@@ -1,0 +1,78 @@
+# =========================
+# .NET / C#
+# =========================
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Ll]og/
+[Ll]ogs/
+*.nupkg
+*.snupkg
+**/Properties/launchSettings.json
+
+# =========================
+# Node / Frontend
+# =========================
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+
+# =========================
+# IDE
+# =========================
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# =========================
+# Testing
+# =========================
+coverage/
+TestResults/
+*.trx
+playwright-report/
+test-results/
+
+# =========================
+# Docker
+# =========================
+docker-compose.override.yml
+
+# =========================
+# OS
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db

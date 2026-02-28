@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ClarityBoard.API/ClarityBoard.API.csproj" />
+    <Project Path="src/ClarityBoard.Application/ClarityBoard.Application.csproj" />
+    <Project Path="src/ClarityBoard.Domain/ClarityBoard.Domain.csproj" />
+    <Project Path="src/ClarityBoard.Infrastructure/ClarityBoard.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ClarityBoard.API.Tests/ClarityBoard.API.Tests.csproj" />
+    <Project Path="tests/ClarityBoard.Application.Tests/ClarityBoard.Application.Tests.csproj" />
+    <Project Path="tests/ClarityBoard.Architecture.Tests/ClarityBoard.Architecture.Tests.csproj" />
+    <Project Path="tests/ClarityBoard.Domain.Tests/ClarityBoard.Domain.Tests.csproj" />
+    <Project Path="tests/ClarityBoard.Infrastructure.Tests/ClarityBoard.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>

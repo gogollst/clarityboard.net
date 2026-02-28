@@ -1,0 +1,73 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: clarityboard_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore
+        working-directory: src/backend
+      - name: Build
+        run: dotnet build --no-restore
+        working-directory: src/backend
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+        working-directory: src/backend
+        env:
+          ConnectionStrings__Test: Host=localhost;Database=clarityboard_test;Username=test;Password=test
+
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: src/frontend/package-lock.json
+      - name: Install
+        run: npm ci
+        working-directory: src/frontend
+      - name: Lint
+        run: npm run lint
+        working-directory: src/frontend
+      - name: Build
+        run: npm run build
+        working-directory: src/frontend
+
+  docker-build:
+    name: Docker Build
+    needs: [backend-test, frontend-test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -t clarityboard-api:${{ github.sha }} ./src/backend
+      - name: Build Frontend image
+        run: docker build -t clarityboard-frontend:${{ github.sha }} ./src/frontend

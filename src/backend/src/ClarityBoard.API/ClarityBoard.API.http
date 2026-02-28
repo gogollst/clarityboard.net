@@ -1,0 +1,6 @@
+@ClarityBoard.API_HostAddress = http://localhost:5042
+
+GET {{ClarityBoard.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

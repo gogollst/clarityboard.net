@@ -1,0 +1,38 @@
+{
+  "app": {
+    "name": "Clarity Board",
+    "tagline": "Enterprise KPI Dashboard"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "financial": "Financial KPIs",
+    "sales": "Sales KPIs",
+    "marketing": "Marketing KPIs",
+    "hr": "HR KPIs",
+    "cashflow": "Cash Flow",
+    "scenarios": "Scenarios",
+    "documents": "Documents",
+    "budget": "Budget",
+    "assets": "Assets",
+    "datev": "DATEV Export",
+    "admin": "Administration"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "export": "Export",
+    "upload": "Upload",
+    "refresh": "Refresh",
+    "filter": "Filter",
+    "search": "Search"
+  },
+  "status": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "empty": "No data available",
+    "success": "Operation successful"
+  }
+}

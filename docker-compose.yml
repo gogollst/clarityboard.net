@@ -1,0 +1,94 @@
+version: '3.9'
+
+services:
+  # ===================
+  # Application Services
+  # ===================
+  api:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Host=localhost;Port=5432;Database=clarityboard;Username=app;Password=${DB_PASSWORD:-devpassword}
+      - Redis__ConnectionString=redis:6379,password=${REDIS_PASSWORD:-devpassword}
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD:-devpassword}
+      - MinIO__Endpoint=minio:9000
+      - MinIO__AccessKey=${MINIO_ACCESS_KEY:-minioadmin}
+      - MinIO__SecretKey=${MINIO_SECRET_KEY:-minioadmin}
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ===================
+  # Infrastructure
+  # ===================
+  # NOTE: PostgreSQL 18 runs locally (not in Docker).
+  # See infrastructure/postgres/init.sql for initial schema setup.
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-devpassword} --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-devpassword}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: clarityboard
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-devpassword}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+volumes:
+  redis_data:
+  rabbitmq_data:
+  minio_data:
