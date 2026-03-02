@@ -10,6 +10,8 @@ import type {
   UpdateUserRequest,
   AuditLogEntry,
   AuditLogParams,
+  MailConfig,
+  UpsertMailConfigRequest,
 } from '@/types/admin';
 
 // ---------------------------------------------------------------------------
@@ -224,6 +226,37 @@ export function useExportAuditLogs() {
     },
     onError: () => {
       toast.error('Failed to export audit logs');
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Mail Config
+// ---------------------------------------------------------------------------
+
+export function useMailConfig() {
+  return useQuery({
+    queryKey: queryKeys.admin.mailConfig(),
+    queryFn: async () => {
+      const { data } = await api.get<MailConfig | null>('/admin/mail/config');
+      return data;
+    },
+  });
+}
+
+export function useUpsertMailConfig() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: UpsertMailConfigRequest) => {
+      await api.put('/admin/mail/config', request);
+    },
+    onSuccess: () => {
+      toast.success('Mail configuration saved');
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.mailConfig() });
+    },
+    onError: () => {
+      toast.error('Failed to save mail configuration');
     },
   });
 }

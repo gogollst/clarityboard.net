@@ -38,6 +38,14 @@ export function useAuth() {
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    await api.post('/auth/forgot-password', { email });
+  };
+
+  const resetPasswordViaToken = async (token: string, newPassword: string) => {
+    await api.post('/auth/reset-password', { token, newPassword });
+  };
+
   const hasPermission = (permission: string): boolean => {
     if (!user?.permissions) return false;
     if (permission.endsWith('.*')) {
@@ -53,6 +61,8 @@ export function useAuth() {
     login,
     verify2FA,
     logout,
+    forgotPassword,
+    resetPasswordViaToken,
     hasPermission,
     role: user?.roles?.[0] ?? null,
   };

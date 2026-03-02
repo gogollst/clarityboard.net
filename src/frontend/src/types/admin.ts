@@ -78,3 +78,25 @@ export interface TriggerDatevExportRequest {
   startDate: string;
   endDate: string;
 }
+
+export interface MailConfig {
+  id: string;
+  host: string;
+  port: number;
+  username: string;
+  fromEmail: string;
+  fromName: string;
+  enableSsl: boolean;
+  isActive: boolean;
+  updatedAt: string;
+}
+
+export interface UpsertMailConfigRequest {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  fromEmail: string;
+  fromName: string;
+  enableSsl: boolean;
+}

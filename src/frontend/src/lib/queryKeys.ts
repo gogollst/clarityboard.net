@@ -99,6 +99,7 @@ export const queryKeys = {
     users: () => ['admin', 'users'] as const,
     roles: () => ['admin', 'roles'] as const,
     auditLogs: () => ['admin', 'audit-logs'] as const,
+    mailConfig: () => ['admin', 'mail-config'] as const,
   },
 
   settings: {

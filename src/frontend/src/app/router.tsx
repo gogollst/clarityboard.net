@@ -7,6 +7,8 @@ const AuthLayout = lazy(() => import('./layouts/AuthLayout'));
 
 // Auth pages
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
 
 // Dashboard
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
@@ -34,6 +36,8 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: '/login', element: <LoginPage /> },
+      { path: '/forgot-password', element: <ForgotPasswordPage /> },
+      { path: '/reset-password', element: <ResetPasswordPage /> },
     ],
   },
 
@@ -74,6 +78,7 @@ export const router = createBrowserRouter([
       { path: 'admin/entities', lazy: () => import('@/features/admin/EntityConfig') },
       { path: 'admin/webhooks', lazy: () => import('@/features/admin/WebhookConfig') },
       { path: 'admin/audit', lazy: () => import('@/features/admin/AuditLog') },
+      { path: 'admin/mail', lazy: () => import('@/features/admin/MailConfig') },
 
       // Admin – AI Management
       { path: 'admin/ai/providers', lazy: () => import('@/features/admin/AiProviders') },

@@ -19,6 +19,7 @@ import {
   KeyRound,
   MessageSquareCode,
   ScrollText,
+  Mail,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -79,6 +80,7 @@ const adminNavGroup: NavGroup = {
     { label: 'Entities', path: '/admin/entities', icon: Building2 },
     { label: 'Webhooks', path: '/admin/webhooks', icon: Webhook },
     { label: 'Audit Log', path: '/admin/audit', icon: ClipboardList },
+    { label: 'Mail Config', path: '/admin/mail', icon: Mail },
   ],
 };
 
