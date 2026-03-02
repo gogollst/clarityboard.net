@@ -4,15 +4,23 @@ type BadgeVariant = 'default' | 'success' | 'warning' | 'destructive' | 'info';
 
 const variantStyles: Record<BadgeVariant, string> = {
   default:
-    'bg-secondary text-secondary-foreground',
+    'bg-secondary text-secondary-foreground border border-border',
   success:
-    'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+    'bg-emerald-100 text-emerald-700 border border-emerald-200',
   warning:
-    'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300',
+    'bg-amber-100 text-amber-700 border border-amber-200',
   destructive:
-    'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+    'bg-red-100 text-red-700 border border-red-200',
   info:
-    'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+    'bg-blue-100 text-blue-700 border border-blue-200',
+};
+
+const dotColor: Record<BadgeVariant, string> = {
+  default: 'bg-slate-400',
+  success: 'bg-emerald-500',
+  warning: 'bg-amber-500',
+  destructive: 'bg-red-500',
+  info: 'bg-blue-500',
 };
 
 interface StatusBadgeProps {
@@ -48,11 +56,12 @@ export default function StatusBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize',
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize',
         variantStyles[variant],
         className
       )}
     >
+      <span className={cn('h-1.5 w-1.5 rounded-full', dotColor[variant])} />
       {status}
     </span>
   );

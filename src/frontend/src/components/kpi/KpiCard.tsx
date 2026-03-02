@@ -51,7 +51,6 @@ function isImprovement(
   if (changePct === 0) return null;
   if (direction === 'higher_better') return changePct > 0;
   if (direction === 'lower_better') return changePct < 0;
-  // For 'target' direction, we cannot determine improvement without more context
   return null;
 }
 
@@ -66,6 +65,18 @@ function getTrend(
   return 'neutral';
 }
 
+const trendBorderColor = {
+  up: 'border-t-emerald-500',
+  down: 'border-t-red-500',
+  neutral: 'border-t-slate-300',
+};
+
+const trendChangeColor = {
+  up: 'text-emerald-600 bg-emerald-50',
+  down: 'text-red-600 bg-red-50',
+  neutral: 'text-muted-foreground bg-muted',
+};
+
 export default function KpiCard({
   name,
   value,
@@ -78,13 +89,13 @@ export default function KpiCard({
 }: KpiCardProps) {
   if (isLoading) {
     return (
-      <Card>
+      <Card className="border-t-2 border-t-slate-200">
         <CardHeader className="pb-2">
           <Skeleton className="h-4 w-24" />
         </CardHeader>
         <CardContent>
           <Skeleton className="mb-2 h-8 w-32" />
-          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-5 w-16 rounded-full" />
         </CardContent>
       </Card>
     );
@@ -92,14 +103,6 @@ export default function KpiCard({
 
   const formattedValue = formatValue(value, unit);
   const trend = getTrend(changePct, direction);
-  const improved = changePct !== undefined ? isImprovement(changePct, direction) : null;
-
-  const changeColor =
-    improved === true
-      ? 'text-green-600'
-      : improved === false
-        ? 'text-red-600'
-        : 'text-muted-foreground';
 
   const TrendIcon =
     changePct !== undefined && changePct > 0
@@ -109,9 +112,9 @@ export default function KpiCard({
         : Minus;
 
   return (
-    <Card>
+    <Card className={cn('border-t-2', trendBorderColor[trend])}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {name}
         </CardTitle>
         {sparklineData && sparklineData.length > 1 && (
@@ -119,16 +122,19 @@ export default function KpiCard({
         )}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{formattedValue}</div>
-        <div className="mt-1 flex items-center gap-2">
+        <div className="kpi-value text-2xl">{formattedValue}</div>
+        <div className="mt-2 flex items-center gap-2">
           {changePct !== undefined && (
-            <div className={cn('flex items-center gap-1 text-sm', changeColor)}>
-              <TrendIcon className="h-3.5 w-3.5" />
-              <span>
-                {changePct > 0 ? '+' : ''}
-                {changePct.toFixed(1)}%
-              </span>
-            </div>
+            <span
+              className={cn(
+                'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+                trendChangeColor[trend]
+              )}
+            >
+              <TrendIcon className="h-3 w-3" />
+              {changePct > 0 ? '+' : ''}
+              {changePct.toFixed(1)}%
+            </span>
           )}
           {targetValue !== undefined && (
             <Badge variant="outline" className="text-xs">

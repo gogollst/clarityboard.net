@@ -107,16 +107,19 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        'flex h-full flex-col border-r border-border bg-card transition-all duration-200',
+        'sidebar-gradient flex h-full flex-col transition-all duration-200',
+        '[box-shadow:2px_0_8px_rgba(0,0,0,0.15)]',
         sidebarOpen ? 'w-64' : 'w-16'
       )}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center border-b border-border px-4">
-        <Link to="/" className="flex items-center gap-2 overflow-hidden">
-          <BarChart3 className="h-6 w-6 shrink-0 text-primary" />
+      <div className="flex h-14 items-center border-b border-white/10 px-4">
+        <Link to="/" className="flex items-center gap-2.5 overflow-hidden">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-500/20 ring-1 ring-indigo-400/30">
+            <BarChart3 className="h-4 w-4 text-indigo-300" />
+          </div>
           {sidebarOpen && (
-            <span className="text-lg font-semibold tracking-tight">
+            <span className="text-sm font-semibold tracking-tight text-white">
               Clarity Board
             </span>
           )}
@@ -124,7 +127,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4">
+      <nav className="scrollbar-thin flex-1 overflow-y-auto py-3">
         {mainNavGroups.map((group) => (
           <NavGroupSection
             key={group.label}
@@ -136,13 +139,13 @@ export default function Sidebar() {
 
         {showAdmin && (
           <>
-            <div className="mx-4 my-2 border-t border-border" />
+            <div className="mx-3 my-2 border-t border-white/10" />
             <NavGroupSection
               group={adminNavGroup}
               collapsed={!sidebarOpen}
               isActive={isActive}
             />
-            <div className="mx-4 my-2 border-t border-border" />
+            <div className="mx-3 my-2 border-t border-white/10" />
             <NavGroupSection
               group={aiAdminNavGroup}
               collapsed={!sidebarOpen}
@@ -153,12 +156,12 @@ export default function Sidebar() {
       </nav>
 
       {/* Collapse Toggle */}
-      <div className="border-t border-border p-2">
+      <div className="border-t border-white/10 p-2">
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="w-full"
+          className="w-full text-slate-400 hover:bg-white/10 hover:text-white"
           aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
         >
           {sidebarOpen ? (
@@ -182,9 +185,9 @@ function NavGroupSection({
   isActive: (path: string) => boolean;
 }) {
   return (
-    <div className="mb-2">
+    <div className="mb-1">
       {!collapsed && (
-        <div className="px-4 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="px-4 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
           {group.label}
         </div>
       )}
@@ -197,15 +200,20 @@ function NavGroupSection({
               <Link
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-colors',
+                  'flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium transition-all duration-150',
                   active
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                    ? 'bg-indigo-500/20 text-white [box-shadow:0_0_0_1px_rgba(99,102,241,0.3),inset_0_0_8px_rgba(99,102,241,0.1)]'
+                    : 'text-slate-400 hover:bg-white/[0.07] hover:text-slate-200',
                   collapsed && 'justify-center'
                 )}
                 title={collapsed ? item.label : undefined}
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <Icon
+                  className={cn(
+                    'h-4 w-4 shrink-0',
+                    active ? 'text-indigo-300' : 'text-slate-500'
+                  )}
+                />
                 {!collapsed && <span>{item.label}</span>}
               </Link>
             </li>
