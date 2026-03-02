@@ -35,17 +35,20 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Creat
     private readonly IPasswordHasher _passwordHasher;
     private readonly ICurrentUser _currentUser;
     private readonly IAuditService _auditService;
+    private readonly IEmailService _email;
 
     public CreateUserCommandHandler(
         IAppDbContext db,
         IPasswordHasher passwordHasher,
         ICurrentUser currentUser,
-        IAuditService auditService)
+        IAuditService auditService,
+        IEmailService email)
     {
         _db = db;
         _passwordHasher = passwordHasher;
         _currentUser = currentUser;
         _auditService = auditService;
+        _email = email;
     }
 
     public async Task<CreateUserResponse> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -90,6 +93,15 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Creat
             ipAddress: null,
             userAgent: null,
             ct: cancellationToken);
+
+        // Send invitation email (fire-and-forget, does not affect user creation)
+        try
+        {
+            await _email.SendInvitationEmailAsync(
+                user.Email, user.FirstName, temporaryPassword,
+                invitedBy: _currentUser.Email, cancellationToken);
+        }
+        catch { /* swallow – user was already created successfully */ }
 
         return new CreateUserResponse
         {

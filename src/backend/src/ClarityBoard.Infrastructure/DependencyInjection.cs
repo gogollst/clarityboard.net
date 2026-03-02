@@ -135,6 +135,9 @@ public static class DependencyInjection
         // Encryption service for API keys (AES-256-GCM)
         services.AddSingleton<IEncryptionService, ClarityBoard.Infrastructure.Services.AI.AesEncryptionService>();
 
+        // Mail service (SMTP with retry + DB logging)
+        services.AddScoped<IEmailService, ClarityBoard.Infrastructure.Services.Mail.SmtpEmailService>();
+
         // Named HttpClient for the prompt AI service (30s timeout, no auth headers – each call sets its own)
         services.AddHttpClient("ai_prompt", client =>
         {

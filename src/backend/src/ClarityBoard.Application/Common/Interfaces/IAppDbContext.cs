@@ -1,4 +1,5 @@
 using ClarityBoard.Domain.Entities.AI;
+using ClarityBoard.Domain.Entities.Mail;
 using ClarityBoard.Domain.Entities.Accounting;
 using ClarityBoard.Domain.Entities.Asset;
 using ClarityBoard.Domain.Entities.Budget;
@@ -73,6 +74,10 @@ public interface IAppDbContext
     DbSet<AiPrompt> AiPrompts { get; }
     DbSet<AiPromptVersion> AiPromptVersions { get; }
     DbSet<AiCallLog> AiCallLogs { get; }
+
+    // Mail
+    DbSet<MailConfig> MailConfigs { get; }
+    DbSet<EmailLog> EmailLogs { get; }
 
     // Identity
     DbSet<User> Users { get; }

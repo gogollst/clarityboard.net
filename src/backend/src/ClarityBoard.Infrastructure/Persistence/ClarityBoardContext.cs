@@ -1,4 +1,5 @@
 using ClarityBoard.Domain.Entities.AI;
+using ClarityBoard.Domain.Entities.Mail;
 using ClarityBoard.Domain.Entities.Accounting;
 using ClarityBoard.Domain.Entities.Asset;
 using ClarityBoard.Domain.Entities.Budget;
@@ -66,6 +67,10 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
     public DbSet<FixedAsset> FixedAssets => Set<FixedAsset>();
     public DbSet<DepreciationSchedule> DepreciationSchedules => Set<DepreciationSchedule>();
     public DbSet<AssetDisposal> AssetDisposals => Set<AssetDisposal>();
+
+    // Mail
+    public DbSet<MailConfig> MailConfigs => Set<MailConfig>();
+    public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
 
     // AI Management
     public DbSet<AiProviderConfig> AiProviderConfigs => Set<AiProviderConfig>();
@@ -147,6 +152,10 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
         modelBuilder.Entity<WebhookEvent>().ToTable("webhook_events", "integration");
         modelBuilder.Entity<MappingRule>().ToTable("mapping_rules", "integration");
         modelBuilder.Entity<PullAdapterConfig>().ToTable("pull_adapter_configs", "integration");
+
+        // Mail schema
+        modelBuilder.Entity<MailConfig>().ToTable("mail_configs", "mail");
+        modelBuilder.Entity<EmailLog>().ToTable("email_logs", "mail");
 
         // AI schema
         modelBuilder.Entity<AiProviderConfig>().ToTable("ai_provider_configs", "ai");
@@ -734,6 +743,36 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.HasOne<AiPrompt>().WithMany()
                 .HasForeignKey(e => e.PromptId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ── Mail ──────────────────────────────────────────────────────────────────
+        modelBuilder.Entity<MailConfig>(entity =>
+        {
+            entity.ToTable("mail_configs", "mail");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Host).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.Username).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.EncryptedPassword).HasMaxLength(2000).IsRequired();
+            entity.Property(e => e.FromEmail).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.FromName).HasMaxLength(256).IsRequired();
+        });
+
+        modelBuilder.Entity<EmailLog>(entity =>
+        {
+            entity.ToTable("email_logs", "mail");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ToEmail).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.Subject).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.ErrorMessage).HasMaxLength(2000);
+            entity.HasIndex(e => e.SentAt);
+            entity.HasIndex(e => e.UserId);
+        });
+
+        // ── User: password reset token fields ────────────────────────────────────
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(e => e.PasswordResetToken).HasMaxLength(256);
+            // PasswordResetTokenExpiry is already mapped as nullable DateTime – no extra config needed
         });
     }
 }

@@ -18,6 +18,8 @@ public class User
     public int FailedLoginAttempts { get; private set; }
     public DateTime? LockedUntil { get; private set; }
     public DateTime? LastLoginAt { get; private set; }
+    public string? PasswordResetToken { get; private set; }
+    public DateTime? PasswordResetTokenExpiry { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
@@ -127,5 +129,19 @@ public class User
     {
         AvatarPath = avatarPath;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetPasswordResetToken(string token, DateTime expiry)
+    {
+        PasswordResetToken       = token;
+        PasswordResetTokenExpiry = expiry;
+        UpdatedAt                = DateTime.UtcNow;
+    }
+
+    public void ClearPasswordResetToken()
+    {
+        PasswordResetToken       = null;
+        PasswordResetTokenExpiry = null;
+        UpdatedAt                = DateTime.UtcNow;
     }
 }

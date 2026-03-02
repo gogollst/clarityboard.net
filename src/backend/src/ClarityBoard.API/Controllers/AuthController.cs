@@ -45,6 +45,27 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    // ── Password Reset ────────────────────────────────────────────────
+
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordCommand command, CancellationToken ct)
+    {
+        await _mediator.Send(command, ct);
+        return NoContent(); // Always 204 – prevents email enumeration
+    }
+
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViaTokenCommand command, CancellationToken ct)
+    {
+        await _mediator.Send(command, ct);
+        return NoContent();
+    }
+
     // ── Two-Factor Authentication ─────────────────────────────────────
 
     [Authorize]

@@ -29,17 +29,20 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
     private readonly IPasswordHasher _passwordHasher;
     private readonly ICurrentUser _currentUser;
     private readonly IAuditService _auditService;
+    private readonly IEmailService _email;
 
     public ResetPasswordCommandHandler(
         IAppDbContext db,
         IPasswordHasher passwordHasher,
         ICurrentUser currentUser,
-        IAuditService auditService)
+        IAuditService auditService,
+        IEmailService email)
     {
         _db = db;
         _passwordHasher = passwordHasher;
         _currentUser = currentUser;
         _auditService = auditService;
+        _email = email;
     }
 
     public async Task<ResetPasswordResponse> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
@@ -74,6 +77,15 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
             ipAddress: null,
             userAgent: null,
             ct: cancellationToken);
+
+        // Notify user of the admin-triggered reset (fire-and-forget, does not affect response)
+        try
+        {
+            await _email.SendInvitationEmailAsync(
+                user.Email, user.FirstName, temporaryPassword,
+                invitedBy: "Administrator", cancellationToken);
+        }
+        catch { /* swallow – password was already reset successfully */ }
 
         return new ResetPasswordResponse
         {
