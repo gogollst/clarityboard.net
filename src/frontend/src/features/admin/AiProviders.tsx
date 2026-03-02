@@ -19,7 +19,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   OpenAI:    'bg-emerald-50 border-emerald-200',
   Grok:      'bg-blue-50 border-blue-200',
   Gemini:    'bg-purple-50 border-purple-200',
-  ZAI:       'bg-slate-50 border-slate-200',
+  ZAI:       'bg-secondary border-border',
   Manus:     'bg-rose-50 border-rose-200',
 };
 

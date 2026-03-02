@@ -20,7 +20,7 @@ const PROVIDER_BADGE_CLASS: Record<AiProvider, string> = {
   OpenAI:    'bg-emerald-100 text-emerald-800',
   Grok:      'bg-blue-100 text-blue-800',
   Gemini:    'bg-purple-100 text-purple-800',
-  ZAI:       'bg-slate-100 text-slate-700',
+  ZAI:       'bg-secondary text-secondary-foreground',
   Manus:     'bg-rose-100 text-rose-800',
 };
 
@@ -108,7 +108,7 @@ export function Component() {
               {filtered.map((prompt: AiPromptListItem) => (
                 <TableRow
                   key={prompt.id}
-                  className="cursor-pointer hover:bg-slate-50"
+                  className="cursor-pointer hover:bg-secondary/60"
                   onClick={() => navigate(`/admin/ai/prompts/${prompt.promptKey}`)}
                 >
                   <TableCell><StatusIcon isActive={prompt.isActive} /></TableCell>

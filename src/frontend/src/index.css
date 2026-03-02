@@ -175,14 +175,14 @@
     box-shadow: var(--shadow-dropdown);
   }
 
-  /* Smooth scrollbar – warm sidebar tone */
+  /* Smooth scrollbar – warm stone for light surfaces */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgba(250, 249, 244, 0.10) transparent;
+    scrollbar-color: var(--color-border) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
-    width: 3px;
+    width: 4px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
@@ -190,6 +190,25 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 2px;
+  }
+
+  /* Scrollbar variant for dark surfaces (sidebar) */
+  .scrollbar-dark {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(250, 249, 244, 0.10) transparent;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-thumb {
     background-color: rgba(250, 249, 244, 0.12);
     border-radius: 2px;
   }

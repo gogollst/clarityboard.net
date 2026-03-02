@@ -244,7 +244,7 @@ export function Component() {
             <div className="grid gap-3 md:grid-cols-2">
               <div>
                 <p className="text-muted-foreground mb-1 text-xs font-medium">Current</p>
-                <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded border bg-slate-50 p-3 text-xs">{form.systemPrompt}</pre>
+                <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded border border-border bg-secondary p-3 text-xs">{form.systemPrompt}</pre>
               </div>
               <div>
                 <p className="mb-1 text-xs font-medium text-amber-700">Enhanced</p>

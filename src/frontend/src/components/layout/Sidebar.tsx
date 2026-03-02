@@ -129,7 +129,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="scrollbar-thin flex-1 overflow-y-auto py-3">
+      <nav className="scrollbar-dark flex-1 overflow-y-auto py-3">
         {mainNavGroups.map((group) => (
           <NavGroupSection
             key={group.label}
