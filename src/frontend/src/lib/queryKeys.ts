@@ -100,4 +100,9 @@ export const queryKeys = {
     roles: () => ['admin', 'roles'] as const,
     auditLogs: () => ['admin', 'audit-logs'] as const,
   },
+
+  settings: {
+    all: ['settings'] as const,
+    profile: () => ['settings', 'profile'] as const,
+  },
 } as const;

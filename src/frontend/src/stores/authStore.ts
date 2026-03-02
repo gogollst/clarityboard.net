@@ -12,6 +12,8 @@ export interface User {
   firstName: string;
   lastName: string;
   locale: string;
+  timezone: string;
+  twoFactorEnabled: boolean;
   entities: EntityAccess[];
   roles: string[];
   permissions: string[];

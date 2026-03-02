@@ -1,0 +1,5 @@
+dump.rdb
+tests/
+bin/
+obj/
+*.slnx

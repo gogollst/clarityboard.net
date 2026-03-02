@@ -118,7 +118,7 @@ export default function Header() {
               <User className="h-4 w-4 text-primary" />
             </div>
             <span className="hidden text-sm font-medium md:inline-block">
-              {user?.name ?? 'User'}
+              {user ? `${user.firstName} ${user.lastName}` : 'User'}
             </span>
             <ChevronDown className="h-3 w-3 text-muted-foreground" />
           </Button>
@@ -126,10 +126,10 @@ export default function Header() {
           {userMenuOpen && (
             <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-md border border-border bg-popover p-1 shadow-lg">
               <div className="px-3 py-2">
-                <p className="text-sm font-medium">{user?.name}</p>
+                <p className="text-sm font-medium">{user ? `${user.firstName} ${user.lastName}` : ''}</p>
                 <p className="text-xs text-muted-foreground">{user?.email}</p>
                 <p className="mt-0.5 text-xs capitalize text-muted-foreground">
-                  {user?.role}
+                  {user?.roles?.[0]}
                 </p>
               </div>
               <div className="my-1 border-t border-border" />

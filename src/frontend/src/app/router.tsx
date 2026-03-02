@@ -66,6 +66,9 @@ export const router = createBrowserRouter([
       { path: 'assets', lazy: () => import('@/features/assets/AssetRegister') },
       { path: 'datev', lazy: () => import('@/features/datev/DatevExportPage') },
 
+      // Settings
+      { path: 'settings', lazy: () => import('@/features/settings/SettingsPage') },
+
       // Admin
       { path: 'admin/users', lazy: () => import('@/features/admin/UserManagement') },
       { path: 'admin/entities', lazy: () => import('@/features/admin/EntityConfig') },

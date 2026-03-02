@@ -9,6 +9,8 @@ public class User
     public string LastName { get; private set; } = default!;
     public string Locale { get; private set; } = "de";
     public string Timezone { get; private set; } = "Europe/Berlin";
+    public string? AvatarPath { get; private set; }
+    public string? Bio { get; private set; }
     public bool TwoFactorEnabled { get; private set; }
     public string? TwoFactorSecret { get; private set; } // Encrypted TOTP secret
     public string? RecoveryCodesHash { get; private set; } // JSON array of hashed recovery codes
@@ -112,6 +114,18 @@ public class User
     public void SetPasswordHash(string passwordHash)
     {
         PasswordHash = passwordHash;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateBio(string? bio)
+    {
+        Bio = bio;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetAvatarPath(string? avatarPath)
+    {
+        AvatarPath = avatarPath;
         UpdatedAt = DateTime.UtcNow;
     }
 }

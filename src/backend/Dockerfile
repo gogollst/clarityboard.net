@@ -2,15 +2,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-COPY ClarityBoard.sln .
 COPY src/ClarityBoard.Domain/*.csproj src/ClarityBoard.Domain/
 COPY src/ClarityBoard.Application/*.csproj src/ClarityBoard.Application/
 COPY src/ClarityBoard.Infrastructure/*.csproj src/ClarityBoard.Infrastructure/
 COPY src/ClarityBoard.API/*.csproj src/ClarityBoard.API/
-RUN dotnet restore
+RUN dotnet restore src/ClarityBoard.API/ClarityBoard.API.csproj
 
 COPY . .
-RUN dotnet publish src/ClarityBoard.API -c Release -o /app/publish --no-restore
+RUN dotnet publish src/ClarityBoard.API -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime

@@ -66,9 +66,11 @@ builder.Services.AddSwaggerGen(options =>
 // CORS
 builder.Services.AddCors(options =>
 {
+    var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+                     ?? ["http://localhost:3000"];
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(corsOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -170,11 +172,8 @@ using (var scope = app.Services.CreateScope())
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSerilogRequestLogging();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseResponseCompression();
 app.UseHttpsRedirection();

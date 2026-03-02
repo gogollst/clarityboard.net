@@ -598,6 +598,8 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.LastName).HasMaxLength(100);
             entity.Property(e => e.Locale).HasMaxLength(10);
             entity.Property(e => e.Timezone).HasMaxLength(50);
+            entity.Property(e => e.AvatarPath).HasMaxLength(500);
+            entity.Property(e => e.Bio).HasMaxLength(500);
             entity.Property(e => e.TwoFactorSecret).HasMaxLength(500);
             entity.Property(e => e.RecoveryCodesHash).HasMaxLength(2000);
             entity.Ignore(e => e.FullName);
