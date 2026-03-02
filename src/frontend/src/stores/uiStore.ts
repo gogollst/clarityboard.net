@@ -15,13 +15,49 @@ interface UiState {
   setConnectionStatus: (status: ConnectionStatus) => void;
 }
 
+const THEME_KEY = 'cb-theme';
+
+/** Liest OS-Präferenz */
+const prefersDark = () =>
+  window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+/** Schreibt .dark-Klasse auf <html> — einzige Quelle der Wahrheit */
+function applyTheme(theme: Theme): void {
+  const shouldBeDark =
+    theme === 'dark' || (theme === 'system' && prefersDark());
+  document.documentElement.classList.toggle('dark', shouldBeDark);
+}
+
+/** Persistiertes Theme aus localStorage, Fallback: 'system' */
+const initialTheme =
+  (localStorage.getItem(THEME_KEY) as Theme | null) ?? 'system';
+
 export const useUiStore = create<UiState>((set) => ({
   sidebarOpen: true,
-  theme: 'system',
+  theme: initialTheme,
   locale: 'en',
   connectionStatus: 'disconnected',
+
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
-  setTheme: (theme) => set({ theme }),
+
+  setTheme: (theme) => {
+    localStorage.setItem(THEME_KEY, theme);
+    applyTheme(theme);
+    set({ theme });
+  },
+
   setLocale: (locale) => set({ locale }),
   setConnectionStatus: (status) => set({ connectionStatus: status }),
 }));
+
+// Theme sofort beim Laden anwenden (vor erstem React-Render)
+applyTheme(initialTheme);
+
+// OS-Präferenz live verfolgen wenn theme === 'system'
+window
+  .matchMedia('(prefers-color-scheme: dark)')
+  .addEventListener('change', () => {
+    if (useUiStore.getState().theme === 'system') {
+      applyTheme('system');
+    }
+  });

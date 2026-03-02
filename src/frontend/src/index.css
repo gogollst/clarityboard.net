@@ -73,30 +73,33 @@
 }
 
 /* ─────────────────────────────────────────────
-   DARK MODE
+   DARK MODE — gesteuert über .dark-Klasse auf <html>
+   Aktiviert alle Tailwind dark:-Utilities app-weit.
 ───────────────────────────────────────────── */
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-primary:            #e8896b;
-    --color-primary-foreground: #131314;
-    --color-background:         #131314;
-    --color-foreground:         #faf9f4;
-    --color-card:               #1d1c1a;
-    --color-card-foreground:    #faf9f4;
-    --color-popover:            #1d1c1a;
-    --color-popover-foreground: #faf9f4;
-    --color-secondary:            #272523;
-    --color-secondary-foreground: #faf9f4;
-    --color-muted:            #272523;
-    --color-muted-foreground: #857f79;
-    --color-border: #2e2c29;
-    --color-input:  #2e2c29;
-    --color-sidebar:     #0d0d0c;
-    --color-sidebar-end: #131314;
-    --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-card-hover: 0 4px 20px rgba(217, 119, 87, 0.14), 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-dropdown:   0 8px 24px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
-  }
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  --color-primary:            #e8896b;
+  --color-primary-foreground: #131314;
+  --color-accent:             #d97757;
+  --color-accent-foreground:  #131314;
+  --color-background:         #131314;
+  --color-foreground:         #faf9f4;
+  --color-card:               #1d1c1a;
+  --color-card-foreground:    #faf9f4;
+  --color-popover:            #1d1c1a;
+  --color-popover-foreground: #faf9f4;
+  --color-secondary:            #272523;
+  --color-secondary-foreground: #faf9f4;
+  --color-muted:            #272523;
+  --color-muted-foreground: #857f79;
+  --color-border: #2e2c29;
+  --color-input:  #2e2c29;
+  --color-sidebar:     #0d0d0c;
+  --color-sidebar-end: #131314;
+  --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 20px rgba(217, 119, 87, 0.14), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-dropdown:   0 8px 24px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 /* ─────────────────────────────────────────────

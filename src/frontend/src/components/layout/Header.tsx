@@ -8,6 +8,9 @@ import {
   Building2,
   Wifi,
   WifiOff,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,10 +20,20 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 
+type Theme = 'light' | 'dark' | 'system';
+
+const THEME_CYCLE: Theme[] = ['light', 'dark', 'system'];
+
+const themeConfig: Record<Theme, { icon: React.ElementType; label: string }> = {
+  light:  { icon: Sun,     label: 'Light mode' },
+  dark:   { icon: Moon,    label: 'Dark mode' },
+  system: { icon: Monitor, label: 'System default' },
+};
+
 export default function Header() {
   const { user, logout } = useAuth();
   const { entities, selectedEntityId, switchEntity } = useEntity();
-  const { toggleSidebar, connectionStatus } = useUiStore();
+  const { toggleSidebar, connectionStatus, theme, setTheme } = useUiStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -40,19 +53,17 @@ export default function Header() {
   }, []);
 
   const connectionConfig = {
-    connected: {
-      dot: 'bg-emerald-500',
-      label: 'Connected',
-    },
-    reconnecting: {
-      dot: 'bg-amber-500 pulse-ring',
-      label: 'Reconnecting...',
-    },
-    disconnected: {
-      dot: 'bg-red-500',
-      label: 'Disconnected',
-    },
+    connected:    { dot: 'bg-emerald-500',          label: 'Connected' },
+    reconnecting: { dot: 'bg-amber-500 pulse-ring',  label: 'Reconnecting...' },
+    disconnected: { dot: 'bg-red-500',               label: 'Disconnected' },
   }[connectionStatus];
+
+  function cycleTheme() {
+    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(theme) + 1) % THEME_CYCLE.length];
+    setTheme(next);
+  }
+
+  const ThemeIcon = themeConfig[theme].icon;
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-card px-4 [box-shadow:0_1px_3px_rgba(0,0,0,0.06)]">
@@ -92,7 +103,7 @@ export default function Header() {
       </div>
 
       {/* Right section */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         {/* Connection Status */}
         <div
           className="flex items-center gap-1.5 rounded-md px-2 py-1"
@@ -109,9 +120,21 @@ export default function Header() {
           />
         </div>
 
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={cycleTheme}
+          aria-label={themeConfig[theme].label}
+          title={themeConfig[theme].label}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <ThemeIcon className="h-4 w-4 transition-transform duration-200" />
+        </Button>
+
         {/* Notification Bell */}
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-4.5 w-4.5" />
+          <Bell className="h-4 w-4" />
         </Button>
 
         {/* User Dropdown */}
@@ -133,7 +156,9 @@ export default function Header() {
           {userMenuOpen && (
             <div className="absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-border bg-popover p-1 shadow-card-hover">
               <div className="px-3 py-2.5">
-                <p className="text-sm font-semibold">{user ? `${user.firstName} ${user.lastName}` : ''}</p>
+                <p className="text-sm font-semibold">
+                  {user ? `${user.firstName} ${user.lastName}` : ''}
+                </p>
                 <p className="text-xs text-muted-foreground">{user?.email}</p>
                 <span className="mt-1 inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium capitalize text-primary">
                   {user?.roles?.[0]}
@@ -153,7 +178,7 @@ export default function Header() {
                   setUserMenuOpen(false);
                   logout();
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-destructive transition-colors hover:bg-red-50"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-destructive transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
               >
                 <LogOut className="h-4 w-4" />
                 Logout
