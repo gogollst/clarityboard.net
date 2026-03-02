@@ -25,8 +25,8 @@ echo "      Frontend deployed."
 # 3. Build & start Docker services (API + infra)
 echo "[3/6] Building and starting Docker services..."
 cd "$PROJECT_DIR"
-sg docker -c "docker compose -f docker-compose.prod.yml build api"
-sg docker -c "docker compose -f docker-compose.prod.yml up -d"
+sg docker -c "docker compose -f docker-compose.prod.yml --env-file .env.production build api"
+sg docker -c "docker compose -f docker-compose.prod.yml --env-file .env.production up -d"
 echo "      Docker services started."
 
 # 4. Install Nginx configs
