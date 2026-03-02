@@ -23,6 +23,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useUiStore } from '@/stores/uiStore';
+import { useVersion } from '@/hooks/useVersion';
 import { Button } from '@/components/ui/button';
 
 interface NavItem {
@@ -94,6 +95,7 @@ export default function Sidebar() {
   const location = useLocation();
   const { hasPermission } = useAuth();
   const { sidebarOpen, toggleSidebar } = useUiStore();
+  const { data: versionInfo } = useVersion();
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -154,6 +156,15 @@ export default function Sidebar() {
           </>
         )}
       </nav>
+
+      {/* Version */}
+      {sidebarOpen && versionInfo && (
+        <div className="px-4 py-2 text-center">
+          <span className="text-[10px] tabular-nums text-slate-600">
+            v{versionInfo.version}
+          </span>
+        </div>
+      )}
 
       {/* Collapse Toggle */}
       <div className="border-t border-white/10 p-2">

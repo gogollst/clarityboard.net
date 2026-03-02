@@ -115,4 +115,8 @@ export const queryKeys = {
     callLogs: (filters?: Record<string, unknown>) => ['ai', 'call-logs', filters ?? {}] as const,
     callLogStats: (from?: string, to?: string) => ['ai', 'call-log-stats', from, to] as const,
   },
+
+  version: {
+    all: () => ['version'] as const,
+  },
 } as const;
