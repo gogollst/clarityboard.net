@@ -1,71 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap');
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────
-   CLARITYBOARD DESIGN SYSTEM – Light Mode
-   Primary: Indigo-600 (#4F46E5) — WCAG AA 5.39:1
+   CLARITYBOARD × ANTHROPIC DESIGN SYSTEM
+   Warm editorial palette — Coral accent #D97757
+   Fraunces (display serif) · DM Sans (body)
 ───────────────────────────────────────────── */
 @theme {
-  /* Brand / Primary */
-  --color-primary: #4f46e5;
+  /* Brand / Primary – Anthropic coral/terracotta */
+  --color-primary:            #d97757;
   --color-primary-foreground: #ffffff;
 
-  /* Accent (Violet) */
-  --color-accent: #7c3aed;
-  --color-accent-foreground: #ffffff;
+  /* Accent – deeper coral for hover */
+  --color-accent:             #c06444;
+  --color-accent-foreground:  #ffffff;
 
-  /* Semantic – Secondary */
-  --color-secondary: #f1f5f9;
-  --color-secondary-foreground: #0f172a;
+  /* Secondary – warm stone */
+  --color-secondary:            #f0ede6;
+  --color-secondary-foreground: #131314;
 
-  /* Semantic – Muted */
-  --color-muted: #f1f5f9;
-  --color-muted-foreground: #475569;
+  /* Muted – warm light gray */
+  --color-muted:            #f0ede6;
+  --color-muted-foreground: #6b6865;
 
-  /* Semantic – Status (all WCAG AA on white) */
-  --color-success: #059669;
-  --color-success-foreground: #ffffff;
-  --color-warning: #d97706;
-  --color-warning-foreground: #ffffff;
-  --color-destructive: #dc2626;
+  /* Semantic – Status */
+  --color-success:             #2d6a4f;
+  --color-success-foreground:  #ffffff;
+  --color-warning:             #b45309;
+  --color-warning-foreground:  #ffffff;
+  --color-destructive:         #b91c1c;
   --color-destructive-foreground: #ffffff;
-  --color-info: #2563eb;
-  --color-info-foreground: #ffffff;
+  --color-info:                #1d4ed8;
+  --color-info-foreground:     #ffffff;
 
-  /* Surfaces */
-  --color-background: #f8fafc;
-  --color-foreground: #0f172a;
-  --color-card: #ffffff;
-  --color-card-foreground: #0f172a;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #0f172a;
+  /* Surfaces – warm cream (Anthropic body bg) */
+  --color-background:         #faf9f4;
+  --color-foreground:         #131314;
+  --color-card:               #ffffff;
+  --color-card-foreground:    #131314;
+  --color-popover:            #ffffff;
+  --color-popover-foreground: #131314;
 
-  /* Borders & Inputs */
-  --color-border: #e2e8f0;
-  --color-input: #e2e8f0;
-  --color-ring: #4f46e5;
+  /* Borders & Inputs – warm stone */
+  --color-border: #e5e0d8;
+  --color-input:  #e5e0d8;
+  --color-ring:   #d97757;
 
-  /* Sidebar (dark gradient) */
-  --color-sidebar: #0f172a;
-  --color-sidebar-end: #1e1b4b;
-  --color-sidebar-foreground: #94a3b8;
-  --color-sidebar-foreground-active: #ffffff;
-  --color-sidebar-item-active: #4f46e5;
-  --color-sidebar-border: rgba(255, 255, 255, 0.08);
+  /* Sidebar – near-black anthracite (Anthropic nav-scrolled style) */
+  --color-sidebar:                   #131314;
+  --color-sidebar-end:               #1c1b19;
+  --color-sidebar-foreground:        #9b958f;
+  --color-sidebar-foreground-active: #faf9f4;
+  --color-sidebar-item-active:       #d97757;
+  --color-sidebar-border:            rgba(250, 249, 244, 0.07);
 
-  /* Border Radius */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* Border Radius – restrained, editorial */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
 
   /* Typography */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans:    "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
 
-  /* Shadows */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-card-hover: 0 4px 12px rgba(79, 70, 229, 0.12), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.15);
+  /* Shadows – warm, barely-there */
+  --shadow-card:       0 1px 2px rgba(19, 19, 20, 0.05), 0 1px 4px rgba(19, 19, 20, 0.03);
+  --shadow-card-hover: 0 4px 20px rgba(217, 119, 87, 0.09), 0 2px 8px rgba(19, 19, 20, 0.06);
+  --shadow-sidebar:    1px 0 0 rgba(250, 249, 244, 0.05);
+  --shadow-dropdown:   0 8px 24px rgba(19, 19, 20, 0.10), 0 2px 8px rgba(19, 19, 20, 0.06);
 }
 
 /* ─────────────────────────────────────────────
@@ -73,24 +77,25 @@
 ───────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   @theme {
-    --color-primary: #6366f1;
-    --color-primary-foreground: #ffffff;
-    --color-background: #0f172a;
-    --color-foreground: #f1f5f9;
-    --color-card: #1e293b;
-    --color-card-foreground: #f1f5f9;
-    --color-popover: #1e293b;
-    --color-popover-foreground: #f1f5f9;
-    --color-secondary: #1e293b;
-    --color-secondary-foreground: #f1f5f9;
-    --color-muted: #1e293b;
-    --color-muted-foreground: #94a3b8;
-    --color-border: #334155;
-    --color-input: #334155;
-    --color-sidebar: #020617;
-    --color-sidebar-end: #0f172a;
-    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-card-hover: 0 4px 12px rgba(99, 102, 241, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3);
+    --color-primary:            #e8896b;
+    --color-primary-foreground: #131314;
+    --color-background:         #131314;
+    --color-foreground:         #faf9f4;
+    --color-card:               #1d1c1a;
+    --color-card-foreground:    #faf9f4;
+    --color-popover:            #1d1c1a;
+    --color-popover-foreground: #faf9f4;
+    --color-secondary:            #272523;
+    --color-secondary-foreground: #faf9f4;
+    --color-muted:            #272523;
+    --color-muted-foreground: #857f79;
+    --color-border: #2e2c29;
+    --color-input:  #2e2c29;
+    --color-sidebar:     #0d0d0c;
+    --color-sidebar-end: #131314;
+    --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-card-hover: 0 4px 20px rgba(217, 119, 87, 0.14), 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-dropdown:   0 8px 24px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
   }
 }
 
@@ -104,35 +109,42 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-optical-sizing: auto;
   }
 
-  /* Typografie-Hierarchie */
+  /* Display font for headings — editorial, Anthropic-inspired */
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+  }
+
   h1 {
     font-size: 2rem;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
   }
 
   h2 {
     font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.3;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
   }
 
   h3 {
     font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
   }
 
   h4 {
     font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    letter-spacing: -0.015em;
     line-height: 1.4;
   }
 }
@@ -145,8 +157,9 @@
   .kpi-value {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    font-family: var(--font-mono);
   }
 
   /* Card shadows */
@@ -158,14 +171,18 @@
     box-shadow: var(--shadow-card-hover);
   }
 
-  /* Smooth scrollbar */
+  .shadow-dropdown {
+    box-shadow: var(--shadow-dropdown);
+  }
+
+  /* Smooth scrollbar – warm sidebar tone */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: var(--color-border) transparent;
+    scrollbar-color: rgba(250, 249, 244, 0.10) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
+    width: 3px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
@@ -173,18 +190,18 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: var(--color-border);
+    background-color: rgba(250, 249, 244, 0.12);
     border-radius: 2px;
   }
 
-  /* Sidebar gradient */
+  /* Sidebar – flat near-black (Anthropic dark nav) */
   .sidebar-gradient {
-    background: linear-gradient(180deg, var(--color-sidebar) 0%, var(--color-sidebar-end) 100%);
+    background: var(--color-sidebar);
   }
 
-  /* Indigo glow for active items */
+  /* Coral glow for active nav items */
   .nav-item-active-glow {
-    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3), inset 0 0 8px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 1px rgba(217, 119, 87, 0.20), inset 0 0 10px rgba(217, 119, 87, 0.06);
   }
 
   /* Pulse ring for connection dot */
@@ -193,18 +210,24 @@
   }
 
   @keyframes pulse-ring {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+    0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    70%  { transform: scale(1);    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
     100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
   }
 
-  /* Page transition */
+  /* Page transition – Anthropic: gentle upward reveal */
   .page-enter {
-    animation: page-in 0.2s ease-out;
+    animation: page-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @keyframes page-in {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Display font utility class */
+  .font-display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
   }
 }

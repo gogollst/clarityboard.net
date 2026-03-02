@@ -110,18 +110,18 @@ export default function Sidebar() {
     <aside
       className={cn(
         'sidebar-gradient flex h-full flex-col transition-all duration-200',
-        '[box-shadow:2px_0_8px_rgba(0,0,0,0.15)]',
+        '[box-shadow:1px_0_0_rgba(250,249,244,0.05)]',
         sidebarOpen ? 'w-64' : 'w-16'
       )}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center border-b border-white/10 px-4">
-        <Link to="/" className="flex items-center gap-2.5 overflow-hidden">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-500/20 ring-1 ring-indigo-400/30">
-            <BarChart3 className="h-4 w-4 text-indigo-300" />
+      <div className="flex h-14 items-center border-b border-[rgba(250,249,244,0.07)] px-4">
+        <Link to="/" className="flex items-center gap-3 overflow-hidden">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#d97757]/15 ring-1 ring-[#d97757]/25">
+            <BarChart3 className="h-4 w-4 text-[#d97757]" />
           </div>
           {sidebarOpen && (
-            <span className="text-sm font-semibold tracking-tight text-white">
+            <span className="font-display text-sm font-medium tracking-tight text-[#faf9f4]">
               Clarity Board
             </span>
           )}
@@ -141,13 +141,13 @@ export default function Sidebar() {
 
         {showAdmin && (
           <>
-            <div className="mx-3 my-2 border-t border-white/10" />
+            <div className="mx-3 my-2 border-t border-[rgba(250,249,244,0.07)]" />
             <NavGroupSection
               group={adminNavGroup}
               collapsed={!sidebarOpen}
               isActive={isActive}
             />
-            <div className="mx-3 my-2 border-t border-white/10" />
+            <div className="mx-3 my-2 border-t border-[rgba(250,249,244,0.07)]" />
             <NavGroupSection
               group={aiAdminNavGroup}
               collapsed={!sidebarOpen}
@@ -160,19 +160,19 @@ export default function Sidebar() {
       {/* Version */}
       {sidebarOpen && versionInfo && (
         <div className="px-4 py-2 text-center">
-          <span className="text-[10px] tabular-nums text-slate-600">
+          <span className="text-[10px] tabular-nums text-[rgba(250,249,244,0.20)]">
             v{versionInfo.version}
           </span>
         </div>
       )}
 
       {/* Collapse Toggle */}
-      <div className="border-t border-white/10 p-2">
+      <div className="border-t border-[rgba(250,249,244,0.07)] p-2">
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="w-full text-slate-400 hover:bg-white/10 hover:text-white"
+          className="w-full text-[#9b958f] hover:bg-[rgba(250,249,244,0.06)] hover:text-[#faf9f4]"
           aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
         >
           {sidebarOpen ? (
@@ -198,7 +198,7 @@ function NavGroupSection({
   return (
     <div className="mb-1">
       {!collapsed && (
-        <div className="px-4 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+        <div className="px-4 pb-1 pt-2 text-[10px] font-medium uppercase tracking-[0.1em] text-[rgba(250,249,244,0.25)]">
           {group.label}
         </div>
       )}
@@ -211,10 +211,10 @@ function NavGroupSection({
               <Link
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-2 py-2 text-sm font-medium transition-all duration-150',
+                  'flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-all duration-150',
                   active
-                    ? 'bg-indigo-500/20 text-white [box-shadow:0_0_0_1px_rgba(99,102,241,0.3),inset_0_0_8px_rgba(99,102,241,0.1)]'
-                    : 'text-slate-400 hover:bg-white/[0.07] hover:text-slate-200',
+                    ? 'bg-[rgba(217,119,87,0.12)] text-[#faf9f4] [box-shadow:0_0_0_1px_rgba(217,119,87,0.18),inset_0_0_10px_rgba(217,119,87,0.05)]'
+                    : 'text-[#9b958f] hover:bg-[rgba(250,249,244,0.06)] hover:text-[#d9d4ce]',
                   collapsed && 'justify-center'
                 )}
                 title={collapsed ? item.label : undefined}
@@ -222,7 +222,7 @@ function NavGroupSection({
                 <Icon
                   className={cn(
                     'h-4 w-4 shrink-0',
-                    active ? 'text-indigo-300' : 'text-slate-500'
+                    active ? 'text-[#d97757]' : 'text-[rgba(250,249,244,0.30)]'
                   )}
                 />
                 {!collapsed && <span>{item.label}</span>}
