@@ -1,3 +1,4 @@
+using ClarityBoard.Domain.Entities.AI;
 using ClarityBoard.Domain.Entities.Accounting;
 using ClarityBoard.Domain.Entities.Entity;
 using ClarityBoard.Domain.Entities.Identity;
@@ -21,6 +22,7 @@ public static class SeedData
             await SeedPermissionsAsync(context, logger);
             await SeedRolesAsync(context, logger);
             await SeedKpiDefinitionsAsync(context, logger);
+            await SeedAiPromptsAsync(context, logger);
             await SeedDevAdminAsync(context, logger);
 
             logger.LogInformation("Seed data initialization completed");
@@ -105,6 +107,32 @@ public static class SeedData
         logger.LogInformation(
             "Seeded dev admin user: admin@clarityboard.net (entity: {EntityName}, role: Admin)",
             entity.Name);
+    }
+
+    private static async Task SeedAiPromptsAsync(ClarityBoardContext context, ILogger logger)
+    {
+        if (await context.AiPrompts.AnyAsync())
+            return;
+
+        var prompts = AiPromptsSeed.All.Select(p => AiPrompt.Create(
+            promptKey:           p.Key,
+            name:                p.Name,
+            description:         p.Description,
+            module:              p.Module,
+            functionDescription: p.FunctionDescription,
+            systemPrompt:        p.SystemPrompt,
+            userPromptTemplate:  p.UserTemplate,
+            primaryProvider:     p.Primary,
+            primaryModel:        p.PrimaryModel,
+            fallbackProvider:    p.Fallback,
+            fallbackModel:       p.FallbackModel,
+            temperature:         p.Temp,
+            maxTokens:           p.MaxTok,
+            isSystemPrompt:      true)).ToList();
+
+        context.AiPrompts.AddRange(prompts);
+        await context.SaveChangesAsync();
+        logger.LogInformation("Seeded {Count} AI prompts", prompts.Count);
     }
 
     private static async Task SeedPermissionsAsync(ClarityBoardContext context, ILogger logger)

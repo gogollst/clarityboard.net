@@ -125,12 +125,27 @@ public static class DependencyInjection
         services.AddSingleton<IExchangeRateService>(sp => sp.GetRequiredService<BackgroundServices.ExchangeRateService>());
         services.AddHostedService(sp => sp.GetRequiredService<BackgroundServices.ExchangeRateService>());
 
-        // AI Service (Claude) with Polly circuit breaker
+        // Legacy AI Service (Claude) – used by DocumentProcessingConsumer
         services.AddHttpClient<IAiService, ClaudeAiProvider>(client =>
             {
                 client.Timeout = TimeSpan.FromSeconds(30);
             })
             .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+        // Encryption service for API keys (AES-256-GCM)
+        services.AddSingleton<IEncryptionService, ClarityBoard.Infrastructure.Services.AI.AesEncryptionService>();
+
+        // Named HttpClient for the prompt AI service (30s timeout, no auth headers – each call sets its own)
+        services.AddHttpClient("ai_prompt", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(60);
+        });
+
+        // Prompt-based AI service (new, centralised engine)
+        services.AddScoped<IPromptAiService, ClarityBoard.Infrastructure.Services.AI.PromptAiService>();
+
+        // Background health check for AI providers (daily at 03:00 UTC)
+        services.AddHostedService<ClarityBoard.Infrastructure.BackgroundServices.AiHealthCheckService>();
 
         // MinIO Document Storage
         services.AddSingleton<IMinioClient>(sp =>

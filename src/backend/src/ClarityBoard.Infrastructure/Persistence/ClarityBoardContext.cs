@@ -1,3 +1,4 @@
+using ClarityBoard.Domain.Entities.AI;
 using ClarityBoard.Domain.Entities.Accounting;
 using ClarityBoard.Domain.Entities.Asset;
 using ClarityBoard.Domain.Entities.Budget;
@@ -65,6 +66,12 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
     public DbSet<FixedAsset> FixedAssets => Set<FixedAsset>();
     public DbSet<DepreciationSchedule> DepreciationSchedules => Set<DepreciationSchedule>();
     public DbSet<AssetDisposal> AssetDisposals => Set<AssetDisposal>();
+
+    // AI Management
+    public DbSet<AiProviderConfig> AiProviderConfigs => Set<AiProviderConfig>();
+    public DbSet<AiPrompt> AiPrompts => Set<AiPrompt>();
+    public DbSet<AiPromptVersion> AiPromptVersions => Set<AiPromptVersion>();
+    public DbSet<AiCallLog> AiCallLogs => Set<AiCallLog>();
 
     // Integration
     public DbSet<WebhookConfig> WebhookConfigs => Set<WebhookConfig>();
@@ -140,6 +147,12 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
         modelBuilder.Entity<WebhookEvent>().ToTable("webhook_events", "integration");
         modelBuilder.Entity<MappingRule>().ToTable("mapping_rules", "integration");
         modelBuilder.Entity<PullAdapterConfig>().ToTable("pull_adapter_configs", "integration");
+
+        // AI schema
+        modelBuilder.Entity<AiProviderConfig>().ToTable("ai_provider_configs", "ai");
+        modelBuilder.Entity<AiPrompt>().ToTable("ai_prompts", "ai");
+        modelBuilder.Entity<AiPromptVersion>().ToTable("ai_prompt_versions", "ai");
+        modelBuilder.Entity<AiCallLog>().ToTable("ai_call_logs", "ai");
 
         // Public schema (Identity)
         modelBuilder.Entity<User>().ToTable("users", "public");
@@ -666,6 +679,61 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.UserAgent).HasMaxLength(500);
             entity.Property(e => e.Hash).HasMaxLength(64);
             entity.Property(e => e.PreviousHash).HasMaxLength(64);
+        });
+
+        // ───────────────────────────────────────────────
+        // AI SCHEMA
+        // ───────────────────────────────────────────────
+
+        modelBuilder.Entity<AiProviderConfig>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            // Only one active config per provider
+            entity.HasIndex(e => new { e.Provider, e.IsActive }).IsUnique()
+                .HasFilter("\"IsActive\" = true");
+            entity.Property(e => e.Provider).HasConversion<int>();
+            entity.Property(e => e.EncryptedApiKey).HasMaxLength(2000);
+            entity.Property(e => e.KeyHint).HasMaxLength(10);
+            entity.Property(e => e.BaseUrl).HasMaxLength(500);
+            entity.Property(e => e.ModelDefault).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<AiPrompt>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.PromptKey).IsUnique();
+            entity.Property(e => e.PromptKey).HasMaxLength(200);
+            entity.Property(e => e.Name).HasMaxLength(200);
+            entity.Property(e => e.Module).HasMaxLength(100);
+            entity.Property(e => e.PrimaryModel).HasMaxLength(100);
+            entity.Property(e => e.FallbackModel).HasMaxLength(100);
+            entity.Property(e => e.Temperature).HasPrecision(4, 2);
+            entity.Property(e => e.PrimaryProvider).HasConversion<int>();
+            entity.Property(e => e.FallbackProvider).HasConversion<int>();
+        });
+
+        modelBuilder.Entity<AiPromptVersion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.PromptId, e.Version }).IsUnique();
+            entity.Property(e => e.ChangeSummary).HasMaxLength(500);
+            entity.Property(e => e.PrimaryProvider).HasConversion<int>();
+            entity.Property(e => e.FallbackProvider).HasConversion<int>();
+            entity.HasOne<AiPrompt>().WithMany()
+                .HasForeignKey(e => e.PromptId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AiCallLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.PromptId, e.CreatedAt });
+            entity.HasIndex(e => new { e.IsSuccess, e.CreatedAt });
+            entity.Property(e => e.UsedProvider).HasConversion<int>();
+            entity.Property(e => e.ErrorMessage).HasMaxLength(1000);
+            entity.HasOne<AiPrompt>().WithMany()
+                .HasForeignKey(e => e.PromptId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

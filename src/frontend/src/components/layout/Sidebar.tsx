@@ -16,6 +16,9 @@ import {
   Landmark,
   Webhook,
   ClipboardList,
+  KeyRound,
+  MessageSquareCode,
+  ScrollText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -78,6 +81,15 @@ const adminNavGroup: NavGroup = {
   ],
 };
 
+const aiAdminNavGroup: NavGroup = {
+  label: 'AI Management',
+  items: [
+    { label: 'Providers', path: '/admin/ai/providers', icon: KeyRound },
+    { label: 'Prompts', path: '/admin/ai/prompts', icon: MessageSquareCode },
+    { label: 'Call Logs', path: '/admin/ai/logs', icon: ScrollText },
+  ],
+};
+
 export default function Sidebar() {
   const location = useLocation();
   const { hasPermission } = useAuth();
@@ -127,6 +139,12 @@ export default function Sidebar() {
             <div className="mx-4 my-2 border-t border-border" />
             <NavGroupSection
               group={adminNavGroup}
+              collapsed={!sidebarOpen}
+              isActive={isActive}
+            />
+            <div className="mx-4 my-2 border-t border-border" />
+            <NavGroupSection
+              group={aiAdminNavGroup}
               collapsed={!sidebarOpen}
               isActive={isActive}
             />

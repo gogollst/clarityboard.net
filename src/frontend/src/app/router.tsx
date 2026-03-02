@@ -74,6 +74,12 @@ export const router = createBrowserRouter([
       { path: 'admin/entities', lazy: () => import('@/features/admin/EntityConfig') },
       { path: 'admin/webhooks', lazy: () => import('@/features/admin/WebhookConfig') },
       { path: 'admin/audit', lazy: () => import('@/features/admin/AuditLog') },
+
+      // Admin – AI Management
+      { path: 'admin/ai/providers', lazy: () => import('@/features/admin/AiProviders') },
+      { path: 'admin/ai/prompts', lazy: () => import('@/features/admin/AiPrompts') },
+      { path: 'admin/ai/prompts/:promptKey', lazy: () => import('@/features/admin/AiPromptDetail') },
+      { path: 'admin/ai/logs', lazy: () => import('@/features/admin/AiCallLogs') },
     ],
   },
 ]);

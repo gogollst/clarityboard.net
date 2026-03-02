@@ -1,3 +1,4 @@
+using ClarityBoard.Domain.Entities.AI;
 using ClarityBoard.Domain.Entities.Accounting;
 using ClarityBoard.Domain.Entities.Asset;
 using ClarityBoard.Domain.Entities.Budget;
@@ -66,6 +67,12 @@ public interface IAppDbContext
     DbSet<WebhookEvent> WebhookEvents { get; }
     DbSet<MappingRule> MappingRules { get; }
     DbSet<PullAdapterConfig> PullAdapterConfigs { get; }
+
+    // AI Management
+    DbSet<AiProviderConfig> AiProviderConfigs { get; }
+    DbSet<AiPrompt> AiPrompts { get; }
+    DbSet<AiPromptVersion> AiPromptVersions { get; }
+    DbSet<AiCallLog> AiCallLogs { get; }
 
     // Identity
     DbSet<User> Users { get; }

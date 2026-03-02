@@ -105,4 +105,14 @@ export const queryKeys = {
     all: ['settings'] as const,
     profile: () => ['settings', 'profile'] as const,
   },
+
+  ai: {
+    all: ['ai'] as const,
+    providers: () => ['ai', 'providers'] as const,
+    prompts: (module?: string) => ['ai', 'prompts', module ?? 'all'] as const,
+    promptDetail: (promptKey: string) => ['ai', 'prompt', promptKey] as const,
+    promptVersions: (promptKey: string) => ['ai', 'prompt-versions', promptKey] as const,
+    callLogs: (filters?: Record<string, unknown>) => ['ai', 'call-logs', filters ?? {}] as const,
+    callLogStats: (from?: string, to?: string) => ['ai', 'call-log-stats', from, to] as const,
+  },
 } as const;

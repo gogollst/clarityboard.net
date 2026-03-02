@@ -1,0 +1,64 @@
+using ClarityBoard.Application.Common.Interfaces;
+using ClarityBoard.Application.Features.AI.DTOs;
+using ClarityBoard.Domain.Entities.AI;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace ClarityBoard.Application.Features.AI.Commands;
+
+public record TestAiProviderCommand : IRequest<ProviderTestResultDto>
+{
+    public AiProvider Provider { get; init; }
+}
+
+public class TestAiProviderCommandHandler
+    : IRequestHandler<TestAiProviderCommand, ProviderTestResultDto>
+{
+    private readonly IAppDbContext _db;
+    private readonly IPromptAiService _aiService;
+
+    public TestAiProviderCommandHandler(IAppDbContext db, IPromptAiService aiService)
+    {
+        _db        = db;
+        _aiService = aiService;
+    }
+
+    public async Task<ProviderTestResultDto> Handle(
+        TestAiProviderCommand request, CancellationToken cancellationToken)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        string? error = null;
+        bool healthy;
+
+        try
+        {
+            healthy = await _aiService.TestProviderAsync(request.Provider, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            healthy = false;
+            error   = ex.Message;
+        }
+
+        sw.Stop();
+
+        // Persist health status
+        var config = await _db.AiProviderConfigs
+            .FirstOrDefaultAsync(p => p.Provider == request.Provider && p.IsActive, cancellationToken);
+
+        if (config is not null)
+        {
+            config.SetHealthStatus(healthy);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        return new ProviderTestResultDto
+        {
+            Provider     = request.Provider,
+            IsHealthy    = healthy,
+            DurationMs   = (int)sw.ElapsedMilliseconds,
+            ErrorMessage = error,
+        };
+    }
+}
+
