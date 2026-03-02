@@ -46,13 +46,14 @@
   --color-input:  #e5e0d8;
   --color-ring:   #d97757;
 
-  /* Sidebar – near-black anthracite (Anthropic nav-scrolled style) */
-  --color-sidebar:                   #131314;
-  --color-sidebar-end:               #1c1b19;
-  --color-sidebar-foreground:        #9b958f;
-  --color-sidebar-foreground-active: #faf9f4;
+  /* Sidebar – Light Mode: clean white surface */
+  --color-sidebar:                   #ffffff;
+  --color-sidebar-foreground:        #6b6865;
+  --color-sidebar-foreground-active: #131314;
   --color-sidebar-item-active:       #d97757;
-  --color-sidebar-border:            rgba(250, 249, 244, 0.07);
+  --color-sidebar-item-hover:        rgba(19, 19, 20, 0.05);
+  --color-sidebar-border:            rgba(19, 19, 20, 0.08);
+  --color-sidebar-scrollbar:         rgba(19, 19, 20, 0.12);
 
   /* Border Radius – restrained, editorial */
   --radius-sm: 0.25rem;
@@ -95,8 +96,14 @@
   --color-muted-foreground: #857f79;
   --color-border: #2e2c29;
   --color-input:  #2e2c29;
-  --color-sidebar:     #0d0d0c;
-  --color-sidebar-end: #131314;
+  /* Sidebar – Dark Mode: near-black anthracite */
+  --color-sidebar:                   #131314;
+  --color-sidebar-foreground:        #9b958f;
+  --color-sidebar-foreground-active: #faf9f4;
+  --color-sidebar-item-active:       #d97757;
+  --color-sidebar-item-hover:        rgba(250, 249, 244, 0.06);
+  --color-sidebar-border:            rgba(250, 249, 244, 0.07);
+  --color-sidebar-scrollbar:         rgba(250, 249, 244, 0.10);
   --shadow-card:       0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0 4px 20px rgba(217, 119, 87, 0.14), 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-dropdown:   0 8px 24px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -216,9 +223,29 @@
     border-radius: 2px;
   }
 
-  /* Sidebar – flat near-black (Anthropic dark nav) */
+  /* Sidebar background + rechte Trennlinie */
   .sidebar-gradient {
     background: var(--color-sidebar);
+    border-right: 1px solid var(--color-sidebar-border);
+  }
+
+  /* Sidebar-Scrollbar — passt sich Light/Dark an */
+  .sidebar-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-sidebar-scrollbar) transparent;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--color-sidebar-scrollbar);
+    border-radius: 2px;
   }
 
   /* Coral glow for active nav items */

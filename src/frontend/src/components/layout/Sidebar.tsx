@@ -98,9 +98,7 @@ export default function Sidebar() {
   const { data: versionInfo } = useVersion();
 
   const isActive = (path: string) => {
-    if (path === '/') {
-      return location.pathname === '/';
-    }
+    if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
@@ -110,18 +108,23 @@ export default function Sidebar() {
     <aside
       className={cn(
         'sidebar-gradient flex h-full flex-col transition-all duration-200',
-        '[box-shadow:1px_0_0_rgba(250,249,244,0.05)]',
         sidebarOpen ? 'w-64' : 'w-16'
       )}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center border-b border-[rgba(250,249,244,0.07)] px-4">
+      <div
+        className="flex h-14 items-center border-b px-4"
+        style={{ borderColor: 'var(--color-sidebar-border)' }}
+      >
         <Link to="/" className="flex items-center gap-3 overflow-hidden">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#d97757]/15 ring-1 ring-[#d97757]/25">
             <BarChart3 className="h-4 w-4 text-[#d97757]" />
           </div>
           {sidebarOpen && (
-            <span className="font-display text-sm font-medium tracking-tight text-[#faf9f4]">
+            <span
+              className="font-display text-sm font-medium tracking-tight"
+              style={{ color: 'var(--color-sidebar-foreground-active)' }}
+            >
               Clarity Board
             </span>
           )}
@@ -129,7 +132,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="scrollbar-dark flex-1 overflow-y-auto py-3">
+      <nav className="sidebar-scrollbar flex-1 overflow-y-auto py-3">
         {mainNavGroups.map((group) => (
           <NavGroupSection
             key={group.label}
@@ -141,13 +144,19 @@ export default function Sidebar() {
 
         {showAdmin && (
           <>
-            <div className="mx-3 my-2 border-t border-[rgba(250,249,244,0.07)]" />
+            <div
+              className="mx-3 my-2 border-t"
+              style={{ borderColor: 'var(--color-sidebar-border)' }}
+            />
             <NavGroupSection
               group={adminNavGroup}
               collapsed={!sidebarOpen}
               isActive={isActive}
             />
-            <div className="mx-3 my-2 border-t border-[rgba(250,249,244,0.07)]" />
+            <div
+              className="mx-3 my-2 border-t"
+              style={{ borderColor: 'var(--color-sidebar-border)' }}
+            />
             <NavGroupSection
               group={aiAdminNavGroup}
               collapsed={!sidebarOpen}
@@ -160,19 +169,42 @@ export default function Sidebar() {
       {/* Version */}
       {sidebarOpen && versionInfo && (
         <div className="px-4 py-2 text-center">
-          <span className="text-[10px] tabular-nums text-[rgba(250,249,244,0.20)]">
+          <span
+            className="text-[10px] tabular-nums"
+            style={{ color: 'var(--color-sidebar-foreground)', opacity: 0.6 }}
+          >
             v{versionInfo.version}
           </span>
         </div>
       )}
 
       {/* Collapse Toggle */}
-      <div className="border-t border-[rgba(250,249,244,0.07)] p-2">
+      <div
+        className="border-t p-2"
+        style={{ borderColor: 'var(--color-sidebar-border)' }}
+      >
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className="w-full text-[#9b958f] hover:bg-[rgba(250,249,244,0.06)] hover:text-[#faf9f4]"
+          className="w-full"
+          style={
+            {
+              color: 'var(--color-sidebar-foreground)',
+              '--tw-bg-opacity': '1',
+            } as React.CSSProperties
+          }
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background =
+              'var(--color-sidebar-item-hover)';
+            (e.currentTarget as HTMLElement).style.color =
+              'var(--color-sidebar-foreground-active)';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = '';
+            (e.currentTarget as HTMLElement).style.color =
+              'var(--color-sidebar-foreground)';
+          }}
           aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
         >
           {sidebarOpen ? (
@@ -198,7 +230,10 @@ function NavGroupSection({
   return (
     <div className="mb-1">
       {!collapsed && (
-        <div className="px-4 pb-1 pt-2 text-[10px] font-medium uppercase tracking-[0.1em] text-[rgba(250,249,244,0.25)]">
+        <div
+          className="px-4 pb-1 pt-2 text-[10px] font-medium uppercase tracking-[0.1em]"
+          style={{ color: 'var(--color-sidebar-foreground)', opacity: 0.7 }}
+        >
           {group.label}
         </div>
       )}
@@ -213,17 +248,39 @@ function NavGroupSection({
                 className={cn(
                   'flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium transition-all duration-150',
                   active
-                    ? 'bg-[rgba(217,119,87,0.12)] text-[#faf9f4] [box-shadow:0_0_0_1px_rgba(217,119,87,0.18),inset_0_0_10px_rgba(217,119,87,0.05)]'
-                    : 'text-[#9b958f] hover:bg-[rgba(250,249,244,0.06)] hover:text-[#d9d4ce]',
+                    ? 'bg-[rgba(217,119,87,0.10)] [box-shadow:0_0_0_1px_rgba(217,119,87,0.18),inset_0_0_10px_rgba(217,119,87,0.04)]'
+                    : '',
                   collapsed && 'justify-center'
                 )}
+                style={
+                  active
+                    ? { color: 'var(--color-sidebar-foreground-active)' }
+                    : { color: 'var(--color-sidebar-foreground)' }
+                }
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.background =
+                      'var(--color-sidebar-item-hover)';
+                    (e.currentTarget as HTMLElement).style.color =
+                      'var(--color-sidebar-foreground-active)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.background = '';
+                    (e.currentTarget as HTMLElement).style.color =
+                      'var(--color-sidebar-foreground)';
+                  }
+                }}
                 title={collapsed ? item.label : undefined}
               >
                 <Icon
-                  className={cn(
-                    'h-4 w-4 shrink-0',
-                    active ? 'text-[#d97757]' : 'text-[rgba(250,249,244,0.30)]'
-                  )}
+                  className="h-4 w-4 shrink-0"
+                  style={{
+                    color: active
+                      ? 'var(--color-sidebar-item-active)'
+                      : 'var(--color-sidebar-foreground)',
+                  }}
                 />
                 {!collapsed && <span>{item.label}</span>}
               </Link>
