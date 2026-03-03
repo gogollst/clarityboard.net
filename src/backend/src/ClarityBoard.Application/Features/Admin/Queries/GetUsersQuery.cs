@@ -75,22 +75,6 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PagedResult<U
 
         // Load roles for these users
         var userIds = users.Select(u => u.Id).ToList();
-        var userRoles = await _db.UserRoles
-            .Where(ur => userIds.Contains(ur.UserId))
-            .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, ur.RoleId, RoleName = r.Name, ur.EntityId, ur.AssignedAt })
-            .Join(_db.LegalEntities, x => x.EntityId, e => e.Id, (x, e) => new UserRoleDto
-            {
-                RoleId = x.RoleId,
-                RoleName = x.RoleName,
-                EntityId = x.EntityId,
-                EntityName = e.Name,
-                AssignedAt = x.AssignedAt,
-            })
-            .ToListAsync(cancellationToken);
-
-        var rolesByUser = userRoles.GroupBy(r => r.EntityId).ToDictionary(g => g.Key, g => g.ToList());
-
-        // Actually group by UserId - we need the UserId from the join
         var userRolesWithUser = await _db.UserRoles
             .Where(ur => userIds.Contains(ur.UserId))
             .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, ur.RoleId, RoleName = r.Name, ur.EntityId, ur.AssignedAt })

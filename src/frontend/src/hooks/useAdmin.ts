@@ -124,7 +124,7 @@ export function useAssignRole() {
       roleId: string;
       entityId: string;
     }) => {
-      await api.post('/admin/roles/assign', { userId, roleId, entityId });
+      await api.post(`/admin/users/${userId}/roles`, { roleId, entityId });
     },
     onSuccess: () => {
       toast.success('Role assigned');
@@ -149,7 +149,7 @@ export function useRemoveRole() {
       roleId: string;
       entityId: string;
     }) => {
-      await api.post('/admin/roles/remove', { userId, roleId, entityId });
+      await api.delete(`/admin/users/${userId}/roles`, { params: { roleId, entityId } });
     },
     onSuccess: () => {
       toast.success('Role removed');
@@ -157,6 +157,23 @@ export function useRemoveRole() {
     },
     onError: () => {
       toast.error('Failed to remove role');
+    },
+  });
+}
+
+export function useReactivateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      await api.post(`/admin/users/${userId}/reactivate`);
+    },
+    onSuccess: () => {
+      toast.success('User reactivated');
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
+    },
+    onError: () => {
+      toast.error('Failed to reactivate user');
     },
   });
 }

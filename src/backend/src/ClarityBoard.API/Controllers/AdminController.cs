@@ -82,6 +82,15 @@ public class AdminController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("users/{userId:guid}/reactivate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ReactivateUser(Guid userId, CancellationToken ct)
+    {
+        await _mediator.Send(new ReactivateUserCommand { UserId = userId }, ct);
+        return NoContent();
+    }
+
     [HttpPost("users/{userId:guid}/reset-password")]
     [ProducesResponseType(typeof(ResetPasswordResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
