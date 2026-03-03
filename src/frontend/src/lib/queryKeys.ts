@@ -100,6 +100,7 @@ export const queryKeys = {
     roles: () => ['admin', 'roles'] as const,
     auditLogs: () => ['admin', 'audit-logs'] as const,
     mailConfig: () => ['admin', 'mail-config'] as const,
+    authConfig: () => ['admin', 'auth-config'] as const,
   },
 
   settings: {
@@ -119,5 +120,14 @@ export const queryKeys = {
 
   version: {
     all: () => ['version'] as const,
+  },
+
+  hr: {
+    all: ['hr'] as const,
+    employees: (params?: unknown) => ['hr', 'employees', params ?? {}] as const,
+    employee: (id: string) => ['hr', 'employee', id] as const,
+    salaryHistory: (employeeId: string) => ['hr', 'salary-history', employeeId] as const,
+    contracts: (employeeId: string) => ['hr', 'contracts', employeeId] as const,
+    departments: (entityId?: string) => ['hr', 'departments', entityId ?? ''] as const,
   },
 } as const;
