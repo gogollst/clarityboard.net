@@ -1,3 +1,4 @@
+using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Common.Models;
 using ClarityBoard.Application.Features.Hr.Commands;
 using ClarityBoard.Application.Features.Hr.Queries;
@@ -13,8 +14,15 @@ namespace ClarityBoard.API.Controllers;
 public class HrController : ControllerBase
 {
     private readonly ISender _mediator;
+    private readonly IHrExportService _hrExport;
+    private readonly ICurrentUser _currentUser;
 
-    public HrController(ISender mediator) => _mediator = mediator;
+    public HrController(ISender mediator, IHrExportService hrExport, ICurrentUser currentUser)
+    {
+        _mediator    = mediator;
+        _hrExport    = hrExport;
+        _currentUser = currentUser;
+    }
 
     // ── Employees ──
 
@@ -284,6 +292,125 @@ public class HrController : ControllerBase
         return Ok(result);
     }
 
+    // ── Travel Expenses ──
+
+    // NOTE: /datev-export must be declared before /{id} to prevent "datev-export"
+    // from being treated as a guid route parameter (ASP.NET Core attribute routing
+    // resolves literal segments before wildcard segments automatically, but explicit
+    // ordering here documents the intent clearly).
+
+    [HttpGet("travel-expenses/datev-export")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ExportTravelExpensesDatev(
+        [FromQuery] Guid entityId,
+        [FromQuery] DateOnly from,
+        [FromQuery] DateOnly to,
+        CancellationToken ct)
+    {
+        if (entityId == Guid.Empty)
+            return BadRequest("entityId is required.");
+
+        if (!_currentUser.HasPermission("hr.export"))
+            return Forbid();
+
+        var bytes    = await _hrExport.ExportTravelExpensesCsvAsync(entityId, from, to, ct);
+        var fileName = $"datev-travel-{entityId}-{from:yyyy-MM-dd}-{to:yyyy-MM-dd}.csv";
+        return File(bytes, "text/csv", fileName);
+    }
+
+    [HttpGet("travel-expenses")]
+    [ProducesResponseType(typeof(PagedResult<TravelExpenseReportDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<TravelExpenseReportDto>>> ListTravelExpenses(
+        [FromQuery] Guid? entityId,
+        [FromQuery] Guid? employeeId,
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new ListTravelExpensesQuery
+        {
+            EntityId   = entityId,
+            EmployeeId = employeeId,
+            Status     = status,
+            Page       = page,
+            PageSize   = pageSize,
+        }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("travel-expenses")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> CreateTravelExpenseReport(
+        [FromBody] CreateTravelExpenseReportRequest body, CancellationToken ct)
+    {
+        var id = await _mediator.Send(new CreateTravelExpenseReportCommand
+        {
+            EmployeeId      = body.EmployeeId,
+            Title           = body.Title,
+            TripStartDate   = body.TripStartDate,
+            TripEndDate     = body.TripEndDate,
+            Destination     = body.Destination,
+            BusinessPurpose = body.BusinessPurpose,
+        }, ct);
+        return Created(string.Empty, new { id });
+    }
+
+    [HttpGet("travel-expenses/{id:guid}")]
+    [ProducesResponseType(typeof(TravelExpenseReportDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<TravelExpenseReportDetailDto>> GetTravelExpense(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetTravelExpenseQuery(id), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("travel-expenses/{id:guid}/items")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> AddTravelExpenseItem(
+        Guid id, [FromBody] AddTravelExpenseItemRequest body, CancellationToken ct)
+    {
+        var itemId = await _mediator.Send(new AddTravelExpenseItemCommand
+        {
+            ReportId             = id,
+            ExpenseType          = body.ExpenseType,
+            ExpenseDate          = body.ExpenseDate,
+            Description          = body.Description,
+            OriginalAmountCents  = body.OriginalAmountCents,
+            OriginalCurrencyCode = body.OriginalCurrencyCode,
+            ExchangeRate         = body.ExchangeRate,
+            ExchangeRateDate     = body.ExchangeRateDate,
+            VatRatePercent       = body.VatRatePercent,
+            IsDeductible         = body.IsDeductible,
+        }, ct);
+        return Created(string.Empty, new { id = itemId });
+    }
+
+    [HttpPost("travel-expenses/{id:guid}/submit")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> SubmitTravelExpense(Guid id, CancellationToken ct)
+    {
+        await _mediator.Send(new SubmitTravelExpenseCommand { ReportId = id }, ct);
+        return NoContent();
+    }
+
+    [HttpPut("travel-expenses/{id:guid}/approve")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ApproveTravelExpense(Guid id, CancellationToken ct)
+    {
+        await _mediator.Send(new ApproveTravelExpenseCommand { ReportId = id }, ct);
+        return NoContent();
+    }
+
     // ── Work Time ──
 
     [HttpGet("work-time/{employeeId:guid}")]
@@ -352,3 +479,22 @@ public record CreateContractRequest(
     string ChangeReason);
 
 public record RejectLeaveRequestRequest(string Reason);
+
+public record CreateTravelExpenseReportRequest(
+    Guid EmployeeId,
+    string Title,
+    DateOnly TripStartDate,
+    DateOnly TripEndDate,
+    string Destination,
+    string BusinessPurpose);
+
+public record AddTravelExpenseItemRequest(
+    string ExpenseType,
+    DateOnly ExpenseDate,
+    string Description,
+    int OriginalAmountCents,
+    string OriginalCurrencyCode,
+    decimal ExchangeRate,
+    DateOnly ExchangeRateDate,
+    decimal? VatRatePercent,
+    bool IsDeductible);

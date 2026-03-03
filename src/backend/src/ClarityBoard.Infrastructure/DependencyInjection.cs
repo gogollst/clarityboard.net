@@ -115,6 +115,9 @@ public static class DependencyInjection
         // DATEV Export
         services.AddScoped<DatevExportService>();
 
+        // HR Export (travel expenses CSV)
+        services.AddScoped<IHrExportService, HrExportService>();
+
         // Background Services
         services.AddHostedService<RecurringEntryService>();
         services.AddHostedService<BackgroundServices.KpiRecalculationService>();
