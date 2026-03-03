@@ -411,6 +411,92 @@ public class HrController : ControllerBase
         return NoContent();
     }
 
+    // ── Performance Reviews ──
+
+    [HttpGet("reviews")]
+    [ProducesResponseType(typeof(PagedResult<PerformanceReviewDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<PerformanceReviewDto>>> ListReviews(
+        [FromQuery] Guid? employeeId,
+        [FromQuery] string? reviewType,
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new ListReviewsQuery
+        {
+            EmployeeId = employeeId,
+            ReviewType = reviewType,
+            Status     = status,
+            Page       = page,
+            PageSize   = pageSize,
+        }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("reviews")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> CreateReview(
+        [FromBody] CreateReviewRequest body, CancellationToken ct)
+    {
+        var id = await _mediator.Send(new CreatePerformanceReviewCommand
+        {
+            EmployeeId        = body.EmployeeId,
+            ReviewerId        = body.ReviewerId,
+            ReviewPeriodStart = body.ReviewPeriodStart,
+            ReviewPeriodEnd   = body.ReviewPeriodEnd,
+            ReviewType        = body.ReviewType,
+        }, ct);
+        return Created(string.Empty, new { id });
+    }
+
+    [HttpGet("reviews/{id:guid}")]
+    [ProducesResponseType(typeof(PerformanceReviewDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PerformanceReviewDetailDto>> GetReview(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetReviewQuery(id), ct);
+        return Ok(result);
+    }
+
+    [HttpPut("reviews/{id:guid}/complete")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CompleteReview(
+        Guid id, [FromBody] CompleteReviewRequest body, CancellationToken ct)
+    {
+        await _mediator.Send(new CompletePerformanceReviewCommand
+        {
+            ReviewId         = id,
+            OverallRating    = body.OverallRating,
+            StrengthsNotes   = body.StrengthsNotes,
+            ImprovementNotes = body.ImprovementNotes,
+            GoalsNotes       = body.GoalsNotes,
+        }, ct);
+        return NoContent();
+    }
+
+    [HttpPost("reviews/{id:guid}/feedback")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> SubmitFeedback(
+        Guid id, [FromBody] SubmitFeedbackRequest body, CancellationToken ct)
+    {
+        var feedbackId = await _mediator.Send(new SubmitFeedbackCommand
+        {
+            ReviewId        = id,
+            RespondentType  = body.RespondentType,
+            IsAnonymous     = body.IsAnonymous,
+            Rating          = body.Rating,
+            Comments        = body.Comments,
+            CompetencyScores = body.CompetencyScores,
+        }, ct);
+        return Created(string.Empty, new { id = feedbackId });
+    }
+
     // ── Work Time ──
 
     [HttpGet("work-time/{employeeId:guid}")]
@@ -498,3 +584,23 @@ public record AddTravelExpenseItemRequest(
     DateOnly ExchangeRateDate,
     decimal? VatRatePercent,
     bool IsDeductible);
+
+public record CreateReviewRequest(
+    Guid EmployeeId,
+    Guid ReviewerId,
+    DateOnly ReviewPeriodStart,
+    DateOnly ReviewPeriodEnd,
+    string ReviewType);
+
+public record CompleteReviewRequest(
+    int OverallRating,
+    string StrengthsNotes,
+    string ImprovementNotes,
+    string GoalsNotes);
+
+public record SubmitFeedbackRequest(
+    string RespondentType,
+    bool IsAnonymous,
+    int Rating,
+    string? Comments,
+    Dictionary<string, int>? CompetencyScores);

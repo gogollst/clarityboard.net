@@ -29,6 +29,9 @@ import type {
   TravelExpenseListParams,
   CreateTravelExpenseReportRequest,
   AddTravelExpenseItemRequest,
+  PerformanceReview,
+  PerformanceReviewDetail,
+  ReviewListParams,
 } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
@@ -455,5 +458,92 @@ export function useApproveTravelExpense() {
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpenses() });
     },
     onError: () => toast.error('Fehler bei der Genehmigung'),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Performance Reviews
+// ---------------------------------------------------------------------------
+
+export function useReviews(params?: ReviewListParams) {
+  return useQuery({
+    queryKey: [...queryKeys.hr.reviews(), params ?? {}],
+    queryFn: async () => {
+      const { data } = await api.get<PaginatedResponse<PerformanceReview>>('/hr/reviews', { params });
+      return data;
+    },
+  });
+}
+
+export function useReview(id: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.review(id),
+    queryFn: async () => {
+      const { data } = await api.get<PerformanceReviewDetail>(`/hr/reviews/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useCreateReview() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: {
+      employeeId: string;
+      reviewerId: string;
+      reviewPeriodStart: string;
+      reviewPeriodEnd: string;
+      reviewType: string;
+    }) => {
+      const { data } = await api.post<{ id: string }>('/hr/reviews', request);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Beurteilung erstellt');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.reviews() });
+    },
+    onError: () => toast.error('Fehler beim Erstellen der Beurteilung'),
+  });
+}
+
+export function useSubmitFeedback(reviewId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: {
+      respondentType: string;
+      isAnonymous: boolean;
+      rating: number;
+      comments?: string;
+      competencyScores?: Record<string, number>;
+    }) => {
+      const { data } = await api.post<{ id: string }>(`/hr/reviews/${reviewId}/feedback`, request);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Feedback eingereicht');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.review(reviewId) });
+    },
+    onError: () => toast.error('Fehler beim Einreichen des Feedbacks'),
+  });
+}
+
+export function useCompleteReview(reviewId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: {
+      overallRating: number;
+      strengthsNotes: string;
+      improvementNotes: string;
+      goalsNotes: string;
+    }) => {
+      await api.put(`/hr/reviews/${reviewId}/complete`, request);
+    },
+    onSuccess: () => {
+      toast.success('Beurteilung abgeschlossen');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.review(reviewId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.reviews() });
+    },
+    onError: () => toast.error('Fehler beim Abschließen der Beurteilung'),
   });
 }

@@ -306,3 +306,46 @@ export interface TravelExpenseListParams {
   page?: number;
   pageSize?: number;
 }
+
+// Performance Reviews
+
+export interface PerformanceReview {
+  id: string;
+  employeeId: string;
+  employeeFullName: string;
+  reviewerId: string;
+  reviewerFullName: string;
+  reviewPeriodStart: string;
+  reviewPeriodEnd: string;
+  reviewType: string; // 'Annual' | 'Probation' | 'Quarterly' | 'ThreeSixty'
+  status: string; // 'Draft' | 'InProgress' | 'Completed'
+  overallRating?: number;
+  createdAt: string;
+}
+
+export interface FeedbackEntry {
+  id: string;
+  reviewId: string;
+  respondentType: string;
+  isAnonymous: boolean;
+  rating: number;
+  comments?: string;
+  competencyScores?: Record<string, number>;
+  submittedAt?: string;
+}
+
+export interface PerformanceReviewDetail extends PerformanceReview {
+  strengthsNotes?: string;
+  improvementNotes?: string;
+  goalsNotes?: string;
+  completedAt?: string;
+  feedbackEntries: FeedbackEntry[];
+}
+
+export interface ReviewListParams {
+  employeeId?: string;
+  reviewType?: string;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}

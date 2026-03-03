@@ -22,6 +22,7 @@ import {
   Mail,
   Calendar,
   Plane,
+  Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -81,6 +82,7 @@ const hrNavGroup: NavGroup = {
     { label: 'Mitarbeiter', path: '/hr/employees', icon: Users },
     { label: 'Urlaubsanträge', path: '/hr/leave/requests', icon: Calendar },
     { label: 'Reisekosten', path: '/hr/travel', icon: Plane },
+    { label: 'Beurteilungen', path: '/hr/reviews', icon: Star },
   ],
 };
 
