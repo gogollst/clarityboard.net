@@ -93,6 +93,9 @@ export const router = createBrowserRouter([
       { path: 'hr/employees', lazy: () => import('@/features/hr/employees/EmployeeList') },
       { path: 'hr/employees/new', lazy: () => import('@/features/hr/employees/EmployeeCreate') },
       { path: 'hr/employees/:id', lazy: () => import('@/features/hr/employees/EmployeeDetail') },
+      { path: 'hr/leave/requests', lazy: () => import('@/features/hr/leave/LeaveRequestList') },
+      { path: 'hr/worktime/:employeeId', lazy: () => import('@/features/hr/worktime/WorkTimeOverview') },
+      { path: 'hr/worktime', lazy: () => import('@/features/hr/worktime/WorkTimeOverview') },
     ],
   },
 ]);

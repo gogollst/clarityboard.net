@@ -143,3 +143,93 @@ export interface EmployeeListParams {
   departmentId?: string;
   entityId?: string;
 }
+
+// Leave Types
+export interface LeaveType {
+  id: string;
+  entityId: string;
+  name: string;
+  code: string;
+  requiresApproval: boolean;
+  isDeductedFromBalance: boolean;
+  maxDaysPerYear?: number;
+  color: string; // hex color
+  isActive: boolean;
+}
+
+// Leave Requests
+export interface LeaveRequest {
+  id: string;
+  employeeId: string;
+  employeeFullName: string;
+  leaveTypeName: string;
+  startDate: string; // ISO date
+  endDate: string;
+  workingDays: number;
+  halfDay: boolean;
+  status: string; // 'Pending' | 'Approved' | 'Rejected' | 'Cancelled'
+  notes?: string;
+  rejectionReason?: string;
+  requestedAt: string;
+  approvedAt?: string;
+}
+
+// Leave Balances
+export interface LeaveBalance {
+  leaveTypeId: string;
+  leaveTypeName: string;
+  year: number;
+  entitlementDays: number;
+  usedDays: number;
+  pendingDays: number;
+  carryOverDays: number;
+  remainingDays: number;
+}
+
+// Work Time
+export interface WorkTimeEntry {
+  id: string;
+  employeeId: string;
+  date: string; // ISO date
+  startTime?: string; // 'HH:mm'
+  endTime?: string;
+  breakMinutes: number;
+  totalMinutes: number;
+  entryType: string; // 'Work' | 'Overtime' | 'Oncall'
+  projectCode?: string;
+  notes?: string;
+  status: string; // 'Open' | 'Locked'
+}
+
+// Request types
+export interface SubmitLeaveRequestRequest {
+  employeeId: string;
+  leaveTypeId: string;
+  startDate: string;
+  endDate: string;
+  halfDay: boolean;
+  notes?: string;
+}
+
+export interface LogWorkTimeRequest {
+  employeeId: string;
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  breakMinutes?: number;
+  totalMinutes?: number;
+  entryType: string;
+  projectCode?: string;
+  notes?: string;
+}
+
+export interface CreateLeaveTypeRequest {
+  entityId: string;
+  name: string;
+  code: string;
+  requiresApproval: boolean;
+  isDeductedFromBalance: boolean;
+  maxDaysPerYear?: number;
+  color: string;
+  isActive: boolean;
+}

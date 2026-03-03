@@ -20,6 +20,7 @@ import {
   MessageSquareCode,
   ScrollText,
   Mail,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -77,6 +78,7 @@ const hrNavGroup: NavGroup = {
   label: 'HR',
   items: [
     { label: 'Mitarbeiter', path: '/hr/employees', icon: Users },
+    { label: 'Urlaubsanträge', path: '/hr/leave/requests', icon: Calendar },
   ],
 };
 

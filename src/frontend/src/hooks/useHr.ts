@@ -16,6 +16,13 @@ import type {
   CreateContractRequest,
   CreateDepartmentRequest,
   EmployeeListParams,
+  LeaveType,
+  LeaveRequest,
+  LeaveBalance,
+  WorkTimeEntry,
+  SubmitLeaveRequestRequest,
+  LogWorkTimeRequest,
+  CreateLeaveTypeRequest,
 } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
@@ -216,5 +223,145 @@ export function useCreateDepartment() {
     onError: () => {
       toast.error('Failed to create department');
     },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Leave Types
+// ---------------------------------------------------------------------------
+
+export function useLeaveTypes(entityId?: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.leaveTypes(entityId),
+    queryFn: async () => {
+      const { data } = await api.get<LeaveType[]>('/hr/leave-types', { params: { entityId } });
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function useCreateLeaveType() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: CreateLeaveTypeRequest) => {
+      const { data } = await api.post<{ id: string }>('/hr/leave-types', request);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Urlaubstyp erstellt');
+      queryClient.invalidateQueries({ queryKey: ['hr', 'leave-types'] });
+    },
+    onError: () => toast.error('Fehler beim Erstellen des Urlaubstyps'),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Leave Requests
+// ---------------------------------------------------------------------------
+
+export function useLeaveRequests(params?: Record<string, unknown>) {
+  return useQuery({
+    queryKey: [...queryKeys.hr.leaveRequests(), params ?? {}],
+    queryFn: async () => {
+      const { data } = await api.get<PaginatedResponse<LeaveRequest>>('/hr/leave-requests', { params });
+      return data;
+    },
+  });
+}
+
+export function useSubmitLeaveRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: SubmitLeaveRequestRequest) => {
+      const { data } = await api.post<{ id: string }>('/hr/leave-requests', request);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Urlaubsantrag eingereicht');
+      queryClient.invalidateQueries({ queryKey: ['hr', 'leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['hr', 'leave-balance'] });
+    },
+    onError: () => toast.error('Fehler beim Einreichen des Urlaubsantrags'),
+  });
+}
+
+export function useApproveLeaveRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.put(`/hr/leave-requests/${id}/approve`);
+    },
+    onSuccess: () => {
+      toast.success('Urlaubsantrag genehmigt');
+      queryClient.invalidateQueries({ queryKey: ['hr', 'leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['hr', 'leave-balance'] });
+    },
+    onError: () => toast.error('Fehler bei der Genehmigung'),
+  });
+}
+
+export function useRejectLeaveRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+      await api.put(`/hr/leave-requests/${id}/reject`, { reason });
+    },
+    onSuccess: () => {
+      toast.success('Urlaubsantrag abgelehnt');
+      queryClient.invalidateQueries({ queryKey: ['hr', 'leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['hr', 'leave-balance'] });
+    },
+    onError: () => toast.error('Fehler bei der Ablehnung'),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Leave Balances
+// ---------------------------------------------------------------------------
+
+export function useLeaveBalance(employeeId: string, year?: number) {
+  return useQuery({
+    queryKey: queryKeys.hr.leaveBalance(employeeId, year),
+    queryFn: async () => {
+      const { data } = await api.get<LeaveBalance[]>(`/hr/leave-balances/${employeeId}`, {
+        params: year ? { year } : undefined,
+      });
+      return data;
+    },
+    enabled: !!employeeId,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Work Time
+// ---------------------------------------------------------------------------
+
+export function useWorkTime(employeeId: string, month?: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.workTime(employeeId, month),
+    queryFn: async () => {
+      const { data } = await api.get<PaginatedResponse<WorkTimeEntry>>(`/hr/work-time/${employeeId}`, {
+        params: { month, page: 1, pageSize: 100 },
+      });
+      return data;
+    },
+    enabled: !!employeeId,
+  });
+}
+
+export function useLogWorkTime() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: LogWorkTimeRequest) => {
+      const { data } = await api.post<{ id: string }>('/hr/work-time', request);
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      toast.success('Arbeitszeit eingetragen');
+      const month = variables.date.substring(0, 7);
+      queryClient.invalidateQueries({ queryKey: ['hr', 'work-time', variables.employeeId, month] });
+    },
+    onError: () => toast.error('Fehler beim Eintragen der Arbeitszeit'),
   });
 }
