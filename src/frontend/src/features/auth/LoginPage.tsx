@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,34 +26,42 @@ import {
 } from '@/components/ui/dialog';
 
 // ---------------------------------------------------------------------------
-// Validation schemas
-// ---------------------------------------------------------------------------
-
-const loginSchema = z.object({
-  email: z.string().min(1, 'Email is required').email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-
-const totpSchema = z.object({
-  totpCode: z
-    .string()
-    .length(6, 'Code must be 6 digits')
-    .regex(/^\d{6}$/, 'Code must contain only digits'),
-});
-
-type TotpFormValues = z.infer<typeof totpSchema>;
-
-// ---------------------------------------------------------------------------
 // LoginPage
 // ---------------------------------------------------------------------------
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login, verify2FA } = useAuth();
+  const { t } = useTranslation(['auth', 'validation']);
+
+  const loginSchema = useMemo(
+    () =>
+      z.object({
+        email: z
+          .string()
+          .min(1, t('validation:email.required'))
+          .email(t('validation:email.invalid')),
+        password: z.string().min(1, t('validation:password.required')),
+      }),
+    [t],
+  );
+
+  const totpSchema = useMemo(
+    () =>
+      z.object({
+        totpCode: z
+          .string()
+          .length(6, t('validation:code.length', { count: 6 }))
+          .regex(/^\d{6}$/, t('validation:code.onlyDigits')),
+      }),
+    [t],
+  );
+
+  type LoginFormValues = z.infer<typeof loginSchema>;
+  type TotpFormValues = z.infer<typeof totpSchema>;
 
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -83,7 +92,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await login(values.email, values.password);
+      const result = await login(values.email, values.password, rememberMe);
 
       if (result.requires2FA) {
         setChallengeToken(result.challengeToken ?? null);
@@ -93,7 +102,7 @@ export default function LoginPage() {
       }
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Invalid email or password';
+        err instanceof Error ? err.message : t('auth:login.invalidCredentials');
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -112,7 +121,7 @@ export default function LoginPage() {
       navigate('/', { replace: true });
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Invalid verification code';
+        err instanceof Error ? err.message : t('auth:login.invalidCode');
       setTwoFAError(message);
     } finally {
       setIs2FASubmitting(false);
@@ -127,10 +136,8 @@ export default function LoginPage() {
     <>
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Sign in to Clarity Board</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your dashboard
-          </CardDescription>
+          <CardTitle className="text-2xl">{t('auth:login.title')}</CardTitle>
+          <CardDescription>{t('auth:login.subtitle')}</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -140,11 +147,11 @@ export default function LoginPage() {
           >
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth:login.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="name@company.com"
+                placeholder={t('auth:login.emailPlaceholder')}
                 autoComplete="email"
                 {...loginForm.register('email')}
               />
@@ -157,12 +164,12 @@ export default function LoginPage() {
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth:login.password')}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
+                  placeholder={t('auth:login.passwordPlaceholder')}
                   autoComplete="current-password"
                   className="pr-10"
                   {...loginForm.register('password')}
@@ -181,7 +188,9 @@ export default function LoginPage() {
                     <Eye className="h-4 w-4 text-muted-foreground" />
                   )}
                   <span className="sr-only">
-                    {showPassword ? 'Hide password' : 'Show password'}
+                    {showPassword
+                      ? t('auth:login.hidePassword')
+                      : t('auth:login.showPassword')}
                   </span>
                 </Button>
               </div>
@@ -192,13 +201,24 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Forgot password link */}
-            <div className="flex justify-end">
+            {/* Remember me + Forgot password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                <span className="text-sm text-muted-foreground">
+                  {t('auth:login.rememberMe')}
+                </span>
+              </label>
               <Link
                 to="/forgot-password"
                 className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
-                Forgot password?
+                {t('auth:login.forgotPassword')}
               </Link>
             </div>
 
@@ -212,7 +232,7 @@ export default function LoginPage() {
             {/* Submit */}
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              Sign In
+              {t('auth:login.signIn')}
             </Button>
           </form>
         </CardContent>
@@ -227,10 +247,10 @@ export default function LoginPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
-              Two-Factor Authentication
+              {t('auth:login.twoFactor.title')}
             </DialogTitle>
             <DialogDescription>
-              Enter the 6-digit code from your authenticator app to continue.
+              {t('auth:login.twoFactor.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -239,13 +259,15 @@ export default function LoginPage() {
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="totpCode">Verification Code</Label>
+              <Label htmlFor="totpCode">
+                {t('auth:login.twoFactor.verificationCode')}
+              </Label>
               <Input
                 id="totpCode"
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
-                placeholder="000000"
+                placeholder={t('auth:login.twoFactor.codePlaceholder')}
                 autoComplete="one-time-code"
                 className="text-center text-lg tracking-widest"
                 {...totpForm.register('totpCode')}
@@ -273,13 +295,13 @@ export default function LoginPage() {
                   setTwoFAError(null);
                 }}
               >
-                Cancel
+                {t('auth:login.twoFactor.cancel')}
               </Button>
               <Button type="submit" disabled={is2FASubmitting}>
                 {is2FASubmitting && (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 )}
-                Verify
+                {t('auth:login.twoFactor.verify')}
               </Button>
             </DialogFooter>
           </form>

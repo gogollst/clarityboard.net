@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Loader2, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAcceptInvitation } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,26 +17,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-// ---------------------------------------------------------------------------
-// Validation schema
-// ---------------------------------------------------------------------------
-
-const schema = z
-  .object({
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number'),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
-
-type FormValues = z.infer<typeof schema>;
 
 // ---------------------------------------------------------------------------
 // Password requirement row
@@ -59,6 +40,29 @@ export default function AcceptInvitationPage() {
   const token = searchParams.get('token');
   const navigate = useNavigate();
   const acceptInvitation = useAcceptInvitation();
+  const { t } = useTranslation(['auth', 'validation']);
+
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          password: z
+            .string()
+            .min(8, t('validation:password.minLength', { count: 8 }))
+            .regex(/[A-Z]/, t('validation:password.uppercase'))
+            .regex(/[0-9]/, t('validation:password.number')),
+          confirmPassword: z
+            .string()
+            .min(1, t('validation:password.confirmRequired')),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: t('validation:password.mismatch'),
+          path: ['confirmPassword'],
+        }),
+    [t],
+  );
+
+  type FormValues = z.infer<typeof schema>;
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -72,9 +76,9 @@ export default function AcceptInvitationPage() {
   const password = form.watch('password');
 
   const requirements = [
-    { met: password.length >= 8, label: 'At least 8 characters' },
-    { met: /[A-Z]/.test(password), label: 'One uppercase letter' },
-    { met: /[0-9]/.test(password), label: 'One number' },
+    { met: password.length >= 8, label: t('auth:acceptInvitation.req8Chars') },
+    { met: /[A-Z]/.test(password), label: t('auth:acceptInvitation.reqUppercase') },
+    { met: /[0-9]/.test(password), label: t('auth:acceptInvitation.reqNumber') },
   ];
 
   // ---------------------------------------------------------------------------
@@ -85,9 +89,11 @@ export default function AcceptInvitationPage() {
     return (
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Invalid invitation link</CardTitle>
+          <CardTitle className="text-2xl">
+            {t('auth:acceptInvitation.invalidLink')}
+          </CardTitle>
           <CardDescription>
-            This invitation link is missing or malformed.
+            {t('auth:acceptInvitation.invalidLinkDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
@@ -95,7 +101,7 @@ export default function AcceptInvitationPage() {
             to="/login"
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
-            Back to Sign In
+            {t('auth:acceptInvitation.backToLogin')}
           </Link>
         </CardContent>
       </Card>
@@ -106,10 +112,10 @@ export default function AcceptInvitationPage() {
   // Form submit
   // ---------------------------------------------------------------------------
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (_values: FormValues) => {
     setError(null);
     acceptInvitation.mutate(
-      { token, password: values.password },
+      { token, password: _values.password },
       {
         onSuccess: () => {
           navigate('/login', { replace: true });
@@ -118,7 +124,7 @@ export default function AcceptInvitationPage() {
           const message =
             axios.isAxiosError(err) && err.response?.data?.message
               ? String(err.response.data.message)
-              : 'The invitation link is invalid or has expired.';
+              : t('auth:acceptInvitation.tokenExpired');
           setError(message);
         },
       },
@@ -132,9 +138,11 @@ export default function AcceptInvitationPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Accept invitation</CardTitle>
+        <CardTitle className="text-2xl">
+          {t('auth:acceptInvitation.title')}
+        </CardTitle>
         <CardDescription>
-          Set a password to activate your account.
+          {t('auth:acceptInvitation.subtitle')}
         </CardDescription>
       </CardHeader>
 
@@ -142,12 +150,14 @@ export default function AcceptInvitationPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Password */}
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">
+              {t('auth:acceptInvitation.password')}
+            </Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Choose a password"
+                placeholder={t('auth:acceptInvitation.passwordPlaceholder')}
                 autoComplete="new-password"
                 className="pr-10"
                 {...form.register('password')}
@@ -166,7 +176,9 @@ export default function AcceptInvitationPage() {
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
                 <span className="sr-only">
-                  {showPassword ? 'Hide password' : 'Show password'}
+                  {showPassword
+                    ? t('auth:login.hidePassword')
+                    : t('auth:login.showPassword')}
                 </span>
               </Button>
             </div>
@@ -186,12 +198,14 @@ export default function AcceptInvitationPage() {
 
           {/* Confirm password */}
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">
+              {t('auth:acceptInvitation.confirmPassword')}
+            </Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
                 type={showConfirm ? 'text' : 'password'}
-                placeholder="Repeat your password"
+                placeholder={t('auth:acceptInvitation.confirmPasswordPlaceholder')}
                 autoComplete="new-password"
                 className="pr-10"
                 {...form.register('confirmPassword')}
@@ -210,7 +224,9 @@ export default function AcceptInvitationPage() {
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
                 <span className="sr-only">
-                  {showConfirm ? 'Hide password' : 'Show password'}
+                  {showConfirm
+                    ? t('auth:login.hidePassword')
+                    : t('auth:login.showPassword')}
                 </span>
               </Button>
             </div>
@@ -237,7 +253,7 @@ export default function AcceptInvitationPage() {
             {acceptInvitation.isPending && (
               <Loader2 className="h-4 w-4 animate-spin" />
             )}
-            Activate Account
+            {t('auth:acceptInvitation.submit')}
           </Button>
 
           <div className="text-center">
@@ -245,7 +261,7 @@ export default function AcceptInvitationPage() {
               to="/login"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Back to Sign In
+              {t('auth:acceptInvitation.backToLogin')}
             </Link>
           </div>
         </form>

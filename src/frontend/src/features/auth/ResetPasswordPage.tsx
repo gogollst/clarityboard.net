@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,22 +19,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 // ---------------------------------------------------------------------------
-// Validation schema
-// ---------------------------------------------------------------------------
-
-const resetPasswordSchema = z
-  .object({
-    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
-
-type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
-
-// ---------------------------------------------------------------------------
 // ResetPasswordPage
 // ---------------------------------------------------------------------------
 
@@ -42,6 +27,27 @@ export default function ResetPasswordPage() {
   const token = searchParams.get('token');
 
   const { resetPasswordViaToken } = useAuth();
+  const { t } = useTranslation(['auth', 'validation']);
+
+  const resetPasswordSchema = useMemo(
+    () =>
+      z
+        .object({
+          newPassword: z
+            .string()
+            .min(8, t('validation:password.minLength', { count: 8 })),
+          confirmPassword: z
+            .string()
+            .min(1, t('validation:password.confirmRequired')),
+        })
+        .refine((data) => data.newPassword === data.confirmPassword, {
+          message: t('validation:password.mismatch'),
+          path: ['confirmPassword'],
+        }),
+    [t],
+  );
+
+  type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -69,7 +75,7 @@ export default function ResetPasswordPage() {
       const message =
         axios.isAxiosError(err) && err.response?.data?.message
           ? String(err.response.data.message)
-          : 'The password reset token is invalid or has expired.';
+          : t('auth:resetPassword.tokenExpired');
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -84,9 +90,11 @@ export default function ResetPasswordPage() {
     return (
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Invalid reset link</CardTitle>
+          <CardTitle className="text-2xl">
+            {t('auth:resetPassword.invalidLink')}
+          </CardTitle>
           <CardDescription>
-            This password reset link is missing or malformed.
+            {t('auth:resetPassword.invalidLinkDescription')}
           </CardDescription>
         </CardHeader>
 
@@ -95,7 +103,7 @@ export default function ResetPasswordPage() {
             to="/login"
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
-            Back to Sign In
+            {t('auth:resetPassword.backToLogin')}
           </Link>
         </CardContent>
       </Card>
@@ -113,9 +121,11 @@ export default function ResetPasswordPage() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <CheckCircle2 className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Password changed</CardTitle>
+          <CardTitle className="text-2xl">
+            {t('auth:resetPassword.success')}
+          </CardTitle>
           <CardDescription>
-            You can now sign in with your new password.
+            {t('auth:resetPassword.successSubtitle')}
           </CardDescription>
         </CardHeader>
 
@@ -124,7 +134,7 @@ export default function ResetPasswordPage() {
             to="/login"
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
-            Go to Sign In
+            {t('auth:resetPassword.goToSignIn')}
           </Link>
         </CardContent>
       </Card>
@@ -138,22 +148,24 @@ export default function ResetPasswordPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Set new password</CardTitle>
-        <CardDescription>
-          Enter a new password for your account.
-        </CardDescription>
+        <CardTitle className="text-2xl">
+          {t('auth:resetPassword.title')}
+        </CardTitle>
+        <CardDescription>{t('auth:resetPassword.subtitle')}</CardDescription>
       </CardHeader>
 
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* New Password */}
           <div className="space-y-2">
-            <Label htmlFor="newPassword">New Password</Label>
+            <Label htmlFor="newPassword">
+              {t('auth:resetPassword.newPassword')}
+            </Label>
             <div className="relative">
               <Input
                 id="newPassword"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="At least 8 characters"
+                placeholder={t('auth:resetPassword.newPasswordPlaceholder')}
                 autoComplete="new-password"
                 className="pr-10"
                 {...form.register('newPassword')}
@@ -172,7 +184,9 @@ export default function ResetPasswordPage() {
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
                 <span className="sr-only">
-                  {showPassword ? 'Hide password' : 'Show password'}
+                  {showPassword
+                    ? t('auth:login.hidePassword')
+                    : t('auth:login.showPassword')}
                 </span>
               </Button>
             </div>
@@ -185,12 +199,14 @@ export default function ResetPasswordPage() {
 
           {/* Confirm Password */}
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">
+              {t('auth:resetPassword.confirmPassword')}
+            </Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
                 type={showConfirm ? 'text' : 'password'}
-                placeholder="Repeat your new password"
+                placeholder={t('auth:resetPassword.confirmPasswordPlaceholder')}
                 autoComplete="new-password"
                 className="pr-10"
                 {...form.register('confirmPassword')}
@@ -209,7 +225,9 @@ export default function ResetPasswordPage() {
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
                 <span className="sr-only">
-                  {showConfirm ? 'Hide password' : 'Show password'}
+                  {showConfirm
+                    ? t('auth:login.hidePassword')
+                    : t('auth:login.showPassword')}
                 </span>
               </Button>
             </div>
@@ -230,7 +248,7 @@ export default function ResetPasswordPage() {
           {/* Submit */}
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            Reset Password
+            {t('auth:resetPassword.submit')}
           </Button>
 
           {/* Back link */}
@@ -239,7 +257,7 @@ export default function ResetPasswordPage() {
               to="/login"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Back to Sign In
+              {t('auth:resetPassword.backToLogin')}
             </Link>
           </div>
         </form>

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, MailCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,21 +19,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 // ---------------------------------------------------------------------------
-// Validation schema
-// ---------------------------------------------------------------------------
-
-const forgotPasswordSchema = z.object({
-  email: z.string().min(1, 'Email is required').email('Invalid email address'),
-});
-
-type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
-
-// ---------------------------------------------------------------------------
 // ForgotPasswordPage
 // ---------------------------------------------------------------------------
 
 export default function ForgotPasswordPage() {
   const { forgotPassword } = useAuth();
+  const { t } = useTranslation(['auth', 'validation']);
+
+  const forgotPasswordSchema = useMemo(
+    () =>
+      z.object({
+        email: z
+          .string()
+          .min(1, t('validation:email.required'))
+          .email(t('validation:email.invalid')),
+      }),
+    [t],
+  );
+
+  type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -54,7 +59,7 @@ export default function ForgotPasswordPage() {
       const message =
         axios.isAxiosError(err) && err.response?.data?.message
           ? String(err.response.data.message)
-          : 'Something went wrong. Please try again.';
+          : t('auth:forgotPassword.genericError');
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -72,9 +77,11 @@ export default function ForgotPasswordPage() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <MailCheck className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Check your email</CardTitle>
+          <CardTitle className="text-2xl">
+            {t('auth:forgotPassword.successTitle')}
+          </CardTitle>
           <CardDescription>
-            If the address is registered, you'll receive a reset link shortly.
+            {t('auth:forgotPassword.successMessage')}
           </CardDescription>
         </CardHeader>
 
@@ -83,7 +90,7 @@ export default function ForgotPasswordPage() {
             to="/login"
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
-            Back to Sign In
+            {t('auth:forgotPassword.backToLogin')}
           </Link>
         </CardContent>
       </Card>
@@ -97,21 +104,21 @@ export default function ForgotPasswordPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Forgot password?</CardTitle>
-        <CardDescription>
-          Enter your email and we'll send you a reset link.
-        </CardDescription>
+        <CardTitle className="text-2xl">
+          {t('auth:forgotPassword.title')}
+        </CardTitle>
+        <CardDescription>{t('auth:forgotPassword.subtitle')}</CardDescription>
       </CardHeader>
 
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* Email */}
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth:forgotPassword.emailLabel')}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="name@company.com"
+              placeholder={t('auth:forgotPassword.emailPlaceholder')}
               autoComplete="email"
               {...form.register('email')}
             />
@@ -132,7 +139,7 @@ export default function ForgotPasswordPage() {
           {/* Submit */}
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            Send Reset Link
+            {t('auth:forgotPassword.submit')}
           </Button>
 
           {/* Back link */}
@@ -141,7 +148,7 @@ export default function ForgotPasswordPage() {
               to="/login"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Back to Sign In
+              {t('auth:forgotPassword.backToLogin')}
             </Link>
           </div>
         </form>
