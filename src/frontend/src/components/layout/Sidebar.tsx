@@ -21,6 +21,7 @@ import {
   ScrollText,
   Mail,
   Calendar,
+  Plane,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -79,6 +80,7 @@ const hrNavGroup: NavGroup = {
   items: [
     { label: 'Mitarbeiter', path: '/hr/employees', icon: Users },
     { label: 'Urlaubsanträge', path: '/hr/leave/requests', icon: Calendar },
+    { label: 'Reisekosten', path: '/hr/travel', icon: Plane },
   ],
 };
 

@@ -242,3 +242,67 @@ export interface CreateLeaveTypeRequest {
   color: string;
   isActive: boolean;
 }
+
+export interface TravelExpenseReport {
+  id: string;
+  employeeId: string;
+  employeeFullName: string;
+  title: string;
+  tripStartDate: string;
+  tripEndDate: string;
+  destination: string;
+  businessPurpose: string;
+  status: string; // 'Draft' | 'Submitted' | 'Approved' | 'Reimbursed' | 'Rejected'
+  totalAmountCents: number;
+  currencyCode: string;
+  createdAt: string;
+}
+
+export interface TravelExpenseItem {
+  id: string;
+  reportId: string;
+  expenseType: string; // 'Accommodation' | 'Transport' | 'Meal' | 'Other'
+  expenseDate: string;
+  description: string;
+  originalAmountCents: number;
+  originalCurrencyCode: string;
+  exchangeRate: number;
+  exchangeRateDate: string;
+  amountCents: number;
+  currencyCode: string;
+  vatRatePercent?: number;
+  isDeductible: boolean;
+}
+
+export interface TravelExpenseReportDetail extends TravelExpenseReport {
+  items: TravelExpenseItem[];
+}
+
+export interface CreateTravelExpenseReportRequest {
+  employeeId: string;
+  title: string;
+  tripStartDate: string;
+  tripEndDate: string;
+  destination: string;
+  businessPurpose: string;
+}
+
+export interface AddTravelExpenseItemRequest {
+  expenseType: string;
+  expenseDate: string;
+  description: string;
+  originalAmountCents: number;
+  originalCurrencyCode: string;
+  exchangeRate: number;
+  exchangeRateDate: string;
+  vatRatePercent?: number;
+  isDeductible: boolean;
+}
+
+export interface TravelExpenseListParams {
+  employeeId?: string;
+  status?: string;
+  entityId?: string;
+  page?: number;
+  pageSize?: number;
+}

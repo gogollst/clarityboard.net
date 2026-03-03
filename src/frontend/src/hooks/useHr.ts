@@ -24,6 +24,11 @@ import type {
   SubmitLeaveRequestRequest,
   LogWorkTimeRequest,
   CreateLeaveTypeRequest,
+  TravelExpenseReport,
+  TravelExpenseReportDetail,
+  TravelExpenseListParams,
+  CreateTravelExpenseReportRequest,
+  AddTravelExpenseItemRequest,
 } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
@@ -364,5 +369,91 @@ export function useLogWorkTime() {
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.workTime(variables.employeeId, month) });
     },
     onError: () => toast.error('Fehler beim Eintragen der Arbeitszeit'),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Travel Expenses
+// ---------------------------------------------------------------------------
+
+export function useTravelExpenses(params?: TravelExpenseListParams) {
+  return useQuery({
+    queryKey: [...queryKeys.hr.travelExpenses(), params ?? {}],
+    queryFn: async () => {
+      const { data } = await api.get<PaginatedResponse<TravelExpenseReport>>('/hr/travel-expenses', { params });
+      return data;
+    },
+  });
+}
+
+export function useTravelExpense(id: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.travelExpense(id),
+    queryFn: async () => {
+      const { data } = await api.get<TravelExpenseReportDetail>(`/hr/travel-expenses/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useCreateTravelExpenseReport() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: CreateTravelExpenseReportRequest) => {
+      const { data } = await api.post<{ id: string }>('/hr/travel-expenses', request);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Reisekostenabrechnung erstellt');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpenses() });
+    },
+    onError: () => toast.error('Fehler beim Erstellen der Abrechnung'),
+  });
+}
+
+export function useAddTravelExpenseItem(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: AddTravelExpenseItemRequest) => {
+      const { data } = await api.post<{ id: string }>(`/hr/travel-expenses/${reportId}/items`, request);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Beleg hinzugefügt');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpense(reportId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpenses() });
+    },
+    onError: () => toast.error('Fehler beim Hinzufügen des Belegs'),
+  });
+}
+
+export function useSubmitTravelExpense() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (reportId: string) => {
+      await api.post(`/hr/travel-expenses/${reportId}/submit`);
+    },
+    onSuccess: (_data, reportId) => {
+      toast.success('Abrechnung eingereicht');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpense(reportId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpenses() });
+    },
+    onError: () => toast.error('Fehler beim Einreichen'),
+  });
+}
+
+export function useApproveTravelExpense() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (reportId: string) => {
+      await api.put(`/hr/travel-expenses/${reportId}/approve`);
+    },
+    onSuccess: (_data, reportId) => {
+      toast.success('Abrechnung genehmigt');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpense(reportId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpenses() });
+    },
+    onError: () => toast.error('Fehler bei der Genehmigung'),
   });
 }

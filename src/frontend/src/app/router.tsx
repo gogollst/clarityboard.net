@@ -96,6 +96,9 @@ export const router = createBrowserRouter([
       { path: 'hr/leave/requests', lazy: () => import('@/features/hr/leave/LeaveRequestList') },
       { path: 'hr/worktime/:employeeId', lazy: () => import('@/features/hr/worktime/WorkTimeOverview') },
       { path: 'hr/worktime', lazy: () => import('@/features/hr/worktime/WorkTimeOverview') },
+      { path: 'hr/travel', lazy: () => import('@/features/hr/travel/TravelExpenseList') },
+      { path: 'hr/travel/new', lazy: () => import('@/features/hr/travel/TravelExpenseCreate') },
+      { path: 'hr/travel/:id', lazy: () => import('@/features/hr/travel/TravelExpenseDetail') },
     ],
   },
 ]);

@@ -133,5 +133,7 @@ export const queryKeys = {
     leaveRequests: () => ['hr', 'leave-requests'] as const,
     leaveBalance: (employeeId: string, year?: number) => ['hr', 'leave-balance', employeeId, year ?? 'current'] as const,
     workTime: (employeeId: string, month?: string) => ['hr', 'work-time', employeeId, month ?? ''] as const,
+    travelExpenses: () => ['hr', 'travel-expenses'] as const,
+    travelExpense: (id: string) => ['hr', 'travel-expense', id] as const,
   },
 } as const;
