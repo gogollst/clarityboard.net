@@ -13,5 +13,6 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.Property(d => d.Name).HasMaxLength(200).IsRequired();
         builder.Property(d => d.Code).HasMaxLength(50).IsRequired();
         builder.Property(d => d.IsActive).IsRequired();
+        builder.HasIndex(d => new { d.EntityId, d.Code }).IsUnique();
     }
 }

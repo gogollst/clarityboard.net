@@ -16,5 +16,6 @@ public class TravelExpenseReportConfiguration : IEntityTypeConfiguration<TravelE
         builder.Property(t => t.BusinessPurpose).HasMaxLength(500).IsRequired();
         builder.Property(t => t.CurrencyCode).HasMaxLength(3).IsRequired();
         builder.HasMany(t => t.Items).WithOne().HasForeignKey(i => i.ReportId);
+        builder.HasIndex(t => t.EmployeeId);
     }
 }

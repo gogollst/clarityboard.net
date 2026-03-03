@@ -14,5 +14,6 @@ public class WorkTimeEntryConfiguration : IEntityTypeConfiguration<WorkTimeEntry
         builder.Property(w => w.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(w => w.ProjectCode).HasMaxLength(50);
         builder.Property(w => w.Notes).HasMaxLength(500);
+        builder.HasIndex(w => new { w.EmployeeId, w.Date });
     }
 }
