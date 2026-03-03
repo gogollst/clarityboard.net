@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ClarityBoard.Application.Features.Hr.Queries;
 
 [RequirePermission("hr.view")]
-public record GetHeadcountStatsQuery(Guid EntityId) : IRequest<HeadcountStatsDto>;
+public record GetHeadcountStatsQuery(Guid EntityId) : IRequest<HeadcountStatsDto>, IEntityScoped;
 
 public record HeadcountStatsDto
 {

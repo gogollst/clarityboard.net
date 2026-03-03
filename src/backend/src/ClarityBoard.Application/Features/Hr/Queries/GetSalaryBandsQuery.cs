@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ClarityBoard.Application.Features.Hr.Queries;
 
 [RequirePermission("hr.salary.view")]
-public record GetSalaryBandsQuery(Guid EntityId) : IRequest<SalaryBandsDto>;
+public record GetSalaryBandsQuery(Guid EntityId) : IRequest<SalaryBandsDto>, IEntityScoped;
 
 public record SalaryBandsDto
 {
@@ -32,27 +32,17 @@ public class GetSalaryBandsQueryHandler : IRequestHandler<GetSalaryBandsQuery, S
 
     public async Task<SalaryBandsDto> Handle(GetSalaryBandsQuery request, CancellationToken cancellationToken)
     {
-        // Get all active employee IDs for this entity (not terminated)
-        var activeEmployeeIds = await _db.Employees
-            .Where(e => e.EntityId == request.EntityId && e.Status != EmployeeStatus.Terminated)
-            .Select(e => e.Id)
-            .ToListAsync(cancellationToken);
-
-        if (activeEmployeeIds.Count == 0)
-        {
-            return new SalaryBandsDto
-            {
-                Bands = BuildEmptyBands(),
-            };
-        }
-
-        // Get current salary entries (ValidTo == null) for active employees
-        var salaries = await _db.SalaryHistories
-            .Where(s => activeEmployeeIds.Contains(s.EmployeeId) && s.ValidTo == null)
+        // Single JOIN query: current salary entries for active employees in this entity
+        var sortedSalaries = await _db.SalaryHistories
+            .Where(s => s.ValidTo == null
+                     && _db.Employees.Any(e => e.Id == s.EmployeeId
+                                            && e.EntityId == request.EntityId
+                                            && e.Status != EmployeeStatus.Terminated))
+            .OrderBy(s => s.GrossAmountCents)
             .Select(s => s.GrossAmountCents)
             .ToListAsync(cancellationToken);
 
-        if (salaries.Count == 0)
+        if (sortedSalaries.Count == 0)
         {
             return new SalaryBandsDto
             {
@@ -60,7 +50,7 @@ public class GetSalaryBandsQueryHandler : IRequestHandler<GetSalaryBandsQuery, S
             };
         }
 
-        salaries.Sort();
+        var salaries = sortedSalaries;
 
         var min  = salaries.First();
         var max  = salaries.Last();

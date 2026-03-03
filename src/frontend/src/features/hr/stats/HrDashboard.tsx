@@ -16,6 +16,11 @@ import {
   Legend,
 } from 'recharts';
 
+function formatCents(cents: number | null | undefined): string {
+  if (cents == null) return '—';
+  return (cents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+}
+
 export function Component() {
   const { selectedEntityId } = useEntity();
   const entityId = selectedEntityId ?? '';
@@ -30,11 +35,6 @@ export function Component() {
         Bitte wählen Sie eine Entity aus.
       </div>
     );
-  }
-
-  function formatCents(cents: number | null | undefined): string {
-    if (cents == null) return '—';
-    return (cents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
   }
 
   return (
