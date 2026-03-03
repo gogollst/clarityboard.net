@@ -74,6 +74,7 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
             noticeWeeks:     request.NoticeWeeks,
             createdBy:       _currentUser.UserId,
             changeReason:    request.ChangeReason,
+            validFrom:       request.ValidFrom,
             endDate:         request.EndDate,
             probationEndDate: request.ProbationEndDate);
 

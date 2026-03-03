@@ -20,7 +20,7 @@ public class Contract
 
     public static Contract Create(Guid employeeId, ContractType type, decimal weeklyHours,
         int workdaysPerWeek, DateOnly startDate, int noticeWeeks, Guid createdBy, string changeReason,
-        DateOnly? endDate = null, DateOnly? probationEndDate = null)
+        DateTime validFrom, DateOnly? endDate = null, DateOnly? probationEndDate = null)
     => new()
     {
         Id               = Guid.NewGuid(),
@@ -32,7 +32,7 @@ public class Contract
         EndDate          = endDate,
         ProbationEndDate = probationEndDate,
         NoticeWeeks      = noticeWeeks,
-        ValidFrom        = DateTime.UtcNow,
+        ValidFrom        = validFrom,
         CreatedBy        = createdBy,
         ChangeReason     = changeReason,
     };
