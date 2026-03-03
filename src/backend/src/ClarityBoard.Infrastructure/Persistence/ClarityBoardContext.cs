@@ -1,3 +1,4 @@
+using ClarityBoard.Domain.Entities.Admin;
 using ClarityBoard.Domain.Entities.AI;
 using ClarityBoard.Domain.Entities.Mail;
 using ClarityBoard.Domain.Entities.Accounting;
@@ -6,12 +7,14 @@ using ClarityBoard.Domain.Entities.Budget;
 using ClarityBoard.Domain.Entities.CashFlow;
 using ClarityBoard.Domain.Entities.Document;
 using ClarityBoard.Domain.Entities.Entity;
+using ClarityBoard.Domain.Entities.Hr;
 using ClarityBoard.Domain.Entities.Identity;
 using ClarityBoard.Domain.Entities.Integration;
 using ClarityBoard.Domain.Entities.KPI;
 using ClarityBoard.Domain.Entities.Scenario;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Domain.Interfaces;
+using ClarityBoard.Infrastructure.Persistence.Configurations.Hr;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.Infrastructure.Persistence;
@@ -68,9 +71,32 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
     public DbSet<DepreciationSchedule> DepreciationSchedules => Set<DepreciationSchedule>();
     public DbSet<AssetDisposal> AssetDisposals => Set<AssetDisposal>();
 
+    // Admin
+    public DbSet<AuthConfig> AuthConfigs => Set<AuthConfig>();
+
     // Mail
     public DbSet<MailConfig> MailConfigs => Set<MailConfig>();
     public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
+
+    // Hr Module
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<SalaryHistory> SalaryHistories => Set<SalaryHistory>();
+    public DbSet<Contract> Contracts => Set<Contract>();
+    public DbSet<EmployeeAddressHistory> EmployeeAddressHistories => Set<EmployeeAddressHistory>();
+    public DbSet<EmployeeContactHistory> EmployeeContactHistories => Set<EmployeeContactHistory>();
+    public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
+    public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();
+    public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
+    public DbSet<WorkTimeEntry> WorkTimeEntries => Set<WorkTimeEntry>();
+    public DbSet<PerformanceReview> PerformanceReviews => Set<PerformanceReview>();
+    public DbSet<FeedbackEntry> FeedbackEntries => Set<FeedbackEntry>();
+    public DbSet<TravelExpenseReport> TravelExpenseReports => Set<TravelExpenseReport>();
+    public DbSet<TravelExpenseItem> TravelExpenseItems => Set<TravelExpenseItem>();
+    public DbSet<EmployeeDocument> EmployeeDocuments => Set<EmployeeDocument>();
+    public DbSet<DataAccessLog> DataAccessLogs => Set<DataAccessLog>();
+    public DbSet<DeletionRequest> DeletionRequests => Set<DeletionRequest>();
+    public DbSet<PublicHoliday> PublicHolidays => Set<PublicHoliday>();
 
     // AI Management
     public DbSet<AiProviderConfig> AiProviderConfigs => Set<AiProviderConfig>();
@@ -152,6 +178,9 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
         modelBuilder.Entity<WebhookEvent>().ToTable("webhook_events", "integration");
         modelBuilder.Entity<MappingRule>().ToTable("mapping_rules", "integration");
         modelBuilder.Entity<PullAdapterConfig>().ToTable("pull_adapter_configs", "integration");
+
+        // Admin schema (public)
+        modelBuilder.Entity<AuthConfig>().ToTable("auth_configs", "public");
 
         // Mail schema
         modelBuilder.Entity<MailConfig>().ToTable("mail_configs", "mail");
@@ -772,5 +801,27 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.HasIndex(e => e.UserId);
         });
 
+        // ───────────────────────────────────────────────
+        // HR SCHEMA
+        // ───────────────────────────────────────────────
+
+        modelBuilder.ApplyConfiguration(new EmployeeConfiguration());
+        modelBuilder.ApplyConfiguration(new DepartmentConfiguration());
+        modelBuilder.ApplyConfiguration(new SalaryHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new ContractConfiguration());
+        modelBuilder.ApplyConfiguration(new EmployeeAddressHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new EmployeeContactHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new LeaveTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new LeaveBalanceConfiguration());
+        modelBuilder.ApplyConfiguration(new LeaveRequestConfiguration());
+        modelBuilder.ApplyConfiguration(new WorkTimeEntryConfiguration());
+        modelBuilder.ApplyConfiguration(new PerformanceReviewConfiguration());
+        modelBuilder.ApplyConfiguration(new FeedbackEntryConfiguration());
+        modelBuilder.ApplyConfiguration(new TravelExpenseReportConfiguration());
+        modelBuilder.ApplyConfiguration(new TravelExpenseItemConfiguration());
+        modelBuilder.ApplyConfiguration(new EmployeeDocumentConfiguration());
+        modelBuilder.ApplyConfiguration(new DataAccessLogConfiguration());
+        modelBuilder.ApplyConfiguration(new DeletionRequestConfiguration());
+        modelBuilder.ApplyConfiguration(new PublicHolidayConfiguration());
     }
 }

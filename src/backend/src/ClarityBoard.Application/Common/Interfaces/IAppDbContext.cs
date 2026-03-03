@@ -1,3 +1,4 @@
+using ClarityBoard.Domain.Entities.Admin;
 using ClarityBoard.Domain.Entities.AI;
 using ClarityBoard.Domain.Entities.Mail;
 using ClarityBoard.Domain.Entities.Accounting;
@@ -6,6 +7,7 @@ using ClarityBoard.Domain.Entities.Budget;
 using ClarityBoard.Domain.Entities.CashFlow;
 using ClarityBoard.Domain.Entities.Document;
 using ClarityBoard.Domain.Entities.Entity;
+using ClarityBoard.Domain.Entities.Hr;
 using ClarityBoard.Domain.Entities.Identity;
 using ClarityBoard.Domain.Entities.Integration;
 using ClarityBoard.Domain.Entities.KPI;
@@ -78,6 +80,29 @@ public interface IAppDbContext
     // Mail
     DbSet<MailConfig> MailConfigs { get; }
     DbSet<EmailLog> EmailLogs { get; }
+
+    // Admin
+    DbSet<AuthConfig> AuthConfigs { get; }
+
+    // Hr Module
+    DbSet<Employee> Employees { get; }
+    DbSet<Department> Departments { get; }
+    DbSet<SalaryHistory> SalaryHistories { get; }
+    DbSet<Contract> Contracts { get; }
+    DbSet<EmployeeAddressHistory> EmployeeAddressHistories { get; }
+    DbSet<EmployeeContactHistory> EmployeeContactHistories { get; }
+    DbSet<LeaveType> LeaveTypes { get; }
+    DbSet<LeaveBalance> LeaveBalances { get; }
+    DbSet<LeaveRequest> LeaveRequests { get; }
+    DbSet<WorkTimeEntry> WorkTimeEntries { get; }
+    DbSet<PerformanceReview> PerformanceReviews { get; }
+    DbSet<FeedbackEntry> FeedbackEntries { get; }
+    DbSet<TravelExpenseReport> TravelExpenseReports { get; }
+    DbSet<TravelExpenseItem> TravelExpenseItems { get; }
+    DbSet<EmployeeDocument> EmployeeDocuments { get; }
+    DbSet<DataAccessLog> DataAccessLogs { get; }
+    DbSet<DeletionRequest> DeletionRequests { get; }
+    DbSet<PublicHoliday> PublicHolidays { get; }
 
     // Identity
     DbSet<User> Users { get; }
