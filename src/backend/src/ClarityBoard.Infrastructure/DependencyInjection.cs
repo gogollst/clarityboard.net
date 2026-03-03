@@ -46,6 +46,22 @@ public static class DependencyInjection
         // Register IAppDbContext
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<ClarityBoardContext>());
 
+        // Register IDbContextFactory<ClarityBoardContext> for services that need an isolated DbContext
+        services.AddDbContextFactory<ClarityBoardContext>(options =>
+        {
+            options.UseNpgsql(configuration.GetConnectionString("Default"), npgsql =>
+            {
+                npgsql.EnableRetryOnFailure(
+                    maxRetryCount: 3,
+                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    errorCodesToAdd: null);
+                npgsql.CommandTimeout(30);
+                npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "public");
+                npgsql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+            });
+            options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+        }, ServiceLifetime.Scoped);
+
         // Redis distributed cache
         services.AddStackExchangeRedisCache(options =>
         {

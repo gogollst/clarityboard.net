@@ -109,7 +109,7 @@ export function Component() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadTitle, setUploadTitle] = useState('');
-  const [uploadType, setUploadType] = useState('other');
+  const [uploadType, setUploadType] = useState('Other');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: employee } = useEmployee(employeeId ?? '');
@@ -135,7 +135,7 @@ export function Component() {
         setUploadOpen(false);
         setUploadFile(null);
         setUploadTitle('');
-        setUploadType('other');
+        setUploadType('Other');
       },
     });
   }
@@ -149,7 +149,9 @@ export function Component() {
     const a = document.createElement('a');
     a.href = url;
     a.download = fileName;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
 
@@ -313,11 +315,11 @@ export function Component() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="contract">Vertrag</SelectItem>
-                  <SelectItem value="certificate">Zertifikat</SelectItem>
-                  <SelectItem value="id_copy">Ausweiskopie</SelectItem>
-                  <SelectItem value="payslip">Gehaltszettel</SelectItem>
-                  <SelectItem value="other">Sonstiges</SelectItem>
+                  <SelectItem value="Contract">Vertrag</SelectItem>
+                  <SelectItem value="Certificate">Zertifikat</SelectItem>
+                  <SelectItem value="IdCopy">Ausweiskopie</SelectItem>
+                  <SelectItem value="Payslip">Gehaltszettel</SelectItem>
+                  <SelectItem value="Other">Sonstiges</SelectItem>
                 </SelectContent>
               </Select>
             </div>

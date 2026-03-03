@@ -1,13 +1,15 @@
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Domain.Entities.Hr;
+using ClarityBoard.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.Infrastructure.Services.Hr;
 
 public class DataAccessLogger : IDataAccessLogger
 {
-    private readonly IAppDbContext _db;
+    private readonly IDbContextFactory<ClarityBoardContext> _contextFactory;
 
-    public DataAccessLogger(IAppDbContext db) => _db = db;
+    public DataAccessLogger(IDbContextFactory<ClarityBoardContext> contextFactory) => _contextFactory = contextFactory;
 
     public async Task LogAsync(
         Guid subjectId,
@@ -28,7 +30,8 @@ public class DataAccessLogger : IDataAccessLogger
             ipAddress:          ipAddress,
             userAgent:          userAgent);
 
-        _db.DataAccessLogs.Add(log);
-        await _db.SaveChangesAsync(ct);
+        await using var db = _contextFactory.CreateDbContext();
+        db.DataAccessLogs.Add(log);
+        await db.SaveChangesAsync(ct);
     }
 }

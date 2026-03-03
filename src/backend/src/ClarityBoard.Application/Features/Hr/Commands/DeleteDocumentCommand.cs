@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.Application.Features.Hr.Commands;
 
-[RequirePermission("hr.document.upload")]
+[RequirePermission("hr.manage")]
 public record DeleteDocumentCommand : IRequest
 {
     public required Guid EmployeeId { get; init; }
@@ -46,12 +46,13 @@ public class DeleteDocumentCommandHandler : IRequestHandler<DeleteDocumentComman
                 cancellationToken)
             ?? throw new NotFoundException("EmployeeDocument", request.DocumentId);
 
-        // Decrypt the storage path and delete the file from MinIO
         var storagePath = _encryption.Decrypt(document.StoragePath);
-        await _documentService.DeleteDocumentAsync(storagePath, cancellationToken);
 
-        // Hard-delete the document entity from the database
+        // DB delete first — still reversible if MinIO fails
         _db.EmployeeDocuments.Remove(document);
         await _db.SaveChangesAsync(cancellationToken);
+
+        // MinIO delete only after DB commit succeeds
+        await _documentService.DeleteDocumentAsync(storagePath, cancellationToken);
     }
 }
