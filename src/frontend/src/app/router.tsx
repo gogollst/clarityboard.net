@@ -81,12 +81,17 @@ export const router = createBrowserRouter([
       { path: 'admin/webhooks', lazy: () => import('@/features/admin/WebhookConfig') },
       { path: 'admin/audit', lazy: () => import('@/features/admin/AuditLog') },
       { path: 'admin/mail', lazy: () => import('@/features/admin/MailConfig') },
+      { path: 'admin/auth-config', lazy: () => import('@/features/admin/AuthConfig') },
 
       // Admin – AI Management
       { path: 'admin/ai/providers', lazy: () => import('@/features/admin/AiProviders') },
       { path: 'admin/ai/prompts', lazy: () => import('@/features/admin/AiPrompts') },
       { path: 'admin/ai/prompts/:promptKey', lazy: () => import('@/features/admin/AiPromptDetail') },
       { path: 'admin/ai/logs', lazy: () => import('@/features/admin/AiCallLogs') },
+
+      // HR
+      { path: 'hr/employees', lazy: () => import('@/features/hr/employees/EmployeeList') },
+      { path: 'hr/employees/new', lazy: () => import('@/features/hr/employees/EmployeeCreate') },
     ],
   },
 ]);
