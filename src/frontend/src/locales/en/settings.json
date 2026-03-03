@@ -1,1 +1,97 @@
-{}
+{
+  "title": "Settings",
+  "description": "Manage your account settings and preferences",
+  "tabs": {
+    "profile": "Profile",
+    "password": "Password",
+    "security": "Security"
+  },
+  "profile": {
+    "title": "Profile",
+    "description": "Update your personal information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell us about yourself...",
+    "language": "Language",
+    "timezone": "Timezone",
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "bioMaxLength": "Bio must be 500 characters or fewer",
+      "timezoneRequired": "Timezone is required"
+    },
+    "toast": {
+      "success": "Profile updated",
+      "error": "Failed to update profile"
+    }
+  },
+  "avatar": {
+    "upload": "Upload",
+    "remove": "Remove",
+    "hint": "JPG or PNG. Max 5 MB.",
+    "toast": {
+      "uploadSuccess": "Avatar uploaded",
+      "uploadError": "Failed to upload avatar",
+      "deleteSuccess": "Avatar removed",
+      "deleteError": "Failed to remove avatar"
+    }
+  },
+  "password": {
+    "title": "Password",
+    "description": "Change your account password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "changeButton": "Change Password",
+    "validation": {
+      "currentRequired": "Current password is required",
+      "minLength": "Password must be at least 8 characters",
+      "uppercase": "Must contain an uppercase letter",
+      "lowercase": "Must contain a lowercase letter",
+      "digit": "Must contain a digit",
+      "special": "Must contain a special character",
+      "confirmRequired": "Please confirm your password",
+      "noMatch": "Passwords do not match"
+    },
+    "toast": {
+      "success": "Password changed",
+      "error": "Failed to change password"
+    }
+  },
+  "twoFactor": {
+    "title": "Two-Factor Authentication",
+    "description": "Add an extra layer of security to your account",
+    "authenticatorApp": "Authenticator App",
+    "authenticatorAppDescription": "Use an authenticator app to generate one-time codes",
+    "enable": "Enable",
+    "disable": "Disable",
+    "setup": {
+      "title": "Set Up Two-Factor Authentication",
+      "description": "Scan the QR code with your authenticator app, then enter the verification code.",
+      "manualKey": "Manual entry key",
+      "recoveryCodes": "Recovery codes (save these somewhere safe)",
+      "verificationCode": "Verification Code",
+      "verifyAndEnable": "Verify & Enable"
+    },
+    "disableDialog": {
+      "title": "Disable Two-Factor Authentication",
+      "description": "Enter your password to confirm disabling two-factor authentication.",
+      "passwordLabel": "Password",
+      "disableButton": "Disable 2FA"
+    },
+    "validation": {
+      "passwordRequired": "Password is required",
+      "codeLength": "Code must be 6 digits",
+      "codeDigits": "Code must contain only digits"
+    },
+    "toast": {
+      "setupError": "Failed to initialize 2FA setup",
+      "enableSuccess": "Two-factor authentication enabled",
+      "enableError": "Failed to verify code",
+      "invalidCode": "Invalid verification code",
+      "disableSuccess": "Two-factor authentication disabled",
+      "disableError": "Failed to disable two-factor authentication"
+    }
+  }
+}

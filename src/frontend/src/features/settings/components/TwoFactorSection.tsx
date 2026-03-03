@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, ShieldCheck, ShieldOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,26 +21,20 @@ import {
 import { useProfile, useDisable2FA } from '@/hooks/useSettings';
 import { api } from '@/lib/api';
 
-// ── Schemas ────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────
 
-const disableSchema = z.object({
-  password: z.string().min(1, 'Password is required'),
-});
+type DisableFormValues = {
+  password: string;
+};
 
-type DisableFormValues = z.infer<typeof disableSchema>;
-
-const verifySchema = z.object({
-  totpCode: z
-    .string()
-    .length(6, 'Code must be 6 digits')
-    .regex(/^\d{6}$/, 'Code must contain only digits'),
-});
-
-type VerifyFormValues = z.infer<typeof verifySchema>;
+type VerifyFormValues = {
+  totpCode: string;
+};
 
 // ── Component ──────────────────────────────────────────────────────────
 
 export function TwoFactorSection() {
+  const { t } = useTranslation('settings');
   const { data: profile } = useProfile();
   const disable2FA = useDisable2FA();
 
@@ -54,6 +49,25 @@ export function TwoFactorSection() {
 
   // Disable flow state
   const [showDisableDialog, setShowDisableDialog] = useState(false);
+
+  const disableSchema = useMemo(
+    () =>
+      z.object({
+        password: z.string().min(1, t('twoFactor.validation.passwordRequired')),
+      }),
+    [t],
+  );
+
+  const verifySchema = useMemo(
+    () =>
+      z.object({
+        totpCode: z
+          .string()
+          .length(6, t('twoFactor.validation.codeLength'))
+          .regex(/^\d{6}$/, t('twoFactor.validation.codeDigits')),
+      }),
+    [t],
+  );
 
   const disableForm = useForm<DisableFormValues>({
     resolver: zodResolver(disableSchema),
@@ -80,7 +94,7 @@ export function TwoFactorSection() {
       setSetupData(data);
       setShowSetupDialog(true);
     } catch {
-      toast.error('Failed to initialize 2FA setup');
+      toast.error(t('twoFactor.toast.setupError'));
     } finally {
       setIsSettingUp(false);
     }
@@ -92,15 +106,15 @@ export function TwoFactorSection() {
         totpCode: values.totpCode,
       });
       if (data.verified) {
-        toast.success('Two-factor authentication enabled');
+        toast.success(t('twoFactor.toast.enableSuccess'));
         setShowSetupDialog(false);
         setSetupData(null);
         verifyForm.reset();
       } else {
-        toast.error('Invalid verification code');
+        toast.error(t('twoFactor.toast.invalidCode'));
       }
     } catch {
-      toast.error('Failed to verify code');
+      toast.error(t('twoFactor.toast.enableError'));
     }
   };
 
@@ -118,9 +132,9 @@ export function TwoFactorSection() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Two-Factor Authentication</CardTitle>
+          <CardTitle>{t('twoFactor.title')}</CardTitle>
           <CardDescription>
-            Add an extra layer of security to your account
+            {t('twoFactor.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -133,17 +147,17 @@ export function TwoFactorSection() {
               )}
               <div>
                 <p className="font-medium">
-                  Authenticator App
+                  {t('twoFactor.authenticatorApp')}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Use an authenticator app to generate one-time codes
+                  {t('twoFactor.authenticatorAppDescription')}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <Badge variant={twoFactorEnabled ? 'default' : 'secondary'}>
-                {twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                {twoFactorEnabled ? t('common:status.enabled') : t('common:status.disabled')}
               </Badge>
 
               {twoFactorEnabled ? (
@@ -152,7 +166,7 @@ export function TwoFactorSection() {
                   size="sm"
                   onClick={() => setShowDisableDialog(true)}
                 >
-                  Disable
+                  {t('twoFactor.disable')}
                 </Button>
               ) : (
                 <Button
@@ -161,7 +175,7 @@ export function TwoFactorSection() {
                   onClick={handleSetup}
                 >
                   {isSettingUp && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Enable
+                  {t('twoFactor.enable')}
                 </Button>
               )}
             </div>
@@ -180,9 +194,9 @@ export function TwoFactorSection() {
       }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Set Up Two-Factor Authentication</DialogTitle>
+            <DialogTitle>{t('twoFactor.setup.title')}</DialogTitle>
             <DialogDescription>
-              Scan the QR code with your authenticator app, then enter the verification code.
+              {t('twoFactor.setup.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -198,7 +212,7 @@ export function TwoFactorSection() {
 
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">
-                  Manual entry key
+                  {t('twoFactor.setup.manualKey')}
                 </Label>
                 <p className="rounded-md bg-muted p-2 text-center font-mono text-sm select-all">
                   {setupData.secret}
@@ -207,7 +221,7 @@ export function TwoFactorSection() {
 
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">
-                  Recovery codes (save these somewhere safe)
+                  {t('twoFactor.setup.recoveryCodes')}
                 </Label>
                 <div className="rounded-md bg-muted p-2 font-mono text-xs">
                   {setupData.recoveryCodes.map((code) => (
@@ -218,7 +232,7 @@ export function TwoFactorSection() {
 
               <form onSubmit={verifyForm.handleSubmit(handleVerify)} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="totpCode">Verification Code</Label>
+                  <Label htmlFor="totpCode">{t('twoFactor.setup.verificationCode')}</Label>
                   <Input
                     id="totpCode"
                     type="text"
@@ -246,9 +260,9 @@ export function TwoFactorSection() {
                       verifyForm.reset();
                     }}
                   >
-                    Cancel
+                    {t('common:buttons.cancel')}
                   </Button>
-                  <Button type="submit">Verify &amp; Enable</Button>
+                  <Button type="submit">{t('twoFactor.setup.verifyAndEnable')}</Button>
                 </DialogFooter>
               </form>
             </div>
@@ -266,15 +280,15 @@ export function TwoFactorSection() {
       }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Disable Two-Factor Authentication</DialogTitle>
+            <DialogTitle>{t('twoFactor.disableDialog.title')}</DialogTitle>
             <DialogDescription>
-              Enter your password to confirm disabling two-factor authentication.
+              {t('twoFactor.disableDialog.description')}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={disableForm.handleSubmit(handleDisable)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="disablePassword">Password</Label>
+              <Label htmlFor="disablePassword">{t('twoFactor.disableDialog.passwordLabel')}</Label>
               <Input
                 id="disablePassword"
                 type="password"
@@ -297,7 +311,7 @@ export function TwoFactorSection() {
                   disableForm.reset();
                 }}
               >
-                Cancel
+                {t('common:buttons.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -305,7 +319,7 @@ export function TwoFactorSection() {
                 disabled={disable2FA.isPending}
               >
                 {disable2FA.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                Disable 2FA
+                {t('twoFactor.disableDialog.disableButton')}
               </Button>
             </DialogFooter>
           </form>

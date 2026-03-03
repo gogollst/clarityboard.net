@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Loader2, Trash2, Upload } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useUploadAvatar, useDeleteAvatar } from '@/hooks/useSettings';
@@ -11,6 +12,7 @@ interface AvatarSectionProps {
 }
 
 export function AvatarSection({ avatarUrl, firstName, lastName }: AvatarSectionProps) {
+  const { t } = useTranslation('settings');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const uploadAvatar = useUploadAvatar();
@@ -68,7 +70,7 @@ export function AvatarSection({ avatarUrl, firstName, lastName }: AvatarSectionP
             ) : (
               <Upload className="h-4 w-4" />
             )}
-            Upload
+            {t('avatar.upload')}
           </Button>
 
           {avatarUrl && (
@@ -84,13 +86,13 @@ export function AvatarSection({ avatarUrl, firstName, lastName }: AvatarSectionP
               ) : (
                 <Trash2 className="h-4 w-4" />
               )}
-              Remove
+              {t('avatar.remove')}
             </Button>
           )}
         </div>
 
         <p className="text-xs text-muted-foreground">
-          JPG or PNG. Max 5 MB.
+          {t('avatar.hint')}
         </p>
       </div>
 

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import i18n from '@/i18n';
 import type {
   UserProfile,
   UpdateProfileRequest,
@@ -27,11 +28,11 @@ export function useUpdateProfile() {
       await api.put('/me', request);
     },
     onSuccess: () => {
-      toast.success('Profile updated');
+      toast.success(i18n.t('settings:profile.toast.success'));
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.profile() });
     },
     onError: () => {
-      toast.error('Failed to update profile');
+      toast.error(i18n.t('settings:profile.toast.error'));
     },
   });
 }
@@ -49,11 +50,11 @@ export function useUploadAvatar() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Avatar uploaded');
+      toast.success(i18n.t('settings:avatar.toast.uploadSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.profile() });
     },
     onError: () => {
-      toast.error('Failed to upload avatar');
+      toast.error(i18n.t('settings:avatar.toast.uploadError'));
     },
   });
 }
@@ -66,11 +67,11 @@ export function useDeleteAvatar() {
       await api.delete('/me/avatar');
     },
     onSuccess: () => {
-      toast.success('Avatar removed');
+      toast.success(i18n.t('settings:avatar.toast.deleteSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.profile() });
     },
     onError: () => {
-      toast.error('Failed to remove avatar');
+      toast.error(i18n.t('settings:avatar.toast.deleteError'));
     },
   });
 }
@@ -81,10 +82,10 @@ export function useChangePassword() {
       await api.post('/me/change-password', request);
     },
     onSuccess: () => {
-      toast.success('Password changed');
+      toast.success(i18n.t('settings:password.toast.success'));
     },
     onError: () => {
-      toast.error('Failed to change password');
+      toast.error(i18n.t('settings:password.toast.error'));
     },
   });
 }
@@ -97,11 +98,11 @@ export function useDisable2FA() {
       await api.post('/me/2fa/disable', request);
     },
     onSuccess: () => {
-      toast.success('Two-factor authentication disabled');
+      toast.success(i18n.t('settings:twoFactor.toast.disableSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.profile() });
     },
     onError: () => {
-      toast.error('Failed to disable two-factor authentication');
+      toast.error(i18n.t('settings:twoFactor.toast.disableError'));
     },
   });
 }

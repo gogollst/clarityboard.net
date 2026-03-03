@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -40,19 +41,30 @@ const TIMEZONES = [
   'UTC',
 ] as const;
 
-const profileSchema = z.object({
-  firstName: z.string().min(1, 'First name is required').max(100),
-  lastName: z.string().min(1, 'Last name is required').max(100),
-  bio: z.string().max(500, 'Bio must be 500 characters or fewer').nullable(),
-  locale: z.enum(['de', 'en']),
-  timezone: z.string().min(1, 'Timezone is required'),
-});
-
-type ProfileFormValues = z.infer<typeof profileSchema>;
+type ProfileFormValues = {
+  firstName: string;
+  lastName: string;
+  bio: string | null;
+  locale: 'de' | 'en';
+  timezone: string;
+};
 
 export function ProfileSection() {
+  const { t } = useTranslation('settings');
   const { data: profile, isLoading, dataUpdatedAt } = useProfile();
   const updateProfile = useUpdateProfile();
+
+  const profileSchema = useMemo(
+    () =>
+      z.object({
+        firstName: z.string().min(1, t('profile.validation.firstNameRequired')).max(100),
+        lastName: z.string().min(1, t('profile.validation.lastNameRequired')).max(100),
+        bio: z.string().max(500, t('profile.validation.bioMaxLength')).nullable(),
+        locale: z.enum(['de', 'en']),
+        timezone: z.string().min(1, t('profile.validation.timezoneRequired')),
+      }),
+    [t],
+  );
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -101,8 +113,8 @@ export function ProfileSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile</CardTitle>
-        <CardDescription>Update your personal information</CardDescription>
+        <CardTitle>{t('profile.title')}</CardTitle>
+        <CardDescription>{t('profile.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="mb-6">
@@ -116,7 +128,7 @@ export function ProfileSection() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">{t('profile.firstName')}</Label>
               <Input id="firstName" {...form.register('firstName')} />
               {form.formState.errors.firstName && (
                 <p className="text-sm text-destructive">
@@ -126,7 +138,7 @@ export function ProfileSection() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">{t('profile.lastName')}</Label>
               <Input id="lastName" {...form.register('lastName')} />
               {form.formState.errors.lastName && (
                 <p className="text-sm text-destructive">
@@ -137,10 +149,10 @@ export function ProfileSection() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bio">Bio</Label>
+            <Label htmlFor="bio">{t('profile.bio')}</Label>
             <Textarea
               id="bio"
-              placeholder="Tell us about yourself..."
+              placeholder={t('profile.bioPlaceholder')}
               rows={3}
               {...form.register('bio')}
             />
@@ -156,7 +168,7 @@ export function ProfileSection() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Language</Label>
+              <Label>{t('profile.language')}</Label>
               <Select
                 value={form.watch('locale')}
                 onValueChange={(value) => form.setValue('locale', value as 'de' | 'en')}
@@ -172,7 +184,7 @@ export function ProfileSection() {
             </div>
 
             <div className="space-y-2">
-              <Label>Timezone</Label>
+              <Label>{t('profile.timezone')}</Label>
               <Select
                 value={form.watch('timezone')}
                 onValueChange={(value) => form.setValue('timezone', value)}
@@ -194,7 +206,7 @@ export function ProfileSection() {
           <div className="flex justify-end pt-2">
             <Button type="submit" disabled={updateProfile.isPending}>
               {updateProfile.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              Save Changes
+              {t('common:buttons.save')}
             </Button>
           </div>
         </form>
