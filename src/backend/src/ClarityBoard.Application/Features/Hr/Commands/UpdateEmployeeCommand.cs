@@ -48,6 +48,8 @@ public class UpdateEmployeeCommandHandler : IRequestHandler<UpdateEmployeeComman
         employee.UpdateBasicInfo(
             firstName: request.FirstName,
             lastName: request.LastName,
+            dateOfBirth: request.DateOfBirth,
+            taxId: request.TaxId,
             managerId: request.ManagerId,
             departmentId: request.DepartmentId);
 

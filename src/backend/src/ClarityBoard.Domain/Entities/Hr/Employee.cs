@@ -56,10 +56,13 @@ public class Employee
 
     public string FullName => $"{FirstName} {LastName}";
 
-    public void UpdateBasicInfo(string firstName, string lastName, Guid? managerId, Guid? departmentId)
+    public void UpdateBasicInfo(string firstName, string lastName, DateOnly dateOfBirth, string taxId,
+        Guid? managerId, Guid? departmentId)
     {
         FirstName    = firstName;
         LastName     = lastName;
+        DateOfBirth  = dateOfBirth;
+        TaxId        = taxId;
         ManagerId    = managerId;
         DepartmentId = departmentId;
         UpdatedAt    = DateTime.UtcNow;
