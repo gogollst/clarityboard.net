@@ -12,6 +12,8 @@ import type {
   AuditLogParams,
   MailConfig,
   UpsertMailConfigRequest,
+  SendTestEmailRequest,
+  SendTestEmailResult,
 } from '@/types/admin';
 
 // ---------------------------------------------------------------------------
@@ -48,11 +50,8 @@ export function useCreateUser() {
       );
       return data;
     },
-    onSuccess: (data) => {
-      toast.success(
-        `User created. Temporary password: ${data.temporaryPassword}`,
-        { duration: 15000 },
-      );
+    onSuccess: () => {
+      toast.success('User created. An invitation email has been sent.');
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
     onError: () => {
@@ -185,19 +184,30 @@ export function useReactivateUser() {
 export function useResetPassword() {
   return useMutation({
     mutationFn: async (userId: string) => {
-      const { data } = await api.post<{ temporaryPassword: string }>(
-        `/admin/users/${userId}/reset-password`,
-      );
-      return data;
+      await api.post(`/admin/users/${userId}/reset-password`);
     },
-    onSuccess: (data) => {
-      toast.success(
-        `Password reset. New temporary password: ${data.temporaryPassword}`,
-        { duration: 15000 },
-      );
+    onSuccess: () => {
+      toast.success('Password reset email sent.');
     },
     onError: () => {
       toast.error('Failed to reset password');
+    },
+  });
+}
+
+export function useResendInvitation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      await api.post(`/admin/users/${userId}/resend-invitation`);
+    },
+    onSuccess: () => {
+      toast.success('Invitation resent.');
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
+    },
+    onError: () => {
+      toast.error('Failed to resend invitation');
     },
   });
 }
@@ -274,6 +284,22 @@ export function useUpsertMailConfig() {
     },
     onError: () => {
       toast.error('Failed to save mail configuration');
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Mail Test
+// ---------------------------------------------------------------------------
+
+export function useSendTestEmail() {
+  return useMutation({
+    mutationFn: async (request: SendTestEmailRequest) => {
+      const { data } = await api.post<SendTestEmailResult>(
+        '/admin/mail/test',
+        request,
+      );
+      return data;
     },
   });
 }

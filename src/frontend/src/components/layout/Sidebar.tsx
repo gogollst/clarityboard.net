@@ -119,9 +119,7 @@ export default function Sidebar() {
         style={{ borderColor: 'var(--color-sidebar-border)' }}
       >
         <Link to="/" className="flex items-center gap-3 overflow-hidden">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#d97757]/15 ring-1 ring-[#d97757]/25">
-            <BarChart3 className="h-4 w-4 text-[#d97757]" />
-          </div>
+          <img src="/cblogo.svg" alt="ClarityBoard" className="h-7 w-7 shrink-0" />
           {sidebarOpen && (
             <span
               className="font-display text-sm font-medium tracking-tight"

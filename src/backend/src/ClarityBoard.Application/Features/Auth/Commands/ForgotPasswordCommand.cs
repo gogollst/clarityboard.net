@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ClarityBoard.Application.Features.Auth.Commands;
 
 /// <summary>
-/// Initiates a password reset. Generates a 15-minute token, saves it on the user,
+/// Initiates a password reset. Generates a 1-hour token, saves it on the user,
 /// and sends a reset link via email. Always returns success to prevent email enumeration.
 /// </summary>
 public record ForgotPasswordCommand : IRequest
@@ -42,12 +42,12 @@ public class ForgotPasswordHandler : IRequestHandler<ForgotPasswordCommand>
         // Always succeed – prevents email enumeration attacks
         if (user is null || !user.IsActive) return;
 
-        // Generate a URL-safe, cryptographically secure token (expiry: 15 minutes)
+        // Generate a URL-safe, cryptographically secure token (expiry: 1 hour)
         var token  = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
                            .Replace("+", "-")
                            .Replace("/", "_")
                            .TrimEnd('=');
-        var expiry = DateTime.UtcNow.AddMinutes(15);
+        var expiry = DateTime.UtcNow.AddHours(1);
 
         user.SetPasswordResetToken(token, expiry);
         await _db.SaveChangesAsync(cancellationToken);

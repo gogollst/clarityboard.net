@@ -12,6 +12,7 @@ export interface AdminUser {
   firstName: string;
   lastName: string;
   isActive: boolean;
+  status: 'Active' | 'Invited' | 'Inactive';
   twoFactorEnabled: boolean;
   createdAt: string;
   lastLoginAt?: string;
@@ -37,7 +38,6 @@ export interface UpdateUserRequest {
 export interface CreateUserResponse {
   userId: string;
   email: string;
-  temporaryPassword: string;
 }
 
 export interface AuditLogEntry {
@@ -99,4 +99,20 @@ export interface UpsertMailConfigRequest {
   fromEmail: string;
   fromName: string;
   enableSsl: boolean;
+}
+
+export interface SendTestEmailRequest {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  fromEmail: string;
+  fromName: string;
+  enableSsl: boolean;
+  recipientEmail: string;
+}
+
+export interface SendTestEmailResult {
+  success: boolean;
+  errorMessage: string | null;
 }

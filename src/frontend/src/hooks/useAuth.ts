@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
 import { api, setAccessToken, setRefreshToken } from '@/lib/api';
 
@@ -66,4 +67,12 @@ export function useAuth() {
     hasPermission,
     role: user?.roles?.[0] ?? null,
   };
+}
+
+export function useAcceptInvitation() {
+  return useMutation({
+    mutationFn: async ({ token, password }: { token: string; password: string }) => {
+      await api.post('/auth/accept-invitation', { token, password });
+    },
+  });
 }

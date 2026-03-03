@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,9 +10,12 @@ import {
   AlertCircle,
   Save,
   Loader2,
+  FlaskConical,
 } from 'lucide-react';
-import { useMailConfig, useUpsertMailConfig } from '@/hooks/useAdmin';
+import { useMailConfig, useUpsertMailConfig, useSendTestEmail } from '@/hooks/useAdmin';
+import { useAuthStore } from '@/stores/authStore';
 import type { UpsertMailConfigRequest } from '@/types/admin';
+import { cn } from '@/lib/utils';
 import {
   Card,
   CardContent,
@@ -25,6 +28,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const schema = z.object({
   host: z.string().min(1, 'Host is required').max(500, 'Host must be at most 500 characters'),
@@ -41,6 +52,8 @@ type FormValues = z.infer<typeof schema>;
 export function Component() {
   const { data: config, isLoading } = useMailConfig();
   const upsert = useUpsertMailConfig();
+  const sendTest = useSendTestEmail();
+  const user = useAuthStore((s) => s.user);
 
   const {
     register,
@@ -48,6 +61,7 @@ export function Component() {
     setValue,
     watch,
     reset,
+    getValues,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -63,6 +77,12 @@ export function Component() {
   });
 
   const enableSsl = watch('enableSsl');
+
+  // Test email dialog state
+  const [isTestOpen, setIsTestOpen] = useState(false);
+  const [testConfig, setTestConfig] = useState<FormValues | null>(null);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [testResult, setTestResult] = useState<{ success: boolean; errorMessage: string | null } | null>(null);
 
   useEffect(() => {
     if (config) {
@@ -89,6 +109,21 @@ export function Component() {
       enableSsl: values.enableSsl,
     };
     upsert.mutate(request);
+  };
+
+  const handleOpenTest = () => {
+    setTestConfig(getValues());
+    setTestResult(null);
+    setRecipientEmail(user?.email ?? '');
+    setIsTestOpen(true);
+  };
+
+  const handleSendTest = () => {
+    if (!testConfig) return;
+    sendTest.mutate(
+      { ...testConfig, recipientEmail },
+      { onSuccess: (result) => setTestResult(result) },
+    );
   };
 
   if (isLoading) {
@@ -219,6 +254,7 @@ export function Component() {
               <Label htmlFor="username">Username *</Label>
               <Input
                 id="username"
+                autoComplete="username"
                 placeholder="your-smtp-username"
                 {...register('username')}
               />
@@ -289,8 +325,8 @@ export function Component() {
               </div>
             </div>
 
-            {/* Submit */}
-            <div className="pt-1">
+            {/* Submit + Test */}
+            <div className="flex gap-2 pt-1">
               <Button type="submit" disabled={upsert.isPending}>
                 {upsert.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -299,10 +335,101 @@ export function Component() {
                 )}
                 {config ? 'Save Changes' : 'Save Configuration'}
               </Button>
+              <Button type="button" variant="outline" onClick={handleOpenTest}>
+                <FlaskConical className="mr-2 h-4 w-4" />
+                Test
+              </Button>
             </div>
           </form>
         </CardContent>
       </Card>
+
+      {/* Test Email Dialog */}
+      <Dialog
+        open={isTestOpen}
+        onOpenChange={(open) => {
+          setIsTestOpen(open);
+          if (!open) setTestResult(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Test Email</DialogTitle>
+            <DialogDescription>
+              Verify your SMTP configuration by sending a test email using the current form values.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Config summary */}
+            <dl className="rounded-md bg-muted/50 p-3 text-sm space-y-1.5">
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Host</dt>
+                <dd className="font-mono text-xs">{testConfig?.host}:{testConfig?.port}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">Username</dt>
+                <dd className="font-mono text-xs">{testConfig?.username}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">From</dt>
+                <dd className="text-xs">{testConfig?.fromName} &lt;{testConfig?.fromEmail}&gt;</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">SSL/TLS</dt>
+                <dd className="text-xs">{testConfig?.enableSsl ? 'Enabled' : 'Disabled'}</dd>
+              </div>
+            </dl>
+
+            {/* Password missing warning */}
+            {!testConfig?.password && (
+              <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                Enter your SMTP password in the form to enable sending a test email.
+              </div>
+            )}
+
+            {/* Recipient */}
+            <div className="space-y-1.5">
+              <Label htmlFor="testRecipient">Send to</Label>
+              <Input
+                id="testRecipient"
+                type="email"
+                autoComplete="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="admin@example.com"
+              />
+            </div>
+
+            {/* Result */}
+            {testResult && (
+              <div className={cn(
+                'rounded-md px-3 py-2 text-sm',
+                testResult.success
+                  ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                  : 'bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-300',
+              )}>
+                {testResult.success
+                  ? 'Test email sent successfully!'
+                  : `Failed: ${testResult.errorMessage}`}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsTestOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={handleSendTest}
+              disabled={sendTest.isPending || !recipientEmail || !testConfig?.password}
+            >
+              {sendTest.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Send Test Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

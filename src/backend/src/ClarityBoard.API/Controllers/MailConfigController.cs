@@ -30,4 +30,14 @@ public class MailConfigController : ControllerBase
         await _mediator.Send(command, ct);
         return NoContent();
     }
+
+    /// <summary>Sends a test email using the provided SMTP config (not saved to DB).</summary>
+    [HttpPost("test")]
+    [ProducesResponseType(typeof(SendTestEmailResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<SendTestEmailResult>> TestMailConfig(
+        [FromBody] SendTestEmailCommand command, CancellationToken ct)
+    {
+        var result = await _mediator.Send(command, ct);
+        return Ok(result);
+    }
 }

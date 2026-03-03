@@ -53,7 +53,10 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
         if (!user.IsActive)
             throw new UnauthorizedAccessException("Account is deactivated.");
 
-        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (user.PasswordHash is null)
+            throw new UnauthorizedAccessException("Account not yet activated. Please accept your invitation email.");
+
+        if (!_passwordHasher.Verify(request.Password, user.PasswordHash!))
         {
             user.RecordFailedLogin();
             await _db.SaveChangesAsync(cancellationToken);

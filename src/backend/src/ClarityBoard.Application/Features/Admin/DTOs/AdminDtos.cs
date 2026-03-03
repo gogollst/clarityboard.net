@@ -7,6 +7,7 @@ public record UserListDto
     public required string FirstName { get; init; }
     public required string LastName { get; init; }
     public required bool IsActive { get; init; }
+    public required string Status { get; init; }
     public required bool TwoFactorEnabled { get; init; }
     public DateTime? LastLoginAt { get; init; }
     public required DateTime CreatedAt { get; init; }
@@ -69,11 +70,4 @@ public record CreateUserResponse
 {
     public required Guid UserId { get; init; }
     public required string Email { get; init; }
-    public required string TemporaryPassword { get; init; }
-}
-
-public record ResetPasswordResponse
-{
-    public required Guid UserId { get; init; }
-    public required string TemporaryPassword { get; init; }
 }

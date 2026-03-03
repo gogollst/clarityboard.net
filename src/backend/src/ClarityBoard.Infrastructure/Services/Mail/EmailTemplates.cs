@@ -92,7 +92,7 @@ internal static class EmailTemplates
             <p>wir haben eine Anfrage erhalten, das Passwort für Ihr Konto zurückzusetzen.</p>
             {Button(resetUrl, "Passwort zurücksetzen")}
             <p style="font-size:13px;color:#64748b;">
-              Dieser Link ist <strong>15 Minuten</strong> gültig. Falls Sie keine
+              Dieser Link ist <strong>1 Stunde</strong> gültig. Falls Sie keine
               Zurücksetzung angefordert haben, können Sie diese E-Mail ignorieren.
             </p>
             """;
@@ -122,7 +122,29 @@ internal static class EmailTemplates
         return (subject, Wrap(subject, content));
     }
 
-    // ── 4. Two-Factor Code ────────────────────────────────────────────────────
+    // ── 4. Invitation Link (token-based) ──────────────────────────────────────
+
+    public static (string subject, string html) InvitationLink(
+        string firstName, string invitationLink, string invitedBy)
+    {
+        var subject = $"Sie wurden zu {LogoText} eingeladen";
+        var content = $"""
+            <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#1e293b;">
+              Sie wurden eingeladen!
+            </h2>
+            <p>Hallo {firstName},</p>
+            <p><strong>{invitedBy}</strong> hat Sie zu <strong>{LogoText}</strong> eingeladen.</p>
+            <p>Klicken Sie auf den Button, um Ihr Konto zu aktivieren und ein Passwort festzulegen:</p>
+            {Button(invitationLink, "Einladung annehmen")}
+            <p style="font-size:13px;color:#64748b;margin-top:16px;">
+              Dieser Link ist <strong>72 Stunden</strong> gültig.
+              Falls Sie diese Einladung nicht erwartet haben, können Sie diese E-Mail ignorieren.
+            </p>
+            """;
+        return (subject, Wrap(subject, content));
+    }
+
+    // ── 5. Two-Factor Code ────────────────────────────────────────────────────
 
     public static (string subject, string html) TwoFactorCode(string firstName, string code)
     {
@@ -144,7 +166,7 @@ internal static class EmailTemplates
         return (subject, Wrap(subject, content));
     }
 
-    // ── 5. System Warning ─────────────────────────────────────────────────────
+    // ── 6. System Warning ─────────────────────────────────────────────────────
 
     public static (string subject, string html) SystemWarning(string warningSubject, string bodyText)
     {

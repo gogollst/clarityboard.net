@@ -92,12 +92,21 @@ public class AdminController : ControllerBase
     }
 
     [HttpPost("users/{userId:guid}/reset-password")]
-    [ProducesResponseType(typeof(ResetPasswordResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<ResetPasswordResponse>> ResetPassword(Guid userId, CancellationToken ct)
+    public async Task<IActionResult> ResetPassword(Guid userId, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ResetPasswordCommand { UserId = userId }, ct);
-        return Ok(result);
+        await _mediator.Send(new ResetPasswordCommand { UserId = userId }, ct);
+        return NoContent();
+    }
+
+    [HttpPost("users/{userId:guid}/resend-invitation")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ResendInvitation(Guid userId, CancellationToken ct)
+    {
+        await _mediator.Send(new ResendInvitationCommand { UserId = userId }, ct);
+        return NoContent();
     }
 
     // ── Role Management ───────────────────────────────────────────────

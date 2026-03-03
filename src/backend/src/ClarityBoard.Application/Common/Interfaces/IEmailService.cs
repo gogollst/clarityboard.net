@@ -11,6 +11,9 @@ public interface IEmailService
     /// <summary>Sends an invitation email with a temporary password.</summary>
     Task SendInvitationEmailAsync(string toEmail, string firstName, string temporaryPassword, string invitedBy, CancellationToken ct = default);
 
+    /// <summary>Sends an invitation link for the user to set their first password.</summary>
+    Task SendInvitationLinkEmailAsync(string toEmail, string firstName, string invitationToken, string invitedBy, CancellationToken ct = default);
+
     /// <summary>Sends a 6-digit 2FA code via email.</summary>
     Task SendTwoFactorCodeEmailAsync(string toEmail, string firstName, string code, CancellationToken ct = default);
 
