@@ -1,6 +1,7 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using ClarityBoard.API.Hubs;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
 using ClarityBoard.API.Middleware;
 using ClarityBoard.API.Services;
