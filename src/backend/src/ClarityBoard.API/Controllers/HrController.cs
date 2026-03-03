@@ -169,10 +169,13 @@ public class HrController : ControllerBase
 
     [HttpGet("departments")]
     [ProducesResponseType(typeof(List<DepartmentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<List<DepartmentDto>>> ListDepartments(
-        [FromQuery] Guid entityId, CancellationToken ct)
+        [FromQuery] Guid? entityId, CancellationToken ct)
     {
-        var result = await _mediator.Send(new ListDepartmentsQuery(entityId), ct);
+        if (entityId is null || entityId == Guid.Empty)
+            return BadRequest("entityId is required.");
+        var result = await _mediator.Send(new ListDepartmentsQuery(entityId.Value), ct);
         return Ok(result);
     }
 
@@ -183,7 +186,7 @@ public class HrController : ControllerBase
         [FromBody] CreateDepartmentCommand command, CancellationToken ct)
     {
         var id = await _mediator.Send(command, ct);
-        return CreatedAtAction(nameof(ListDepartments), new { entityId = command.EntityId }, new { id });
+        return Created(string.Empty, new { id });
     }
 }
 
