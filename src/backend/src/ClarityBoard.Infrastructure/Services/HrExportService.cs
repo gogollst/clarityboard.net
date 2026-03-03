@@ -21,6 +21,9 @@ public class HrExportService : IHrExportService
     public async Task<byte[]> ExportTravelExpensesCsvAsync(
         Guid entityId, DateOnly from, DateOnly to, CancellationToken ct = default)
     {
+        if (to < from)
+            throw new ArgumentException($"'to' ({to}) must be greater than or equal to 'from' ({from}).");
+
         // Load all approved/reimbursed items for the entity in the date range
         var approvedStatuses = new[] { TravelExpenseStatus.Approved, TravelExpenseStatus.Reimbursed };
 
@@ -90,7 +93,7 @@ public class HrExportService : IHrExportService
     /// Formats a decimal value using German convention (comma as decimal separator).
     /// </summary>
     private static string FormatDecimal(decimal value)
-        => value.ToString("F2").Replace(".", ",");
+        => value.ToString("F2", System.Globalization.CultureInfo.InvariantCulture).Replace(".", ",");
 
     /// <summary>
     /// Wraps a CSV field in quotes and escapes internal double quotes.

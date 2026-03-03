@@ -46,10 +46,12 @@ public class ListTravelExpensesQueryValidator : AbstractValidator<ListTravelExpe
 public class ListTravelExpensesQueryHandler : IRequestHandler<ListTravelExpensesQuery, PagedResult<TravelExpenseReportDto>>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
-    public ListTravelExpensesQueryHandler(IAppDbContext db)
+    public ListTravelExpensesQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
-        _db = db;
+        _db          = db;
+        _currentUser = currentUser;
     }
 
     public async Task<PagedResult<TravelExpenseReportDto>> Handle(
@@ -57,13 +59,13 @@ public class ListTravelExpensesQueryHandler : IRequestHandler<ListTravelExpenses
     {
         var query = _db.TravelExpenseReports.AsQueryable();
 
-        if (request.EntityId.HasValue)
-        {
-            var entityEmployeeIds = _db.Employees
-                .Where(e => e.EntityId == request.EntityId.Value)
-                .Select(e => e.Id);
-            query = query.Where(r => entityEmployeeIds.Contains(r.EmployeeId));
-        }
+        // Always scope to an entity: use the explicitly requested one or default to the current user's entity
+        var entityId = request.EntityId ?? _currentUser.EntityId;
+        var entityEmployeeIds = await _db.Employees
+            .Where(e => e.EntityId == entityId)
+            .Select(e => e.Id)
+            .ToListAsync(cancellationToken);
+        query = query.Where(r => entityEmployeeIds.Contains(r.EmployeeId));
 
         if (request.EmployeeId.HasValue)
             query = query.Where(r => r.EmployeeId == request.EmployeeId.Value);

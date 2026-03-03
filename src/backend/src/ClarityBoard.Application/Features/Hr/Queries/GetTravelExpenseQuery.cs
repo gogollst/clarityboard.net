@@ -55,10 +55,12 @@ public class GetTravelExpenseQueryValidator : AbstractValidator<GetTravelExpense
 public class GetTravelExpenseQueryHandler : IRequestHandler<GetTravelExpenseQuery, TravelExpenseReportDetailDto>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
-    public GetTravelExpenseQueryHandler(IAppDbContext db)
+    public GetTravelExpenseQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
-        _db = db;
+        _db          = db;
+        _currentUser = currentUser;
     }
 
     public async Task<TravelExpenseReportDetailDto> Handle(
@@ -69,14 +71,12 @@ public class GetTravelExpenseQueryHandler : IRequestHandler<GetTravelExpenseQuer
             .FirstOrDefaultAsync(r => r.Id == request.ReportId, cancellationToken)
             ?? throw new NotFoundException("TravelExpenseReport", request.ReportId);
 
-        var employee = await _db.Employees
-            .Where(e => e.Id == report.EmployeeId)
-            .Select(e => new { e.Id, e.FirstName, e.LastName })
-            .FirstOrDefaultAsync(cancellationToken);
+        // Verify entity ownership — use NotFoundException to not reveal existence to unauthorized callers
+        var employee = await _db.Employees.FindAsync([report.EmployeeId], cancellationToken);
+        if (employee is null || employee.EntityId != _currentUser.EntityId)
+            throw new NotFoundException("TravelExpenseReport", request.ReportId);
 
-        var fullName = employee is not null
-            ? $"{employee.FirstName} {employee.LastName}"
-            : string.Empty;
+        var fullName = $"{employee.FirstName} {employee.LastName}";
 
         var items = report.Items
             .OrderBy(i => i.ExpenseDate)

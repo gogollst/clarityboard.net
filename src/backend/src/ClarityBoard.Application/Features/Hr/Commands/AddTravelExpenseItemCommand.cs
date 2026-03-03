@@ -44,10 +44,12 @@ public class AddTravelExpenseItemCommandValidator : AbstractValidator<AddTravelE
 public class AddTravelExpenseItemCommandHandler : IRequestHandler<AddTravelExpenseItemCommand, Guid>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
-    public AddTravelExpenseItemCommandHandler(IAppDbContext db)
+    public AddTravelExpenseItemCommandHandler(IAppDbContext db, ICurrentUser currentUser)
     {
-        _db = db;
+        _db          = db;
+        _currentUser = currentUser;
     }
 
     public async Task<Guid> Handle(AddTravelExpenseItemCommand request, CancellationToken cancellationToken)
@@ -56,6 +58,13 @@ public class AddTravelExpenseItemCommandHandler : IRequestHandler<AddTravelExpen
             .Include(r => r.Items)
             .FirstOrDefaultAsync(r => r.Id == request.ReportId, cancellationToken)
             ?? throw new NotFoundException("TravelExpenseReport", request.ReportId);
+
+        // Load employee for entity ownership verification
+        var employee = await _db.Employees.FindAsync([report.EmployeeId], cancellationToken)
+            ?? throw new NotFoundException("Employee", report.EmployeeId);
+
+        if (employee.EntityId != _currentUser.EntityId)
+            throw new InvalidOperationException("Access denied to this report.");
 
         if (report.Status != TravelExpenseStatus.Draft)
             throw new InvalidOperationException("Items can only be added to draft reports.");
@@ -76,9 +85,11 @@ public class AddTravelExpenseItemCommandHandler : IRequestHandler<AddTravelExpen
 
         _db.TravelExpenseItems.Add(item);
 
-        // Recalculate total (existing items + new item)
-        var existingTotal = report.Items.Sum(i => i.AmountCents);
-        report.UpdateTotal(existingTotal + item.AmountCents);
+        // Recalculate total from DB to avoid race condition with concurrent item additions
+        var existingDbTotal = await _db.TravelExpenseItems
+            .Where(i => i.ReportId == request.ReportId)
+            .SumAsync(i => i.AmountCents, cancellationToken);
+        report.UpdateTotal(existingDbTotal + item.AmountCents);
 
         await _db.SaveChangesAsync(cancellationToken);
 

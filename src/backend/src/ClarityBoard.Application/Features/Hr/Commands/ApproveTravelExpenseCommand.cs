@@ -41,9 +41,7 @@ public class ApproveTravelExpenseCommandHandler : IRequestHandler<ApproveTravelE
             .FirstOrDefaultAsync(r => r.Id == request.ReportId, cancellationToken)
             ?? throw new NotFoundException("TravelExpenseReport", request.ReportId);
 
-        if (report.Status != TravelExpenseStatus.Submitted)
-            throw new InvalidOperationException("Only submitted reports can be approved.");
-
+        // Domain method already enforces Submitted status; no duplicate guard needed here
         report.Approve(_currentUser.UserId);
 
         var employee = await _db.Employees

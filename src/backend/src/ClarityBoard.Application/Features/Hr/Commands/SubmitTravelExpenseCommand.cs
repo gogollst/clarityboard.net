@@ -25,12 +25,14 @@ public class SubmitTravelExpenseCommandValidator : AbstractValidator<SubmitTrave
 public class SubmitTravelExpenseCommandHandler : IRequestHandler<SubmitTravelExpenseCommand>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
     private readonly IHrHubNotifier _hrHub;
 
-    public SubmitTravelExpenseCommandHandler(IAppDbContext db, IHrHubNotifier hrHub)
+    public SubmitTravelExpenseCommandHandler(IAppDbContext db, ICurrentUser currentUser, IHrHubNotifier hrHub)
     {
-        _db    = db;
-        _hrHub = hrHub;
+        _db          = db;
+        _currentUser = currentUser;
+        _hrHub       = hrHub;
     }
 
     public async Task Handle(SubmitTravelExpenseCommand request, CancellationToken cancellationToken)
@@ -40,17 +42,18 @@ public class SubmitTravelExpenseCommandHandler : IRequestHandler<SubmitTravelExp
             .FirstOrDefaultAsync(r => r.Id == request.ReportId, cancellationToken)
             ?? throw new NotFoundException("TravelExpenseReport", request.ReportId);
 
-        if (report.Status != TravelExpenseStatus.Draft)
-            throw new InvalidOperationException("Only draft reports can be submitted.");
+        // Load employee first for entity ownership check and hub notification
+        var employee = await _db.Employees.FindAsync([report.EmployeeId], cancellationToken)
+            ?? throw new NotFoundException("Employee", report.EmployeeId);
+
+        if (employee.EntityId != _currentUser.EntityId)
+            throw new InvalidOperationException("Access denied to this report.");
 
         if (!report.Items.Any())
             throw new InvalidOperationException("Cannot submit a travel expense report with no items.");
 
+        // Domain method already enforces Draft status; no duplicate guard needed here
         report.Submit();
-
-        var employee = await _db.Employees
-            .FirstOrDefaultAsync(e => e.Id == report.EmployeeId, cancellationToken)
-            ?? throw new NotFoundException("Employee", report.EmployeeId);
 
         await _db.SaveChangesAsync(cancellationToken);
 

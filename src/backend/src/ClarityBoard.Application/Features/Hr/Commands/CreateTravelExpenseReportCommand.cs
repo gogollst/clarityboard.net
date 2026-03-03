@@ -1,4 +1,5 @@
 using ClarityBoard.Application.Common.Attributes;
+using ClarityBoard.Application.Common.Exceptions;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Domain.Entities.Hr;
 using FluentValidation;
@@ -36,14 +37,22 @@ public class CreateTravelExpenseReportCommandValidator : AbstractValidator<Creat
 public class CreateTravelExpenseReportCommandHandler : IRequestHandler<CreateTravelExpenseReportCommand, Guid>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
-    public CreateTravelExpenseReportCommandHandler(IAppDbContext db)
+    public CreateTravelExpenseReportCommandHandler(IAppDbContext db, ICurrentUser currentUser)
     {
-        _db = db;
+        _db          = db;
+        _currentUser = currentUser;
     }
 
     public async Task<Guid> Handle(CreateTravelExpenseReportCommand request, CancellationToken cancellationToken)
     {
+        var employee = await _db.Employees.FindAsync([request.EmployeeId], cancellationToken)
+            ?? throw new NotFoundException("Employee", request.EmployeeId);
+
+        if (employee.EntityId != _currentUser.EntityId)
+            throw new InvalidOperationException("Access denied to this employee.");
+
         var report = TravelExpenseReport.Create(
             employeeId:      request.EmployeeId,
             title:           request.Title,
