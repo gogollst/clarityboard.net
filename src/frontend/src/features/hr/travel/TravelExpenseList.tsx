@@ -14,7 +14,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
-import { formatDate } from '../utils';
+import { formatDate, formatEur } from '../utils';
 
 function getTravelStatusBadge(status: string) {
   switch (status) {
@@ -51,13 +51,6 @@ function getTravelStatusBadge(status: string) {
     default:
       return <Badge variant="secondary">{status}</Badge>;
   }
-}
-
-function formatEur(totalAmountCents: number): string {
-  return (totalAmountCents / 100).toLocaleString('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-  });
 }
 
 export function Component() {

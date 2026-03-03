@@ -20,24 +20,21 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { formatDate } from '../utils';
+import { formatDate, formatEur } from '../utils';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatEur(cents: number): string {
-  return (cents / 100).toLocaleString('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-  });
-}
-
 function formatAmount(cents: number, currency: string): string {
-  return (cents / 100).toLocaleString('de-DE', {
-    style: 'currency',
-    currency,
-  });
+  try {
+    return (cents / 100).toLocaleString('de-DE', {
+      style: 'currency',
+      currency,
+    });
+  } catch {
+    return `${(cents / 100).toFixed(2)} ${currency}`;
+  }
 }
 
 function getTravelStatusBadge(status: string) {

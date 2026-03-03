@@ -77,6 +77,7 @@ export function Component() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              {/* TODO: Replace with employee selector dropdown once a shared EmployeeSelect component exists */}
               {/* Mitarbeiter-ID */}
               <div className="space-y-1.5">
                 <Label htmlFor="employeeId">Mitarbeiter-ID *</Label>
