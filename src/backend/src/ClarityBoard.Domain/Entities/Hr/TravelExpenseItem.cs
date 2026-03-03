@@ -23,6 +23,10 @@ public class TravelExpenseItem
         string description, int originalAmountCents, string originalCurrencyCode,
         decimal exchangeRate, DateOnly exchangeRateDate, bool isDeductible = true, decimal? vatRate = null)
     {
+        if (string.IsNullOrWhiteSpace(description)) throw new ArgumentException("Description is required.", nameof(description));
+        if (string.IsNullOrWhiteSpace(originalCurrencyCode)) throw new ArgumentException("Currency code is required.", nameof(originalCurrencyCode));
+        if (originalAmountCents < 0) throw new ArgumentException("Amount cannot be negative.", nameof(originalAmountCents));
+        if (exchangeRate <= 0) throw new ArgumentException("Exchange rate must be positive.", nameof(exchangeRate));
         var amountCents = (int)Math.Round(originalAmountCents * exchangeRate);
         return new TravelExpenseItem
         {

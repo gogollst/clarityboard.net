@@ -36,6 +36,8 @@ public class LeaveRequest
 
     public void Approve(Guid approvedBy)
     {
+        if (Status != LeaveRequestStatus.Pending)
+            throw new InvalidOperationException("Only pending requests can be approved.");
         Status     = LeaveRequestStatus.Approved;
         ApprovedBy = approvedBy;
         ApprovedAt = DateTime.UtcNow;
@@ -43,10 +45,17 @@ public class LeaveRequest
 
     public void Reject(string reason)
     {
+        if (Status != LeaveRequestStatus.Pending)
+            throw new InvalidOperationException("Only pending requests can be rejected.");
         Status          = LeaveRequestStatus.Rejected;
         RejectionReason = reason;
     }
 
-    public void Cancel() => Status = LeaveRequestStatus.Cancelled;
+    public void Cancel()
+    {
+        if (Status is LeaveRequestStatus.Approved or LeaveRequestStatus.Rejected)
+            throw new InvalidOperationException("Cannot cancel an already decided request.");
+        Status = LeaveRequestStatus.Cancelled;
+    }
 }
 

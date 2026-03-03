@@ -48,15 +48,24 @@ public class TravelExpenseReport
 
     public void Approve(Guid approvedBy)
     {
+        if (Status != TravelExpenseStatus.Submitted)
+            throw new InvalidOperationException("Only submitted reports can be approved.");
         Status     = TravelExpenseStatus.Approved;
         ApprovedBy = approvedBy;
         ApprovedAt = DateTime.UtcNow;
     }
 
-    public void Reject() => Status = TravelExpenseStatus.Rejected;
+    public void Reject()
+    {
+        if (Status != TravelExpenseStatus.Submitted)
+            throw new InvalidOperationException("Only submitted reports can be rejected.");
+        Status = TravelExpenseStatus.Rejected;
+    }
 
     public void MarkReimbursed()
     {
+        if (Status != TravelExpenseStatus.Approved)
+            throw new InvalidOperationException("Only approved reports can be reimbursed.");
         Status        = TravelExpenseStatus.Reimbursed;
         ReimbursedAt  = DateTime.UtcNow;
     }

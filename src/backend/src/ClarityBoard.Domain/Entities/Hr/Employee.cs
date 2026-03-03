@@ -31,6 +31,10 @@ public class Employee
         string firstName, string lastName, DateOnly dateOfBirth, string taxId, DateOnly hireDate,
         Guid? managerId = null, Guid? departmentId = null)
     {
+        if (string.IsNullOrWhiteSpace(firstName)) throw new ArgumentException("First name is required.", nameof(firstName));
+        if (string.IsNullOrWhiteSpace(lastName)) throw new ArgumentException("Last name is required.", nameof(lastName));
+        if (string.IsNullOrWhiteSpace(employeeNumber)) throw new ArgumentException("Employee number is required.", nameof(employeeNumber));
+        if (string.IsNullOrWhiteSpace(taxId)) throw new ArgumentException("Tax ID is required.", nameof(taxId));
         return new Employee
         {
             Id             = Guid.NewGuid(),

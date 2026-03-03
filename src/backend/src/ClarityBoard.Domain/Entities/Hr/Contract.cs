@@ -37,5 +37,10 @@ public class Contract
         ChangeReason     = changeReason,
     };
 
-    public void Close(DateTime validTo) => ValidTo = validTo;
+    public void Close(DateTime validTo)
+    {
+        if (validTo <= ValidFrom)
+            throw new ArgumentException("ValidTo must be after ValidFrom.", nameof(validTo));
+        ValidTo = validTo;
+    }
 }

@@ -29,7 +29,13 @@ public class LeaveBalance
 
     public decimal RemainingDays => EntitlementDays + CarryOverDays - UsedDays - PendingDays;
 
-    public void AddPending(decimal days)    { PendingDays += days; UpdatedAt = DateTime.UtcNow; }
+    public void AddPending(decimal days)
+    {
+        if (days > RemainingDays)
+            throw new InvalidOperationException("Insufficient leave balance.");
+        PendingDays += days;
+        UpdatedAt = DateTime.UtcNow;
+    }
     public void ApprovePending(decimal days) { PendingDays -= days; UsedDays += days; UpdatedAt = DateTime.UtcNow; }
     public void RejectPending(decimal days)  { PendingDays -= days; UpdatedAt = DateTime.UtcNow; }
 }
