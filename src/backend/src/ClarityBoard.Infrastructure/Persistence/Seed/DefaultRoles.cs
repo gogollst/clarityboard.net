@@ -78,6 +78,7 @@ public static class DefaultRoles
         new("admin.roles.manage", "admin", "roles_manage"),
         new("admin.audit.view", "admin", "audit_view"),
         new("admin.settings.manage", "admin", "settings_manage"),
+        new("admin.mail.manage", "admin", "mail_manage"),
     ];
 
     public static readonly RoleSeed[] AllRoles = [

@@ -137,39 +137,49 @@ public static class SeedData
 
     private static async Task SeedPermissionsAsync(ClarityBoardContext context, ILogger logger)
     {
-        if (await context.Permissions.AnyAsync())
-            return;
+        var existing = (await context.Permissions.Select(p => p.Name).ToListAsync()).ToHashSet();
+        var toAdd = DefaultRoles.AllPermissions
+            .Where(p => !existing.Contains(p.Name))
+            .Select(p => Permission.Create(p.Name, p.Module, p.Action))
+            .ToList();
 
-        var permissions = DefaultRoles.AllPermissions.Select(p =>
-            Permission.Create(p.Name, p.Module, p.Action)).ToList();
+        if (toAdd.Count == 0) return;
 
-        context.Permissions.AddRange(permissions);
+        context.Permissions.AddRange(toAdd);
         await context.SaveChangesAsync();
-        logger.LogInformation("Seeded {Count} permissions", permissions.Count);
+        logger.LogInformation("Seeded {Count} new permissions", toAdd.Count);
     }
 
     private static async Task SeedRolesAsync(ClarityBoardContext context, ILogger logger)
     {
-        if (await context.Roles.AnyAsync())
-            return;
-
         var allPermissions = await context.Permissions.ToListAsync();
+        var permsByName = allPermissions.ToDictionary(p => p.Name);
 
         foreach (var roleSeed in DefaultRoles.AllRoles)
         {
-            var role = Role.Create(roleSeed.Name, roleSeed.Description, isSystem: true);
-            var rolePermissions = allPermissions
-                .Where(p => roleSeed.Permissions.Contains(p.Name))
-                .ToList();
+            var role = await context.Roles
+                .Include(r => r.Permissions)
+                .FirstOrDefaultAsync(r => r.Name == roleSeed.Name);
 
-            foreach (var perm in rolePermissions)
-                role.AddPermission(perm);
-
-            context.Roles.Add(role);
+            if (role is null)
+            {
+                role = Role.Create(roleSeed.Name, roleSeed.Description, isSystem: true);
+                foreach (var permName in roleSeed.Permissions)
+                    if (permsByName.TryGetValue(permName, out var perm))
+                        role.AddPermission(perm);
+                context.Roles.Add(role);
+            }
+            else
+            {
+                var existingPerms = role.Permissions.Select(p => p.Name).ToHashSet();
+                foreach (var permName in roleSeed.Permissions)
+                    if (!existingPerms.Contains(permName) && permsByName.TryGetValue(permName, out var perm))
+                        role.AddPermission(perm);
+            }
         }
 
         await context.SaveChangesAsync();
-        logger.LogInformation("Seeded {Count} roles", DefaultRoles.AllRoles.Length);
+        logger.LogInformation("Roles seeded/updated");
     }
 
     private static async Task SeedKpiDefinitionsAsync(ClarityBoardContext context, ILogger logger)
