@@ -100,3 +100,19 @@ export interface UpsertMailConfigRequest {
   fromName: string;
   enableSsl: boolean;
 }
+
+export interface SendTestEmailRequest {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  fromEmail: string;
+  fromName: string;
+  enableSsl: boolean;
+  recipientEmail: string;
+}
+
+export interface SendTestEmailResult {
+  success: boolean;
+  errorMessage: string | null;
+}

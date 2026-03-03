@@ -12,6 +12,8 @@ import type {
   AuditLogParams,
   MailConfig,
   UpsertMailConfigRequest,
+  SendTestEmailRequest,
+  SendTestEmailResult,
 } from '@/types/admin';
 
 // ---------------------------------------------------------------------------
@@ -274,6 +276,22 @@ export function useUpsertMailConfig() {
     },
     onError: () => {
       toast.error('Failed to save mail configuration');
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Mail Test
+// ---------------------------------------------------------------------------
+
+export function useSendTestEmail() {
+  return useMutation({
+    mutationFn: async (request: SendTestEmailRequest) => {
+      const { data } = await api.post<SendTestEmailResult>(
+        '/admin/mail/test',
+        request,
+      );
+      return data;
     },
   });
 }
