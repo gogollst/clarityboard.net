@@ -100,7 +100,12 @@
     "dismiss": "Schließen",
     "showLess": "Weniger anzeigen",
     "showMore_one": "{{count}} weiteren Alert anzeigen",
-    "showMore_other": "{{count}} weitere Alerts anzeigen"
+    "showMore_other": "{{count}} weitere Alerts anzeigen",
+    "severity": {
+      "critical": "Kritisch",
+      "warning": "Warnung",
+      "info": "Info"
+    }
   },
   "kpi": {
     "target": "Ziel: {{value}}"

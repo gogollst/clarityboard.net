@@ -90,7 +90,7 @@ export default function AlertBanner({
                     config.badge
                   )}
                 >
-                  {alert.severity}
+                  {t(`alerts.severity.${alert.severity}`, { defaultValue: alert.severity })}
                 </span>
               </div>
               <p className={cn('mt-0.5 text-sm', config.text)}>

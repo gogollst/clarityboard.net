@@ -102,7 +102,12 @@
     "showMore_one": "Показать ещё {{count}} уведомление",
     "showMore_few": "Показать ещё {{count}} уведомления",
     "showMore_many": "Показать ещё {{count}} уведомлений",
-    "showMore_other": "Показать ещё {{count}} уведомлений"
+    "showMore_other": "Показать ещё {{count}} уведомлений",
+    "severity": {
+      "critical": "Критический",
+      "warning": "Предупреждение",
+      "info": "Информация"
+    }
   },
   "kpi": {
     "target": "Цель: {{value}}"
