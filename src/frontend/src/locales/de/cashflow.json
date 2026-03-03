@@ -79,6 +79,14 @@
       "totalLiabilities": "Gesamtverbindlichkeiten",
       "equity": "Eigenkapital"
     },
+    "chart": {
+      "grossMargin": "Bruttomargen",
+      "ebitdaMargin": "EBITDA-Marge",
+      "netMargin": "Nettomarge",
+      "revenue": "Erlöse",
+      "cogs": "Wareneinsatz",
+      "operatingExpenses": "Betriebskosten"
+    },
     "marginTrendsCard": "Margenentwicklung",
     "noMarginData": "Keine historischen Margendaten verfügbar.",
     "revenueVsCostsCard": "Umsatz vs. Kosten",

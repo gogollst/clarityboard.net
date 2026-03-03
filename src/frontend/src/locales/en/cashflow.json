@@ -79,6 +79,14 @@
       "totalLiabilities": "Total Liabilities",
       "equity": "Equity"
     },
+    "chart": {
+      "grossMargin": "Gross Margin",
+      "ebitdaMargin": "EBITDA Margin",
+      "netMargin": "Net Margin",
+      "revenue": "Revenue",
+      "cogs": "COGS",
+      "operatingExpenses": "Operating Expenses"
+    },
     "marginTrendsCard": "Margin Trends",
     "noMarginData": "No historical margin data available.",
     "revenueVsCostsCard": "Revenue vs Costs",

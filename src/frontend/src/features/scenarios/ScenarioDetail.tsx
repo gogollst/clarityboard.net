@@ -120,8 +120,10 @@ export function Component() {
                     <TableCell className="font-medium">
                       {kpiNameMap.get(param.kpiId)?.name ?? param.kpiId}
                     </TableCell>
-                    <TableCell className="capitalize">
-                      {param.adjustmentType}
+                    <TableCell>
+                      {param.adjustmentType === 'percentage'
+                        ? t('create.adjustmentPercentage')
+                        : t('create.adjustmentAbsolute')}
                     </TableCell>
                     <TableCell className="text-right">
                       {param.adjustmentType === 'percentage'

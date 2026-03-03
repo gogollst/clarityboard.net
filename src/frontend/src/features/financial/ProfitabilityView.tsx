@@ -96,48 +96,56 @@ export function Component() {
   }, [definitions, dashboard]);
 
   // -----------------------------------------------------------------------
+  // Translated chart category labels
+  // -----------------------------------------------------------------------
+
+  const gmLabel = t('financial.chart.grossMargin');
+  const ebitdaLabel = t('financial.chart.ebitdaMargin');
+  const nmLabel = t('financial.chart.netMargin');
+  const revLabel = t('financial.chart.revenue');
+  const cogsLabel = t('financial.chart.cogs');
+  const opexLabel = t('financial.chart.operatingExpenses');
+
+  // -----------------------------------------------------------------------
   // Margin trend data (for line chart)
   // -----------------------------------------------------------------------
 
   const marginTrendData = useMemo(() => {
     if (!grossMarginHistory) return [];
 
-    const dateMap = new Map<
-      string,
-      { month: string; 'Gross Margin': number; 'EBITDA Margin': number; 'Net Margin': number }
-    >();
+    const dateMap = new Map<string, Record<string, number | string>>();
 
     for (const snap of grossMarginHistory) {
       const month = snap.snapshotDate.slice(0, 7);
       if (!dateMap.has(month)) {
         dateMap.set(month, {
           month,
-          'Gross Margin': 0,
-          'EBITDA Margin': 0,
-          'Net Margin': 0,
+          [gmLabel]: 0,
+          [ebitdaLabel]: 0,
+          [nmLabel]: 0,
         });
       }
-      dateMap.get(month)!['Gross Margin'] = snap.value;
+      dateMap.get(month)![gmLabel] = snap.value;
     }
 
     for (const snap of ebitdaMarginHistory ?? []) {
       const month = snap.snapshotDate.slice(0, 7);
       if (dateMap.has(month)) {
-        dateMap.get(month)!['EBITDA Margin'] = snap.value;
+        dateMap.get(month)![ebitdaLabel] = snap.value;
       }
     }
 
     for (const snap of netMarginHistory ?? []) {
       const month = snap.snapshotDate.slice(0, 7);
       if (dateMap.has(month)) {
-        dateMap.get(month)!['Net Margin'] = snap.value;
+        dateMap.get(month)![nmLabel] = snap.value;
       }
     }
 
     return Array.from(dateMap.values()).sort((a, b) =>
-      a.month.localeCompare(b.month),
+      (a.month as string).localeCompare(b.month as string),
     );
-  }, [grossMarginHistory, ebitdaMarginHistory, netMarginHistory]);
+  }, [grossMarginHistory, ebitdaMarginHistory, netMarginHistory, gmLabel, ebitdaLabel, nmLabel]);
 
   // -----------------------------------------------------------------------
   // Revenue vs Costs bar chart data
@@ -149,15 +157,15 @@ export function Component() {
     return [
       {
         period: `${startDate.slice(0, 7)} - ${endDate.slice(0, 7)}`,
-        Revenue: pnl.revenue,
-        COGS: pnl.cogs,
-        'Operating Expenses': pnl.operatingExpenses.reduce(
+        [revLabel]: pnl.revenue,
+        [cogsLabel]: pnl.cogs,
+        [opexLabel]: pnl.operatingExpenses.reduce(
           (sum, c) => sum + c.amount,
           0,
         ),
       },
     ];
-  }, [pnl, startDate, endDate]);
+  }, [pnl, startDate, endDate, revLabel, cogsLabel, opexLabel]);
 
   // -----------------------------------------------------------------------
   // Loading state
@@ -343,7 +351,7 @@ export function Component() {
             {marginTrendData.length > 0 ? (
               <LineChart
                 data={marginTrendData}
-                categories={['Gross Margin', 'EBITDA Margin', 'Net Margin']}
+                categories={[gmLabel, ebitdaLabel, nmLabel]}
                 index="month"
                 valueFormatter={(v) => formatPercent(v)}
                 colors={['#3b82f6', '#f59e0b', '#10b981']}
@@ -365,7 +373,7 @@ export function Component() {
             {revenueVsCostsData.length > 0 ? (
               <BarChart
                 data={revenueVsCostsData}
-                categories={['Revenue', 'COGS', 'Operating Expenses']}
+                categories={[revLabel, cogsLabel, opexLabel]}
                 index="period"
                 valueFormatter={(v) => formatCurrency(v)}
                 colors={['#10b981', '#ef4444', '#f59e0b']}

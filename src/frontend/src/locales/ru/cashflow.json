@@ -79,6 +79,14 @@
       "totalLiabilities": "Итого обязательства",
       "equity": "Собственный капитал"
     },
+    "chart": {
+      "grossMargin": "Валовая маржа",
+      "ebitdaMargin": "Маржа EBITDA",
+      "netMargin": "Чистая маржа",
+      "revenue": "Выручка",
+      "cogs": "Себестоимость",
+      "operatingExpenses": "Операционные расходы"
+    },
     "marginTrendsCard": "Динамика маржи",
     "noMarginData": "Исторические данные по марже недоступны.",
     "revenueVsCostsCard": "Выручка и затраты",
