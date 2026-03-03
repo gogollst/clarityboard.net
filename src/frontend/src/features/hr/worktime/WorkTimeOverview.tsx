@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useWorkTime } from '@/hooks/useHr';
 import type { WorkTimeEntry } from '@/types/hr';
+import { formatDate } from '../utils';
 import PageHeader from '@/components/shared/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -19,10 +20,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('de-DE');
-}
 
 function formatMinutes(totalMinutes: number): string {
   const h = Math.floor(totalMinutes / 60);
@@ -43,7 +40,7 @@ function getEntryTypeLabel(entryType: string): string {
   }
 }
 
-function getStatusBadge(status: string) {
+function getWorkTimeStatusBadge(status: string) {
   switch (status) {
     case 'Open':
       return (
@@ -71,24 +68,18 @@ export function Component() {
   const [month, setMonth] = useState(() => new Date().toISOString().substring(0, 7));
 
   const { data, isLoading } = useWorkTime(employeeId ?? '', month);
-  const entries: WorkTimeEntry[] = data?.items ?? [];
 
-  const totalMonthMinutes = entries.reduce((sum, e) => sum + (e.totalMinutes ?? 0), 0);
-
+  // Guard MUST come after all hooks but before derived state
   if (!employeeId) {
     return (
-      <div>
-        <PageHeader title="Arbeitszeitübersicht" />
-        <p className="mt-8 text-center text-sm text-muted-foreground">
-          Kein Mitarbeiter ausgewählt. Bitte rufen Sie diese Seite über
-          <code className="mx-1 rounded bg-muted px-1 py-0.5 font-mono text-xs">
-            /hr/worktime/:employeeId
-          </code>
-          auf.
-        </p>
+      <div className="py-12 text-center text-muted-foreground">
+        Kein Mitarbeiter ausgewählt. Navigiere über die Mitarbeiter-Seite zur Arbeitszeitansicht.
       </div>
     );
   }
+
+  const entries: WorkTimeEntry[] = data?.items ?? [];
+  const totalMonthMinutes = entries.reduce((sum, e) => sum + (e.totalMinutes ?? 0), 0);
 
   return (
     <div>
@@ -157,7 +148,7 @@ export function Component() {
                   {entry.projectCode ?? '—'}
                 </TableCell>
                 <TableCell>
-                  {getStatusBadge(entry.status)}
+                  {getWorkTimeStatusBadge(entry.status)}
                 </TableCell>
               </TableRow>
             ))}

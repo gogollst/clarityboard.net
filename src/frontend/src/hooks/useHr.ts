@@ -16,6 +16,7 @@ import type {
   CreateContractRequest,
   CreateDepartmentRequest,
   EmployeeListParams,
+  LeaveRequestParams,
   LeaveType,
   LeaveRequest,
   LeaveBalance,
@@ -250,7 +251,7 @@ export function useCreateLeaveType() {
     },
     onSuccess: () => {
       toast.success('Urlaubstyp erstellt');
-      queryClient.invalidateQueries({ queryKey: ['hr', 'leave-types'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.leaveTypes() });
     },
     onError: () => toast.error('Fehler beim Erstellen des Urlaubstyps'),
   });
@@ -260,7 +261,7 @@ export function useCreateLeaveType() {
 // Leave Requests
 // ---------------------------------------------------------------------------
 
-export function useLeaveRequests(params?: Record<string, unknown>) {
+export function useLeaveRequests(params?: LeaveRequestParams) {
   return useQuery({
     queryKey: [...queryKeys.hr.leaveRequests(), params ?? {}],
     queryFn: async () => {
@@ -342,7 +343,7 @@ export function useWorkTime(employeeId: string, month?: string) {
     queryKey: queryKeys.hr.workTime(employeeId, month),
     queryFn: async () => {
       const { data } = await api.get<PaginatedResponse<WorkTimeEntry>>(`/hr/work-time/${employeeId}`, {
-        params: { month, page: 1, pageSize: 100 },
+        params: { month, page: 1, pageSize: 500 }, // a full month should not exceed this; all entries needed for accurate summary
       });
       return data;
     },
@@ -360,7 +361,7 @@ export function useLogWorkTime() {
     onSuccess: (_, variables) => {
       toast.success('Arbeitszeit eingetragen');
       const month = variables.date.substring(0, 7);
-      queryClient.invalidateQueries({ queryKey: ['hr', 'work-time', variables.employeeId, month] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.workTime(variables.employeeId, month) });
     },
     onError: () => toast.error('Fehler beim Eintragen der Arbeitszeit'),
   });

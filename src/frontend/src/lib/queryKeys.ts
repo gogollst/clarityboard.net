@@ -130,7 +130,7 @@ export const queryKeys = {
     contracts: (employeeId: string) => ['hr', 'contracts', employeeId] as const,
     departments: (entityId?: string) => ['hr', 'departments', entityId ?? ''] as const,
     leaveTypes: (entityId?: string) => ['hr', 'leave-types', entityId ?? ''] as const,
-    leaveRequests: (params?: unknown) => ['hr', 'leave-requests', params ?? {}] as const,
+    leaveRequests: () => ['hr', 'leave-requests'] as const,
     leaveBalance: (employeeId: string, year?: number) => ['hr', 'leave-balance', employeeId, year ?? 'current'] as const,
     workTime: (employeeId: string, month?: string) => ['hr', 'work-time', employeeId, month ?? ''] as const,
   },

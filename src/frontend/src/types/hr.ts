@@ -133,6 +133,15 @@ export interface CreateDepartmentRequest {
   managerId?: string;
 }
 
+// Leave request query params
+export interface LeaveRequestParams {
+  status?: string;
+  year?: number;
+  page?: number;
+  pageSize?: number;
+  employeeId?: string;
+}
+
 // List query params
 export interface EmployeeListParams {
   page?: number;

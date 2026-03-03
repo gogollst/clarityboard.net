@@ -5,6 +5,7 @@ import {
   useRejectLeaveRequest,
 } from '@/hooks/useHr';
 import type { LeaveRequest } from '@/types/hr';
+import { formatDate } from '../utils';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
 import { Badge } from '@/components/ui/badge';
@@ -31,11 +32,7 @@ import { Check, X } from 'lucide-react';
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('de-DE');
-}
-
-function getStatusBadge(status: string) {
+function getLeaveStatusBadge(status: string) {
   switch (status) {
     case 'Pending':
       return (
@@ -79,6 +76,10 @@ interface RejectDialogProps {
 
 function RejectDialog({ open, onClose, onConfirm, isPending }: RejectDialogProps) {
   const [reason, setReason] = useState('');
+
+  useEffect(() => {
+    if (!open) setReason('');
+  }, [open]);
 
   const handleClose = () => {
     setReason('');
@@ -224,7 +225,7 @@ export function Component() {
       key: 'status',
       header: 'Status',
       render: (item: Record<string, unknown>) =>
-        getStatusBadge(String(item.status ?? '')),
+        getLeaveStatusBadge(String(item.status ?? '')),
     },
     {
       key: 'requestedAt',
