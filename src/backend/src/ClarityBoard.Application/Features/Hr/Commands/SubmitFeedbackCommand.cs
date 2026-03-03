@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ClarityBoard.Application.Common.Attributes;
+using ClarityBoard.Application.Common.Exceptions;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Domain.Entities.Hr;
 using FluentValidation;
@@ -49,6 +50,12 @@ public class SubmitFeedbackCommandHandler : IRequestHandler<SubmitFeedbackComman
         var review = await _db.PerformanceReviews
             .FirstOrDefaultAsync(r => r.Id == request.ReviewId, cancellationToken)
             ?? throw new InvalidOperationException($"Performance review '{request.ReviewId}' not found.");
+
+        var employee = await _db.Employees.FindAsync([review.EmployeeId], cancellationToken)
+            ?? throw new NotFoundException("Employee", review.EmployeeId);
+
+        if (employee.EntityId != _currentUser.EntityId)
+            throw new InvalidOperationException("Access denied to this review.");
 
         if (review.Status == ReviewStatus.Completed)
             throw new InvalidOperationException("Cannot submit feedback on a completed review.");

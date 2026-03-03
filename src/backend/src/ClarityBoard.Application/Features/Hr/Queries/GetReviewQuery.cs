@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ClarityBoard.Application.Common.Attributes;
+using ClarityBoard.Application.Common.Exceptions;
 using ClarityBoard.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -33,10 +34,12 @@ public record FeedbackEntryDto
 public class GetReviewQueryHandler : IRequestHandler<GetReviewQuery, PerformanceReviewDetailDto>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
-    public GetReviewQueryHandler(IAppDbContext db)
+    public GetReviewQueryHandler(IAppDbContext db, ICurrentUser currentUser)
     {
-        _db = db;
+        _db          = db;
+        _currentUser = currentUser;
     }
 
     public async Task<PerformanceReviewDetailDto> Handle(
@@ -45,13 +48,15 @@ public class GetReviewQueryHandler : IRequestHandler<GetReviewQuery, Performance
         var review = await _db.PerformanceReviews
             .Include(r => r.FeedbackEntries)
             .FirstOrDefaultAsync(r => r.Id == request.ReviewId, cancellationToken)
-            ?? throw new InvalidOperationException($"Performance review '{request.ReviewId}' not found.");
+            ?? throw new NotFoundException("PerformanceReview", request.ReviewId);
 
-        // Resolve employee name
+        // Resolve employee and verify tenant ownership
         var employee = await _db.Employees
             .Where(e => e.Id == review.EmployeeId)
-            .Select(e => new { e.FirstName, e.LastName })
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (employee is null || employee.EntityId != _currentUser.EntityId)
+            throw new NotFoundException("PerformanceReview", request.ReviewId);
 
         // Resolve reviewer name
         var reviewer = await _db.Users

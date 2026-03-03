@@ -100,14 +100,12 @@ public class ListReviewsQueryHandler : IRequestHandler<ListReviewsQuery, PagedRe
             })
             .ToListAsync(cancellationToken);
 
-        // Batch-load user names
-        var allUserIds = rawItems.SelectMany(r => new[] { r.EmployeeId, r.ReviewerId }).Distinct().ToList();
-
-        // Employee full names (via Employee entity)
+        // Batch-load employee names (EmployeeId values only — ReviewerId is a UserId, not an EmployeeId)
+        var employeeIds = rawItems.Select(r => r.EmployeeId).Distinct().ToList();
         var employeeNames = await _db.Employees
-            .Where(e => allUserIds.Contains(e.Id))
-            .Select(e => new { e.Id, e.FirstName, e.LastName })
-            .ToDictionaryAsync(e => e.Id, e => $"{e.FirstName} {e.LastName}", cancellationToken);
+            .Where(e => employeeIds.Contains(e.Id))
+            .Select(e => new { e.Id, Name = e.FirstName + " " + e.LastName })
+            .ToDictionaryAsync(e => e.Id, e => e.Name, cancellationToken);
 
         // Reviewer names (via Users, because ReviewerId is a UserId)
         var reviewerUserIds = rawItems.Select(r => r.ReviewerId).Distinct().ToList();

@@ -1,4 +1,5 @@
 using ClarityBoard.Application.Common.Attributes;
+using ClarityBoard.Application.Common.Exceptions;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Domain.Entities.Hr;
 using FluentValidation;
@@ -34,14 +35,22 @@ public class CreatePerformanceReviewCommandValidator : AbstractValidator<CreateP
 public class CreatePerformanceReviewCommandHandler : IRequestHandler<CreatePerformanceReviewCommand, Guid>
 {
     private readonly IAppDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
-    public CreatePerformanceReviewCommandHandler(IAppDbContext db)
+    public CreatePerformanceReviewCommandHandler(IAppDbContext db, ICurrentUser currentUser)
     {
-        _db = db;
+        _db          = db;
+        _currentUser = currentUser;
     }
 
     public async Task<Guid> Handle(CreatePerformanceReviewCommand request, CancellationToken cancellationToken)
     {
+        var employee = await _db.Employees.FindAsync([request.EmployeeId], cancellationToken)
+            ?? throw new NotFoundException("Employee", request.EmployeeId);
+
+        if (employee.EntityId != _currentUser.EntityId)
+            throw new InvalidOperationException("Access denied to this employee.");
+
         var reviewType = Enum.Parse<ReviewType>(request.ReviewType, ignoreCase: true);
 
         var review = PerformanceReview.Create(
