@@ -188,6 +188,130 @@ public class HrController : ControllerBase
         var id = await _mediator.Send(command, ct);
         return Created(string.Empty, new { id });
     }
+
+    // ── Leave Types ──
+
+    [HttpGet("leave-types")]
+    [ProducesResponseType(typeof(List<LeaveTypeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<List<LeaveTypeDto>>> ListLeaveTypes(
+        [FromQuery] Guid? entityId, CancellationToken ct)
+    {
+        if (entityId is null || entityId == Guid.Empty)
+            return BadRequest("entityId is required.");
+        var result = await _mediator.Send(new ListLeaveTypesQuery(entityId.Value), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("leave-types")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> CreateLeaveType(
+        [FromBody] CreateLeaveTypeCommand command, CancellationToken ct)
+    {
+        var id = await _mediator.Send(command, ct);
+        return Created(string.Empty, new { id });
+    }
+
+    // ── Leave Requests ──
+
+    [HttpGet("leave-requests")]
+    [ProducesResponseType(typeof(PagedResult<LeaveRequestDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<LeaveRequestDto>>> ListLeaveRequests(
+        [FromQuery] Guid? employeeId,
+        [FromQuery] string? status,
+        [FromQuery] int? year,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new ListLeaveRequestsQuery
+        {
+            EmployeeId = employeeId,
+            Status     = status,
+            Year       = year,
+            Page       = page,
+            PageSize   = pageSize,
+        }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("leave-requests")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> SubmitLeaveRequest(
+        [FromBody] SubmitLeaveRequestCommand command, CancellationToken ct)
+    {
+        var id = await _mediator.Send(command, ct);
+        return Created(string.Empty, new { id });
+    }
+
+    [HttpPut("leave-requests/{id:guid}/approve")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ApproveLeaveRequest(Guid id, CancellationToken ct)
+    {
+        await _mediator.Send(new ApproveLeaveRequestCommand { LeaveRequestId = id }, ct);
+        return NoContent();
+    }
+
+    [HttpPut("leave-requests/{id:guid}/reject")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RejectLeaveRequest(
+        Guid id, [FromBody] RejectLeaveRequestRequest body, CancellationToken ct)
+    {
+        await _mediator.Send(new RejectLeaveRequestCommand
+        {
+            LeaveRequestId = id,
+            Reason         = body.Reason,
+        }, ct);
+        return NoContent();
+    }
+
+    // ── Leave Balances ──
+
+    [HttpGet("leave-balances/{employeeId:guid}")]
+    [ProducesResponseType(typeof(List<LeaveBalanceDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<LeaveBalanceDto>>> GetLeaveBalance(
+        Guid employeeId, [FromQuery] int? year, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetLeaveBalanceQuery(employeeId, year), ct);
+        return Ok(result);
+    }
+
+    // ── Work Time ──
+
+    [HttpGet("work-time/{employeeId:guid}")]
+    [ProducesResponseType(typeof(PagedResult<WorkTimeEntryDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<WorkTimeEntryDto>>> GetWorkTime(
+        Guid employeeId,
+        [FromQuery] string? month,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetWorkTimeQuery
+        {
+            EmployeeId = employeeId,
+            Month      = month,
+            Page       = page,
+            PageSize   = pageSize,
+        }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("work-time")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> LogWorkTime(
+        [FromBody] LogWorkTimeCommand command, CancellationToken ct)
+    {
+        var id = await _mediator.Send(command, ct);
+        return Created(string.Empty, new { id });
+    }
 }
 
 // ── Request DTOs ──
@@ -224,3 +348,5 @@ public record CreateContractRequest(
     int NoticeWeeks,
     DateTime ValidFrom,
     string ChangeReason);
+
+public record RejectLeaveRequestRequest(string Reason);
