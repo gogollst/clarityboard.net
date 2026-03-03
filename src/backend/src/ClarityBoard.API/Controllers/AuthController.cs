@@ -45,6 +45,15 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize]
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Logout(CancellationToken ct)
+    {
+        await _mediator.Send(new LogoutCommand(), ct);
+        return NoContent();
+    }
+
     // ── Password Reset ────────────────────────────────────────────────
 
     [AllowAnonymous]
