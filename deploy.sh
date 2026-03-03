@@ -78,12 +78,10 @@ else
     echo "      API health check: FAILED - check logs with: docker compose -f docker-compose.prod.yml logs api"
 fi
 
-# ── 7. Tag release ───────────────────────────────────────────────────────────
-echo "[7/7] Tagging release..."
+# ── 7. Tag release (local only) ──────────────────────────────────────────────
+echo "[7/7] Tagging release (local)..."
 git -C "$PROJECT_DIR" tag "v$NEW_VERSION"
-git -C "$PROJECT_DIR" push origin main
-git -C "$PROJECT_DIR" push origin "v$NEW_VERSION"
-echo "      Tagged: v$NEW_VERSION pushed to origin"
+echo "      Tagged: v$NEW_VERSION (push handled separately)"
 
 echo ""
 echo "=== Deploy complete ==="
