@@ -159,6 +159,15 @@ builder.Services.AddResponseCompression(options =>
 var app = builder.Build();
 
 // ============================
+// Database Migration
+// ============================
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ClarityBoard.Infrastructure.Persistence.ClarityBoardContext>();
+    await db.Database.MigrateAsync();
+}
+
+// ============================
 // Seed Data
 // ============================
 using (var scope = app.Services.CreateScope())
