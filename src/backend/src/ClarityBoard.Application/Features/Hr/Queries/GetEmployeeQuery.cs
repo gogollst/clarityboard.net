@@ -34,58 +34,41 @@ public class GetEmployeeQueryHandler : IRequestHandler<GetEmployeeQuery, Employe
 {
     private readonly IAppDbContext _db;
 
-    public GetEmployeeQueryHandler(IAppDbContext db)
-    {
-        _db = db;
-    }
+    public GetEmployeeQueryHandler(IAppDbContext db) => _db = db;
 
     public async Task<EmployeeDetailDto> Handle(GetEmployeeQuery request, CancellationToken cancellationToken)
     {
-        var employee = await _db.Employees
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken)
+        var dto = await _db.Employees
+            .Where(e => e.Id == request.EmployeeId)
+            .Select(e => new EmployeeDetailDto
+            {
+                Id                = e.Id,
+                EmployeeNumber    = e.EmployeeNumber,
+                FirstName         = e.FirstName,
+                LastName          = e.LastName,
+                EmployeeType      = e.EmployeeType.ToString(),
+                Status            = e.Status.ToString(),
+                DateOfBirth       = e.DateOfBirth,
+                TaxId             = e.TaxId,
+                HireDate          = e.HireDate,
+                TerminationDate   = e.TerminationDate,
+                TerminationReason = e.TerminationReason,
+                ManagerId         = e.ManagerId,
+                ManagerName       = _db.Employees
+                    .Where(m => m.Id == e.ManagerId)
+                    .Select(m => m.FirstName + " " + m.LastName)
+                    .FirstOrDefault(),
+                DepartmentId      = e.DepartmentId,
+                DepartmentName    = _db.Departments
+                    .Where(d => d.Id == e.DepartmentId)
+                    .Select(d => d.Name)
+                    .FirstOrDefault(),
+                EntityId          = e.EntityId,
+                CreatedAt         = e.CreatedAt,
+            })
+            .FirstOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException("Employee", request.EmployeeId);
 
-        // Resolve manager name
-        string? managerName = null;
-        if (employee.ManagerId.HasValue)
-        {
-            var manager = await _db.Employees
-                .Where(e => e.Id == employee.ManagerId.Value)
-                .Select(e => new { e.FirstName, e.LastName })
-                .FirstOrDefaultAsync(cancellationToken);
-            if (manager is not null)
-                managerName = $"{manager.FirstName} {manager.LastName}";
-        }
-
-        // Resolve department name
-        string? departmentName = null;
-        if (employee.DepartmentId.HasValue)
-        {
-            departmentName = await _db.Departments
-                .Where(d => d.Id == employee.DepartmentId.Value)
-                .Select(d => d.Name)
-                .FirstOrDefaultAsync(cancellationToken);
-        }
-
-        return new EmployeeDetailDto
-        {
-            Id                = employee.Id,
-            EmployeeNumber    = employee.EmployeeNumber,
-            FirstName         = employee.FirstName,
-            LastName          = employee.LastName,
-            EmployeeType      = employee.EmployeeType.ToString(),
-            Status            = employee.Status.ToString(),
-            DateOfBirth       = employee.DateOfBirth,
-            TaxId             = employee.TaxId,
-            HireDate          = employee.HireDate,
-            TerminationDate   = employee.TerminationDate,
-            TerminationReason = employee.TerminationReason,
-            ManagerId         = employee.ManagerId,
-            ManagerName       = managerName,
-            DepartmentId      = employee.DepartmentId,
-            DepartmentName    = departmentName,
-            EntityId          = employee.EntityId,
-            CreatedAt         = employee.CreatedAt,
-        };
+        return dto;
     }
 }

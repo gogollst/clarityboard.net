@@ -56,7 +56,7 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
         if (exists)
             throw new InvalidOperationException($"An employee with number '{request.EmployeeNumber}' already exists in this entity.");
 
-        var employeeType = Enum.Parse<EmployeeType>(request.EmployeeType);
+        var employeeType = Enum.Parse<EmployeeType>(request.EmployeeType, ignoreCase: true);
 
         var employee = Employee.Create(
             entityId: request.EntityId,

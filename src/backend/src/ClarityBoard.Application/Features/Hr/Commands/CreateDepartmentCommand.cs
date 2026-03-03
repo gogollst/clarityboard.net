@@ -3,6 +3,7 @@ using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Domain.Entities.Hr;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.Application.Features.Hr.Commands;
 
@@ -37,6 +38,11 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
 
     public async Task<Guid> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
     {
+        var exists = await _db.Departments
+            .AnyAsync(d => d.EntityId == request.EntityId && d.Code == request.Code, cancellationToken);
+        if (exists)
+            throw new InvalidOperationException($"A department with code '{request.Code}' already exists in this entity.");
+
         var department = Department.Create(
             entityId: request.EntityId,
             name: request.Name,
