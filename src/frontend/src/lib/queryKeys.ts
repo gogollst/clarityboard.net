@@ -124,7 +124,7 @@ export const queryKeys = {
 
   hr: {
     all: ['hr'] as const,
-    employees: (params?: unknown) => ['hr', 'employees', params ?? {}] as const,
+    employees: () => ['hr', 'employees'] as const,
     employee: (id: string) => ['hr', 'employee', id] as const,
     salaryHistory: (employeeId: string) => ['hr', 'salary-history', employeeId] as const,
     contracts: (employeeId: string) => ['hr', 'contracts', employeeId] as const,

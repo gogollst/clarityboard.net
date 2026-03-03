@@ -24,7 +24,7 @@ import type {
 
 export function useEmployees(params?: EmployeeListParams) {
   return useQuery({
-    queryKey: queryKeys.hr.employees(params),
+    queryKey: [...queryKeys.hr.employees(), params],
     queryFn: async () => {
       const { data } = await api.get<PaginatedResponse<EmployeeListItem>>(
         '/hr/employees',
@@ -209,11 +209,9 @@ export function useCreateDepartment() {
       const { data } = await api.post<Department>('/hr/departments', request);
       return data;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       toast.success('Department created');
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.hr.departments(variables.entityId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.departments() });
     },
     onError: () => {
       toast.error('Failed to create department');
