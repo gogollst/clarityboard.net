@@ -92,7 +92,7 @@ internal static class EmailTemplates
             <p>wir haben eine Anfrage erhalten, das Passwort für Ihr Konto zurückzusetzen.</p>
             {Button(resetUrl, "Passwort zurücksetzen")}
             <p style="font-size:13px;color:#64748b;">
-              Dieser Link ist <strong>15 Minuten</strong> gültig. Falls Sie keine
+              Dieser Link ist <strong>1 Stunde</strong> gültig. Falls Sie keine
               Zurücksetzung angefordert haben, können Sie diese E-Mail ignorieren.
             </p>
             """;
