@@ -73,6 +73,13 @@ const mainNavGroups: NavGroup[] = [
   },
 ];
 
+const hrNavGroup: NavGroup = {
+  label: 'HR',
+  items: [
+    { label: 'Mitarbeiter', path: '/hr/employees', icon: Users },
+  ],
+};
+
 const adminNavGroup: NavGroup = {
   label: 'Admin',
   items: [
@@ -105,6 +112,7 @@ export default function Sidebar() {
   };
 
   const showAdmin = hasPermission('admin.*');
+  const showHr = hasPermission('hr.view');
 
   return (
     <aside
@@ -141,6 +149,20 @@ export default function Sidebar() {
             isActive={isActive}
           />
         ))}
+
+        {showHr && (
+          <>
+            <div
+              className="mx-3 my-2 border-t"
+              style={{ borderColor: 'var(--color-sidebar-border)' }}
+            />
+            <NavGroupSection
+              group={hrNavGroup}
+              collapsed={!sidebarOpen}
+              isActive={isActive}
+            />
+          </>
+        )}
 
         {showAdmin && (
           <>
