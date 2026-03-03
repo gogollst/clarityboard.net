@@ -377,3 +377,41 @@ export interface ReviewListParams {
   page?: number;
   pageSize?: number;
 }
+
+// HR Statistics
+
+export interface HeadcountMonthDto {
+  month: string;
+  count: number;
+}
+
+export interface HeadcountStats {
+  totalActive: number;
+  totalContractors: number;
+  totalEmployees: number;
+  monthlyTrend: HeadcountMonthDto[];
+}
+
+export interface TurnoverMonthDto {
+  month: string;
+  terminations: number;
+  newHires: number;
+}
+
+export interface TurnoverStats {
+  monthlyTurnover: TurnoverMonthDto[];
+  averageTurnoverRate: number;
+}
+
+export interface SalaryBandDto {
+  label: string;
+  count: number;
+}
+
+export interface SalaryBands {
+  minSalaryCents: number | null;
+  maxSalaryCents: number | null;
+  avgSalaryCents: number | null;
+  medianSalaryCents: number | null;
+  bands: SalaryBandDto[];
+}

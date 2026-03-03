@@ -645,6 +645,38 @@ public class HrController : ControllerBase
         return NoContent();
     }
 
+    // ── Statistics ──
+
+    [HttpGet("stats/headcount")]
+    [ProducesResponseType(typeof(HeadcountStatsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetHeadcountStats([FromQuery] Guid? entityId, CancellationToken ct)
+    {
+        var effectiveEntityId = entityId ?? _currentUser.EntityId;
+        var result = await _mediator.Send(new GetHeadcountStatsQuery(effectiveEntityId), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("stats/turnover")]
+    [ProducesResponseType(typeof(TurnoverStatsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetTurnoverStats([FromQuery] Guid? entityId, CancellationToken ct)
+    {
+        var effectiveEntityId = entityId ?? _currentUser.EntityId;
+        var result = await _mediator.Send(new GetTurnoverStatsQuery(effectiveEntityId), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("stats/salary-bands")]
+    [ProducesResponseType(typeof(SalaryBandsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetSalaryBands([FromQuery] Guid? entityId, CancellationToken ct)
+    {
+        var effectiveEntityId = entityId ?? _currentUser.EntityId;
+        var result = await _mediator.Send(new GetSalaryBandsQuery(effectiveEntityId), ct);
+        return Ok(result);
+    }
+
     // ── DSGVO / Deletion Requests ──
 
     [HttpGet("deletion-requests")]

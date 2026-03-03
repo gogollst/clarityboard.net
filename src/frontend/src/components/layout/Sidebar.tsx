@@ -6,6 +6,7 @@ import {
   Users,
   Megaphone,
   Activity,
+  BarChart2,
   BarChart3,
   FileText,
   PiggyBank,
@@ -84,6 +85,7 @@ const hrNavGroup: NavGroup = {
     { label: 'Urlaubsanträge', path: '/hr/leave/requests', icon: Calendar },
     { label: 'Reisekosten', path: '/hr/travel', icon: Plane },
     { label: 'Beurteilungen', path: '/hr/reviews', icon: Star },
+    { label: 'Statistiken', path: '/hr/stats', icon: BarChart2 },
   ],
 };
 

@@ -34,6 +34,9 @@ import type {
   ReviewListParams,
   EmployeeDocument,
   DeletionRequest,
+  HeadcountStats,
+  TurnoverStats,
+  SalaryBands,
 } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
@@ -623,5 +626,48 @@ export function useScheduleDeletion() {
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.deletionRequests() });
     },
     onError: () => toast.error('Fehler beim Planen der Löschung'),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// HR Statistics
+// ---------------------------------------------------------------------------
+
+export function useHeadcountStats(entityId: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.headcountStats(entityId),
+    queryFn: async () => {
+      const { data } = await api.get<HeadcountStats>('/hr/stats/headcount', {
+        params: { entityId },
+      });
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function useTurnoverStats(entityId: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.turnoverStats(entityId),
+    queryFn: async () => {
+      const { data } = await api.get<TurnoverStats>('/hr/stats/turnover', {
+        params: { entityId },
+      });
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function useSalaryBands(entityId: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.salaryBands(entityId),
+    queryFn: async () => {
+      const { data } = await api.get<SalaryBands>('/hr/stats/salary-bands', {
+        params: { entityId },
+      });
+      return data;
+    },
+    enabled: !!entityId,
   });
 }
