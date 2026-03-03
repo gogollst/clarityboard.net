@@ -1,1 +1,40 @@
-{}
+{
+  "groups": {
+    "overview": "Обзор",
+    "kpis": "КПИ",
+    "cashFlow": "Денежный поток",
+    "planning": "Планирование",
+    "hr": "Кадры",
+    "hrAdmin": "Кадровый администратор",
+    "admin": "Администрирование",
+    "aiManagement": "Управление ИИ"
+  },
+  "items": {
+    "dashboard": "Панель управления",
+    "financial": "Финансы",
+    "sales": "Продажи",
+    "marketing": "Маркетинг",
+    "hrKpi": "Кадры",
+    "cashflowOverview": "Обзор",
+    "forecast": "Прогноз",
+    "scenarios": "Сценарии",
+    "documents": "Документы",
+    "budget": "Бюджет",
+    "assets": "Основные средства",
+    "datevExport": "Экспорт DATEV",
+    "employees": "Сотрудники",
+    "leaveRequests": "Заявки на отпуск",
+    "travel": "Командировочные расходы",
+    "reviews": "Оценки",
+    "stats": "Статистика",
+    "gdprManagement": "Управление GDPR",
+    "users": "Пользователи",
+    "entities": "Организации",
+    "webhooks": "Вебхуки",
+    "auditLog": "Журнал аудита",
+    "mailConfig": "Конфигурация почты",
+    "providers": "Провайдеры",
+    "prompts": "Промпты",
+    "callLogs": "Журнал запросов"
+  }
+}

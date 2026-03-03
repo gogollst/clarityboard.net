@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -26,6 +27,7 @@ import {
   Star,
   Shield,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useUiStore } from '@/stores/uiStore';
@@ -43,84 +45,85 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const mainNavGroups: NavGroup[] = [
-  {
-    label: 'Overview',
-    items: [
-      { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: 'KPIs',
-    items: [
-      { label: 'Financial', path: '/kpis/financial', icon: DollarSign },
-      { label: 'Sales', path: '/kpis/sales', icon: TrendingUp },
-      { label: 'Marketing', path: '/kpis/marketing', icon: Megaphone },
-      { label: 'HR', path: '/kpis/hr', icon: Users },
-    ],
-  },
-  {
-    label: 'Cash Flow',
-    items: [
-      { label: 'Overview', path: '/cashflow', icon: Activity },
-      { label: 'Forecast', path: '/cashflow/forecast', icon: BarChart3 },
-    ],
-  },
-  {
-    label: 'Planning',
-    items: [
-      { label: 'Scenarios', path: '/scenarios', icon: Landmark },
-      { label: 'Documents', path: '/documents', icon: FileText },
-      { label: 'Budget', path: '/budget', icon: PiggyBank },
-      { label: 'Assets', path: '/assets', icon: Building2 },
-      { label: 'DATEV Export', path: '/datev', icon: FileSpreadsheet },
-    ],
-  },
-];
-
-const hrNavGroup: NavGroup = {
-  label: 'HR',
-  items: [
-    { label: 'Mitarbeiter', path: '/hr/employees', icon: Users },
-    { label: 'Urlaubsanträge', path: '/hr/leave/requests', icon: Calendar },
-    { label: 'Reisekosten', path: '/hr/travel', icon: Plane },
-    { label: 'Beurteilungen', path: '/hr/reviews', icon: Star },
-    { label: 'Statistiken', path: '/hr/stats', icon: BarChart2 },
-  ],
-};
-
-const hrAdminNavGroup: NavGroup = {
-  label: 'HR Admin',
-  items: [
-    { label: 'DSGVO-Verwaltung', path: '/hr/admin/deletions', icon: Shield },
-  ],
-};
-
-const adminNavGroup: NavGroup = {
-  label: 'Admin',
-  items: [
-    { label: 'Users', path: '/admin/users', icon: Users },
-    { label: 'Entities', path: '/admin/entities', icon: Building2 },
-    { label: 'Webhooks', path: '/admin/webhooks', icon: Webhook },
-    { label: 'Audit Log', path: '/admin/audit', icon: ClipboardList },
-    { label: 'Mail Config', path: '/admin/mail', icon: Mail },
-  ],
-};
-
-const aiAdminNavGroup: NavGroup = {
-  label: 'AI Management',
-  items: [
-    { label: 'Providers', path: '/admin/ai/providers', icon: KeyRound },
-    { label: 'Prompts', path: '/admin/ai/prompts', icon: MessageSquareCode },
-    { label: 'Call Logs', path: '/admin/ai/logs', icon: ScrollText },
-  ],
-};
-
 export default function Sidebar() {
   const location = useLocation();
   const { hasPermission } = useAuth();
   const { sidebarOpen, toggleSidebar } = useUiStore();
   const { data: versionInfo } = useVersion();
+  const { t } = useTranslation(['navigation', 'common']);
+
+  const mainNavGroups = useMemo<NavGroup[]>(() => [
+    {
+      label: t('navigation:groups.overview'),
+      items: [
+        { label: t('navigation:items.dashboard'), path: '/', icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: t('navigation:groups.kpis'),
+      items: [
+        { label: t('navigation:items.financial'), path: '/kpis/financial', icon: DollarSign },
+        { label: t('navigation:items.sales'), path: '/kpis/sales', icon: TrendingUp },
+        { label: t('navigation:items.marketing'), path: '/kpis/marketing', icon: Megaphone },
+        { label: t('navigation:items.hrKpi'), path: '/kpis/hr', icon: Users },
+      ],
+    },
+    {
+      label: t('navigation:groups.cashFlow'),
+      items: [
+        { label: t('navigation:items.cashflowOverview'), path: '/cashflow', icon: Activity },
+        { label: t('navigation:items.forecast'), path: '/cashflow/forecast', icon: BarChart3 },
+      ],
+    },
+    {
+      label: t('navigation:groups.planning'),
+      items: [
+        { label: t('navigation:items.scenarios'), path: '/scenarios', icon: Landmark },
+        { label: t('navigation:items.documents'), path: '/documents', icon: FileText },
+        { label: t('navigation:items.budget'), path: '/budget', icon: PiggyBank },
+        { label: t('navigation:items.assets'), path: '/assets', icon: Building2 },
+        { label: t('navigation:items.datevExport'), path: '/datev', icon: FileSpreadsheet },
+      ],
+    },
+  ], [t]);
+
+  const hrNavGroupMemo = useMemo<NavGroup>(() => ({
+    label: t('navigation:groups.hr'),
+    items: [
+      { label: t('navigation:items.employees'), path: '/hr/employees', icon: Users },
+      { label: t('navigation:items.leaveRequests'), path: '/hr/leave/requests', icon: Calendar },
+      { label: t('navigation:items.travel'), path: '/hr/travel', icon: Plane },
+      { label: t('navigation:items.reviews'), path: '/hr/reviews', icon: Star },
+      { label: t('navigation:items.stats'), path: '/hr/stats', icon: BarChart2 },
+    ],
+  }), [t]);
+
+  const hrAdminNavGroupMemo = useMemo<NavGroup>(() => ({
+    label: t('navigation:groups.hrAdmin'),
+    items: [
+      { label: t('navigation:items.gdprManagement'), path: '/hr/admin/deletions', icon: Shield },
+    ],
+  }), [t]);
+
+  const adminNavGroupMemo = useMemo<NavGroup>(() => ({
+    label: t('navigation:groups.admin'),
+    items: [
+      { label: t('navigation:items.users'), path: '/admin/users', icon: Users },
+      { label: t('navigation:items.entities'), path: '/admin/entities', icon: Building2 },
+      { label: t('navigation:items.webhooks'), path: '/admin/webhooks', icon: Webhook },
+      { label: t('navigation:items.auditLog'), path: '/admin/audit', icon: ClipboardList },
+      { label: t('navigation:items.mailConfig'), path: '/admin/mail', icon: Mail },
+    ],
+  }), [t]);
+
+  const aiAdminNavGroupMemo = useMemo<NavGroup>(() => ({
+    label: t('navigation:groups.aiManagement'),
+    items: [
+      { label: t('navigation:items.providers'), path: '/admin/ai/providers', icon: KeyRound },
+      { label: t('navigation:items.prompts'), path: '/admin/ai/prompts', icon: MessageSquareCode },
+      { label: t('navigation:items.callLogs'), path: '/admin/ai/logs', icon: ScrollText },
+    ],
+  }), [t]);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -174,7 +177,7 @@ export default function Sidebar() {
               style={{ borderColor: 'var(--color-sidebar-border)' }}
             />
             <NavGroupSection
-              group={hrNavGroup}
+              group={hrNavGroupMemo}
               collapsed={!sidebarOpen}
               isActive={isActive}
             />
@@ -188,7 +191,7 @@ export default function Sidebar() {
               style={{ borderColor: 'var(--color-sidebar-border)' }}
             />
             <NavGroupSection
-              group={hrAdminNavGroup}
+              group={hrAdminNavGroupMemo}
               collapsed={!sidebarOpen}
               isActive={isActive}
             />
@@ -202,7 +205,7 @@ export default function Sidebar() {
               style={{ borderColor: 'var(--color-sidebar-border)' }}
             />
             <NavGroupSection
-              group={adminNavGroup}
+              group={adminNavGroupMemo}
               collapsed={!sidebarOpen}
               isActive={isActive}
             />
@@ -211,7 +214,7 @@ export default function Sidebar() {
               style={{ borderColor: 'var(--color-sidebar-border)' }}
             />
             <NavGroupSection
-              group={aiAdminNavGroup}
+              group={aiAdminNavGroupMemo}
               collapsed={!sidebarOpen}
               isActive={isActive}
             />
@@ -258,7 +261,7 @@ export default function Sidebar() {
             (e.currentTarget as HTMLElement).style.color =
               'var(--color-sidebar-foreground)';
           }}
-          aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          aria-label={sidebarOpen ? t('common:sidebar.collapse') : t('common:sidebar.expand')}
         >
           {sidebarOpen ? (
             <ChevronLeft className="h-4 w-4" />

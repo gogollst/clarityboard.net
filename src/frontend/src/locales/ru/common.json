@@ -1,1 +1,81 @@
-{}
+{
+  "buttons": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "create": "Создать",
+    "export": "Экспорт",
+    "add": "Добавить",
+    "close": "Закрыть",
+    "confirm": "Подтвердить",
+    "back": "Назад",
+    "search": "Поиск",
+    "upload": "Загрузить",
+    "download": "Скачать",
+    "submit": "Отправить",
+    "test": "Проверить",
+    "restore": "Восстановить",
+    "approve": "Одобрить",
+    "reject": "Отклонить",
+    "send": "Отправить",
+    "next": "Далее",
+    "previous": "Назад",
+    "finish": "Завершить",
+    "refresh": "Обновить"
+  },
+  "status": {
+    "active": "Активен",
+    "inactive": "Неактивен",
+    "pending": "Ожидает",
+    "approved": "Одобрено",
+    "rejected": "Отклонено",
+    "draft": "Черновик",
+    "completed": "Завершено",
+    "connected": "Подключено",
+    "reconnecting": "Подключение...",
+    "disconnected": "Отключено",
+    "enabled": "Включено",
+    "disabled": "Выключено",
+    "healthy": "Исправно",
+    "unhealthy": "Неисправно",
+    "invited": "Приглашён",
+    "locked": "Заблокировано",
+    "open": "Открыто"
+  },
+  "pagination": {
+    "page": "Стр.",
+    "of": "из",
+    "previous": "Назад",
+    "next": "Далее"
+  },
+  "table": {
+    "noResults": "Записи не найдены.",
+    "loading": "Загрузка..."
+  },
+  "theme": {
+    "light": "Светлая тема",
+    "dark": "Тёмная тема",
+    "system": "Системная тема"
+  },
+  "user": {
+    "settings": "Настройки",
+    "logout": "Выйти",
+    "noEntities": "Нет организаций"
+  },
+  "sidebar": {
+    "collapse": "Свернуть боковую панель",
+    "expand": "Развернуть боковую панель",
+    "toggle": "Переключить боковую панель"
+  },
+  "errors": {
+    "generic": "Произошла ошибка.",
+    "notFound": "Не найдено.",
+    "unauthorized": "Нет доступа."
+  },
+  "connection": {
+    "connected": "Подключено",
+    "reconnecting": "Подключение...",
+    "disconnected": "Отключено"
+  }
+}

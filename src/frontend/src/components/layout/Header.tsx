@@ -12,6 +12,7 @@ import {
   Moon,
   Monitor,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useEntity, useSwitchEntity } from '@/hooks/useEntity';
@@ -26,18 +27,13 @@ type Theme = 'light' | 'dark' | 'system';
 
 const THEME_CYCLE: Theme[] = ['light', 'dark', 'system'];
 
-const themeConfig: Record<Theme, { icon: React.ElementType; label: string }> = {
-  light:  { icon: Sun,     label: 'Light mode' },
-  dark:   { icon: Moon,    label: 'Dark mode' },
-  system: { icon: Monitor, label: 'System default' },
-};
-
 export default function Header() {
   const { user, logout } = useAuth();
   const { selectedEntityId } = useEntity();
   const authUser = useAuthStore((s) => s.user);
   const { mutate: switchEntity, isPending: isSwitching } = useSwitchEntity();
   const { toggleSidebar, connectionStatus, theme, setTheme } = useUiStore();
+  const { t } = useTranslation('common');
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -56,10 +52,16 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const themeConfig: Record<Theme, { icon: React.ElementType; label: string }> = {
+    light:  { icon: Sun,     label: t('theme.light') },
+    dark:   { icon: Moon,    label: t('theme.dark') },
+    system: { icon: Monitor, label: t('theme.system') },
+  };
+
   const connectionConfig = {
-    connected:    { dot: 'bg-emerald-500',          label: 'Connected' },
-    reconnecting: { dot: 'bg-amber-500 pulse-ring',  label: 'Reconnecting...' },
-    disconnected: { dot: 'bg-red-500',               label: 'Disconnected' },
+    connected:    { dot: 'bg-emerald-500',          label: t('connection.connected') },
+    reconnecting: { dot: 'bg-amber-500 pulse-ring',  label: t('connection.reconnecting') },
+    disconnected: { dot: 'bg-red-500',               label: t('connection.disconnected') },
   }[connectionStatus];
 
   function cycleTheme() {
@@ -77,7 +79,7 @@ export default function Header() {
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          aria-label="Toggle sidebar"
+          aria-label={t('sidebar.toggle')}
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -95,7 +97,7 @@ export default function Header() {
           >
             {!authUser?.entities?.length && (
               <option value="" disabled>
-                No entities
+                {t('user.noEntities')}
               </option>
             )}
             {authUser?.entities?.map((entity) => (
@@ -179,7 +181,7 @@ export default function Header() {
                 onClick={() => setUserMenuOpen(false)}
               >
                 <Settings className="h-4 w-4 text-muted-foreground" />
-                Settings
+                {t('user.settings')}
               </Link>
               <button
                 onClick={() => {
@@ -189,7 +191,7 @@ export default function Header() {
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-destructive transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
               >
                 <LogOut className="h-4 w-4" />
-                Logout
+                {t('user.logout')}
               </button>
             </div>
           )}

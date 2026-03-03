@@ -1,1 +1,81 @@
-{}
+{
+  "buttons": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "export": "Export",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "search": "Search",
+    "upload": "Upload",
+    "download": "Download",
+    "submit": "Submit",
+    "test": "Test",
+    "restore": "Restore",
+    "approve": "Approve",
+    "reject": "Reject",
+    "send": "Send",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish",
+    "refresh": "Refresh"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "draft": "Draft",
+    "completed": "Completed",
+    "connected": "Connected",
+    "reconnecting": "Reconnecting...",
+    "disconnected": "Disconnected",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "healthy": "Healthy",
+    "unhealthy": "Unhealthy",
+    "invited": "Invited",
+    "locked": "Locked",
+    "open": "Open"
+  },
+  "pagination": {
+    "page": "Page",
+    "of": "of",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "table": {
+    "noResults": "No entries found.",
+    "loading": "Loading..."
+  },
+  "theme": {
+    "light": "Light mode",
+    "dark": "Dark mode",
+    "system": "System default"
+  },
+  "user": {
+    "settings": "Settings",
+    "logout": "Logout",
+    "noEntities": "No entities"
+  },
+  "sidebar": {
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "toggle": "Toggle sidebar"
+  },
+  "errors": {
+    "generic": "An error occurred.",
+    "notFound": "Not found.",
+    "unauthorized": "Unauthorized."
+  },
+  "connection": {
+    "connected": "Connected",
+    "reconnecting": "Reconnecting...",
+    "disconnected": "Disconnected"
+  }
+}

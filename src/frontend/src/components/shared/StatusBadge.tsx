@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 type BadgeVariant = 'default' | 'success' | 'warning' | 'destructive' | 'info';
@@ -50,8 +51,14 @@ export default function StatusBadge({
   variantMap,
   className,
 }: StatusBadgeProps) {
+  const { t } = useTranslation('common');
   const map = variantMap ?? defaultVariantMap;
   const variant = map[status.toLowerCase()] ?? 'default';
+
+  // Try to get translated label for known status keys; fall back to raw status
+  const translationKey = `status.${status.toLowerCase()}`;
+  const translated = t(translationKey, { defaultValue: '' });
+  const label = translated || status;
 
   return (
     <span
@@ -62,7 +69,7 @@ export default function StatusBadge({
       )}
     >
       <span className={cn('h-1.5 w-1.5 rounded-full', dotColor[variant])} />
-      {status}
+      {label}
     </span>
   );
 }

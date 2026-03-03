@@ -1,1 +1,81 @@
-{}
+{
+  "buttons": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "export": "Exportieren",
+    "add": "Hinzufügen",
+    "close": "Schließen",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "search": "Suchen",
+    "upload": "Hochladen",
+    "download": "Herunterladen",
+    "submit": "Absenden",
+    "test": "Testen",
+    "restore": "Wiederherstellen",
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "send": "Senden",
+    "next": "Weiter",
+    "previous": "Zurück",
+    "finish": "Fertigstellen",
+    "refresh": "Aktualisieren"
+  },
+  "status": {
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "pending": "Ausstehend",
+    "approved": "Genehmigt",
+    "rejected": "Abgelehnt",
+    "draft": "Entwurf",
+    "completed": "Abgeschlossen",
+    "connected": "Verbunden",
+    "reconnecting": "Verbinde...",
+    "disconnected": "Getrennt",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "healthy": "Fehlerfrei",
+    "unhealthy": "Fehlerhaft",
+    "invited": "Eingeladen",
+    "locked": "Gesperrt",
+    "open": "Offen"
+  },
+  "pagination": {
+    "page": "Seite",
+    "of": "von",
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "table": {
+    "noResults": "Keine Einträge gefunden.",
+    "loading": "Wird geladen..."
+  },
+  "theme": {
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System"
+  },
+  "user": {
+    "settings": "Einstellungen",
+    "logout": "Abmelden",
+    "noEntities": "Keine Entities"
+  },
+  "sidebar": {
+    "collapse": "Sidebar schließen",
+    "expand": "Sidebar öffnen",
+    "toggle": "Sidebar umschalten"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten.",
+    "notFound": "Nicht gefunden.",
+    "unauthorized": "Nicht autorisiert."
+  },
+  "connection": {
+    "connected": "Verbunden",
+    "reconnecting": "Verbinde...",
+    "disconnected": "Getrennt"
+  }
+}

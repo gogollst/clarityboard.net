@@ -1,1 +1,40 @@
-{}
+{
+  "groups": {
+    "overview": "Übersicht",
+    "kpis": "KPIs",
+    "cashFlow": "Cash Flow",
+    "planning": "Planung",
+    "hr": "HR",
+    "hrAdmin": "HR Admin",
+    "admin": "Administration",
+    "aiManagement": "KI-Verwaltung"
+  },
+  "items": {
+    "dashboard": "Dashboard",
+    "financial": "Finanzen",
+    "sales": "Vertrieb",
+    "marketing": "Marketing",
+    "hrKpi": "HR",
+    "cashflowOverview": "Übersicht",
+    "forecast": "Prognose",
+    "scenarios": "Szenarien",
+    "documents": "Dokumente",
+    "budget": "Budget",
+    "assets": "Anlagevermögen",
+    "datevExport": "DATEV-Export",
+    "employees": "Mitarbeiter",
+    "leaveRequests": "Urlaubsanträge",
+    "travel": "Reisekosten",
+    "reviews": "Beurteilungen",
+    "stats": "Statistiken",
+    "gdprManagement": "DSGVO-Verwaltung",
+    "users": "Benutzer",
+    "entities": "Entities",
+    "webhooks": "Webhooks",
+    "auditLog": "Audit-Log",
+    "mailConfig": "Mail-Konfiguration",
+    "providers": "Anbieter",
+    "prompts": "Prompts",
+    "callLogs": "Aufrufprotokolle"
+  }
+}

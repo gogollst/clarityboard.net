@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,13 +33,16 @@ export default function DataTable<T extends Record<string, unknown>>({
   columns,
   data,
   isLoading,
-  emptyMessage = 'No data available.',
+  emptyMessage,
   pagination,
   className,
 }: DataTableProps<T>) {
+  const { t } = useTranslation('common');
   const totalPages = pagination
     ? Math.ceil(pagination.total / pagination.pageSize)
     : 0;
+
+  const resolvedEmptyMessage = emptyMessage ?? t('table.noResults');
 
   return (
     <div className={cn('w-full', className)}>
@@ -73,7 +77,7 @@ export default function DataTable<T extends Record<string, unknown>>({
                   colSpan={columns.length}
                   className="px-4 py-12 text-center text-muted-foreground"
                 >
-                  {emptyMessage}
+                  {resolvedEmptyMessage}
                 </td>
               </tr>
             ) : (
@@ -110,7 +114,7 @@ export default function DataTable<T extends Record<string, unknown>>({
               pagination.page * pagination.pageSize,
               pagination.total
             )}{' '}
-            of {pagination.total}
+            {t('pagination.of')} {pagination.total}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -120,10 +124,10 @@ export default function DataTable<T extends Record<string, unknown>>({
               onClick={() => pagination.onPageChange(pagination.page - 1)}
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {t('pagination.previous')}
             </Button>
             <span className="text-sm text-muted-foreground">
-              Page {pagination.page} of {totalPages}
+              {t('pagination.page')} {pagination.page} {t('pagination.of')} {totalPages}
             </span>
             <Button
               variant="outline"
@@ -131,7 +135,7 @@ export default function DataTable<T extends Record<string, unknown>>({
               disabled={pagination.page >= totalPages}
               onClick={() => pagination.onPageChange(pagination.page + 1)}
             >
-              Next
+              {t('pagination.next')}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

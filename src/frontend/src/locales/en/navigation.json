@@ -1,1 +1,40 @@
-{}
+{
+  "groups": {
+    "overview": "Overview",
+    "kpis": "KPIs",
+    "cashFlow": "Cash Flow",
+    "planning": "Planning",
+    "hr": "HR",
+    "hrAdmin": "HR Admin",
+    "admin": "Admin",
+    "aiManagement": "AI Management"
+  },
+  "items": {
+    "dashboard": "Dashboard",
+    "financial": "Financial",
+    "sales": "Sales",
+    "marketing": "Marketing",
+    "hrKpi": "HR",
+    "cashflowOverview": "Overview",
+    "forecast": "Forecast",
+    "scenarios": "Scenarios",
+    "documents": "Documents",
+    "budget": "Budget",
+    "assets": "Assets",
+    "datevExport": "DATEV Export",
+    "employees": "Employees",
+    "leaveRequests": "Leave Requests",
+    "travel": "Travel Expenses",
+    "reviews": "Reviews",
+    "stats": "Statistics",
+    "gdprManagement": "GDPR Management",
+    "users": "Users",
+    "entities": "Entities",
+    "webhooks": "Webhooks",
+    "auditLog": "Audit Log",
+    "mailConfig": "Mail Config",
+    "providers": "Providers",
+    "prompts": "Prompts",
+    "callLogs": "Call Logs"
+  }
+}
