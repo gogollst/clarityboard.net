@@ -205,7 +205,7 @@ export function TwoFactorSection() {
               <div className="flex justify-center">
                 <img
                   src={setupData.qrCodeUri}
-                  alt="2FA QR Code"
+                  alt={t('twoFactor.qrCodeAlt')}
                   className="h-48 w-48"
                 />
               </div>

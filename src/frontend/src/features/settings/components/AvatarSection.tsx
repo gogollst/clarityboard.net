@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Loader2, Trash2, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ export function AvatarSection({ avatarUrl, firstName, lastName }: AvatarSectionP
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
+      toast.error(t('avatar.fileTooLarge'));
       return;
     }
 

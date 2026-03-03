@@ -177,8 +177,8 @@ export function ProfileSection() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="de">Deutsch</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="de">{t('profile.languageOptions.de')}</SelectItem>
+                  <SelectItem value="en">{t('profile.languageOptions.en')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
