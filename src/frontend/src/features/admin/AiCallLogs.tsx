@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle2, XCircle, AlertTriangle, Loader2, BarChart3 } from 'lucide-react';
 import { useAiCallLogs, useAiCallLogStats } from '@/hooks/useAiManagement';
 import { AI_PROVIDERS } from '@/types/ai';
@@ -27,6 +28,7 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
 }
 
 export function Component() {
+  const { t, i18n } = useTranslation('ai');
   const [filters, setFilters] = useState<AiCallLogFilters>({ page: 1, pageSize: 50 });
 
   const { data: logs, isLoading } = useAiCallLogs(filters);
@@ -42,21 +44,21 @@ export function Component() {
       <div className="flex items-center gap-2">
         <BarChart3 className="h-5 w-5" />
         <div>
-          <h1 className="text-2xl font-semibold">AI Call Logs</h1>
-          <p className="text-muted-foreground mt-0.5 text-sm">Audit trail of all AI calls made through the prompt execution engine.</p>
+          <h1 className="text-2xl font-semibold">{t('callLogs.title')}</h1>
+          <p className="text-muted-foreground mt-0.5 text-sm">{t('callLogs.description')}</p>
         </div>
       </div>
 
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
-          <StatCard label="Total Calls" value={stats.totalCalls.toLocaleString()} />
-          <StatCard label="Success Rate" value={`${stats.successRate}%`} />
-          <StatCard label="Avg. Duration" value={`${stats.avgDurationMs} ms`} />
-          <StatCard label="Fallbacks" value={stats.fallbackCount} />
-          <StatCard label="Input Tokens" value={stats.totalInputTokens.toLocaleString()} />
-          <StatCard label="Output Tokens" value={stats.totalOutputTokens.toLocaleString()} />
-          <StatCard label="Total Tokens" value={(stats.totalInputTokens + stats.totalOutputTokens).toLocaleString()} />
+          <StatCard label={t('callLogs.stats.totalCalls')} value={stats.totalCalls.toLocaleString(i18n.language)} />
+          <StatCard label={t('callLogs.stats.successRate')} value={`${stats.successRate}%`} />
+          <StatCard label={t('callLogs.stats.avgDuration')} value={`${stats.avgDurationMs} ms`} />
+          <StatCard label={t('callLogs.stats.fallbacks')} value={stats.fallbackCount} />
+          <StatCard label={t('callLogs.stats.inputTokens')} value={stats.totalInputTokens.toLocaleString(i18n.language)} />
+          <StatCard label={t('callLogs.stats.outputTokens')} value={stats.totalOutputTokens.toLocaleString(i18n.language)} />
+          <StatCard label={t('callLogs.stats.totalTokens')} value={(stats.totalInputTokens + stats.totalOutputTokens).toLocaleString(i18n.language)} />
         </div>
       )}
 
@@ -64,14 +66,14 @@ export function Component() {
       <div className="flex flex-wrap gap-2">
         <Input
           className="w-52"
-          placeholder="Filter by prompt key…"
+          placeholder={t('callLogs.filters.promptKeyPlaceholder')}
           value={filters.promptKey ?? ''}
           onChange={e => set('promptKey', e.target.value || undefined)}
         />
         <Select value={filters.provider ?? 'all'} onValueChange={v => set('provider', v === 'all' ? undefined : v as AiProvider)}>
-          <SelectTrigger className="w-36"><SelectValue placeholder="All Providers" /></SelectTrigger>
+          <SelectTrigger className="w-36"><SelectValue placeholder={t('callLogs.filters.allProviders')} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Providers</SelectItem>
+            <SelectItem value="all">{t('callLogs.filters.allProviders')}</SelectItem>
             {AI_PROVIDERS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -81,9 +83,9 @@ export function Component() {
         >
           <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="success">Success</SelectItem>
-            <SelectItem value="error">Error</SelectItem>
+            <SelectItem value="all">{t('callLogs.filters.all')}</SelectItem>
+            <SelectItem value="success">{t('callLogs.filters.success')}</SelectItem>
+            <SelectItem value="error">{t('callLogs.filters.error')}</SelectItem>
           </SelectContent>
         </Select>
         <Input type="date" className="w-40" value={filters.from ?? ''}
@@ -102,14 +104,14 @@ export function Component() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-8" />
-                  <TableHead>Prompt Key</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Fallback</TableHead>
-                  <TableHead>Input Tok.</TableHead>
-                  <TableHead>Output Tok.</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Error</TableHead>
+                  <TableHead>{t('callLogs.columns.promptKey')}</TableHead>
+                  <TableHead>{t('callLogs.columns.provider')}</TableHead>
+                  <TableHead>{t('callLogs.columns.fallback')}</TableHead>
+                  <TableHead>{t('callLogs.columns.inputTokens')}</TableHead>
+                  <TableHead>{t('callLogs.columns.outputTokens')}</TableHead>
+                  <TableHead>{t('callLogs.columns.duration')}</TableHead>
+                  <TableHead>{t('callLogs.columns.date')}</TableHead>
+                  <TableHead>{t('callLogs.columns.error')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -127,18 +129,18 @@ export function Component() {
                     <TableCell>
                       {log.usedFallback && <AlertTriangle className="h-4 w-4 text-amber-500" />}
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">{log.inputTokens.toLocaleString()}</TableCell>
-                    <TableCell className="text-muted-foreground text-xs">{log.outputTokens.toLocaleString()}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{log.inputTokens.toLocaleString(i18n.language)}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{log.outputTokens.toLocaleString(i18n.language)}</TableCell>
                     <TableCell className="text-muted-foreground text-xs">{log.durationMs} ms</TableCell>
                     <TableCell className="text-muted-foreground text-xs">
-                      {new Date(log.createdAt).toLocaleString('de-DE')}
+                      {new Date(log.createdAt).toLocaleString(i18n.language)}
                     </TableCell>
                     <TableCell className="max-w-xs truncate text-xs text-red-600">{log.errorMessage}</TableCell>
                   </TableRow>
                 ))}
                 {(logs?.items ?? []).length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-muted-foreground py-12 text-center">No logs found.</TableCell>
+                    <TableCell colSpan={9} className="text-muted-foreground py-12 text-center">{t('callLogs.noLogsFound')}</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -148,16 +150,16 @@ export function Component() {
           {/* Pagination */}
           <div className="flex items-center justify-between">
             <p className="text-muted-foreground text-sm">
-              {logs?.totalCount ?? 0} entries
+              {t('callLogs.entries', { count: logs?.totalCount ?? 0 })}
             </p>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" disabled={(filters.page ?? 1) <= 1}
-                onClick={() => set('page', (filters.page ?? 1) - 1)}>Previous</Button>
+                onClick={() => set('page', (filters.page ?? 1) - 1)}>{t('common:buttons.previous')}</Button>
               <span className="text-muted-foreground flex items-center px-2 text-sm">
-                Page {filters.page ?? 1} / {totalPages}
+                {t('callLogs.pagination.page', { page: filters.page ?? 1, total: totalPages })}
               </span>
               <Button size="sm" variant="outline" disabled={(filters.page ?? 1) >= totalPages}
-                onClick={() => set('page', (filters.page ?? 1) + 1)}>Next</Button>
+                onClick={() => set('page', (filters.page ?? 1) + 1)}>{t('common:buttons.next')}</Button>
             </div>
           </div>
         </>

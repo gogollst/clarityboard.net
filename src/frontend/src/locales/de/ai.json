@@ -1,1 +1,145 @@
-{}
+{
+  "providers": {
+    "title": "KI-Anbieter-Verwaltung",
+    "description": "API-Schlüssel für jeden KI-Anbieter konfigurieren und testen. Schlüssel werden AES-256-verschlüsselt gespeichert.",
+    "noKeyConfigured": "Kein Schlüssel konfiguriert",
+    "lastTested": "Zuletzt getestet: {{date}}",
+    "defaultModel": "Standardmodell:",
+    "notTested": "Nicht getestet",
+    "healthy": "Fehlerfrei",
+    "unhealthy": "Fehlerhaft",
+    "updateKey": "Schlüssel aktualisieren",
+    "addKey": "Schlüssel hinzufügen",
+    "dialog": {
+      "title": "{{provider}} API-Schlüssel konfigurieren",
+      "apiKeyLabel": "API-Schlüssel *",
+      "apiKeyPlaceholder": "API-Schlüssel einfügen…",
+      "apiKeyHint": "Nach dem Speichern werden nur die letzten 4 Zeichen angezeigt.",
+      "baseUrlLabel": "Benutzerdefinierte Basis-URL",
+      "baseUrlOptional": "(optional)",
+      "baseUrlPlaceholder": "https://ihr-endpunkt.com/v1",
+      "modelLabel": "Standardmodell",
+      "modelOptional": "(optional)",
+      "modelPlaceholder": "z.B. claude-sonnet-4-20250514",
+      "saveAndTest": "Speichern & Testen"
+    },
+    "toast": {
+      "saveSuccess": "API-Schlüssel erfolgreich gespeichert und getestet",
+      "saveError": "API-Schlüssel konnte nicht gespeichert werden",
+      "testHealthy": "{{provider}} ist fehlerfrei ({{durationMs}} ms)",
+      "testFailed": "{{provider}}-Test fehlgeschlagen: {{error}}",
+      "testError": "Anbieter-Test fehlgeschlagen"
+    }
+  },
+  "prompts": {
+    "title": "Prompt-Verwaltung",
+    "description": "Alle KI-Prompts werden hier verwaltet. Jeder KI-Aufruf im System muss einen Prompt per Schlüssel referenzieren.",
+    "searchPlaceholder": "Schlüssel oder Name suchen…",
+    "columns": {
+      "status": "Status",
+      "promptKey": "Prompt-Schlüssel",
+      "name": "Name",
+      "module": "Modul",
+      "primary": "Primär",
+      "fallback": "Fallback",
+      "version": "Version",
+      "updated": "Aktualisiert"
+    },
+    "noPromptsFound": "Keine Prompts gefunden.",
+    "modules": {
+      "All": "Alle",
+      "System": "System",
+      "Document": "Dokument",
+      "CashFlow": "Cashflow",
+      "KPI": "KPI",
+      "Scenario": "Szenario",
+      "Budget": "Budget",
+      "Accounting": "Buchhaltung"
+    },
+    "detail": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "systemBadge": "System",
+      "primaryProvider": "Primärer Anbieter",
+      "primaryModel": "Primäres Modell",
+      "primaryModelPlaceholder": "z.B. claude-sonnet-4-20250514",
+      "fallbackProvider": "Fallback-Anbieter",
+      "fallbackModel": "Fallback-Modell",
+      "fallbackModelPlaceholder": "z.B. gpt-4o",
+      "temperature": "Temperatur",
+      "maxTokens": "Max. Token",
+      "systemPrompt": "System-Prompt",
+      "enhancePrompt": "Prompt verbessern",
+      "userPromptTemplate": "Nutzer-Prompt-Vorlage",
+      "userPromptTemplatePlaceholder": "Optional: Vorlage mit {{variable}}-Platzhaltern…",
+      "userPromptTemplateHint": "({{variable}}-Platzhalter verwenden)",
+      "versionHistory": "Versionsverlauf",
+      "enhancePreview": {
+        "title": "Verbesserter Prompt – Vorschau",
+        "description": "Überprüfen Sie den verbesserten Prompt. \"Anwenden\" ersetzt den aktuellen System-Prompt; \"Verwerfen\" behält den ursprünglichen.",
+        "current": "Aktuell",
+        "enhanced": "Verbessert",
+        "discard": "Verwerfen",
+        "apply": "Verbesserte Version anwenden"
+      },
+      "saveDialog": {
+        "title": "Änderungen speichern",
+        "changeSummaryLabel": "Änderungszusammenfassung *",
+        "changeSummaryPlaceholder": "Beschreiben Sie was und warum geändert wurde…",
+        "changeSummaryHint": "Erforderlich – wird im Versionsverlauf gespeichert.",
+        "saveVersion": "Version speichern"
+      }
+    },
+    "history": {
+      "columns": {
+        "version": "Version",
+        "provider": "Anbieter",
+        "changeSummary": "Änderungszusammenfassung",
+        "date": "Datum"
+      },
+      "restore": "Wiederherstellen"
+    },
+    "toast": {
+      "saveSuccess": "Prompt gespeichert",
+      "saveError": "Prompt konnte nicht gespeichert werden",
+      "enhanceError": "Prompt-Verbesserung fehlgeschlagen",
+      "restoreSuccess": "Version wiederhergestellt",
+      "restoreError": "Version konnte nicht wiederhergestellt werden"
+    }
+  },
+  "callLogs": {
+    "title": "KI-Aufruf-Protokolle",
+    "description": "Audit-Protokoll aller KI-Aufrufe über die Prompt-Ausführungsmaschine.",
+    "stats": {
+      "totalCalls": "Gesamtaufrufe",
+      "successRate": "Erfolgsrate",
+      "avgDuration": "Ø Dauer",
+      "fallbacks": "Fallbacks",
+      "inputTokens": "Eingabe-Token",
+      "outputTokens": "Ausgabe-Token",
+      "totalTokens": "Gesamt-Token"
+    },
+    "filters": {
+      "promptKeyPlaceholder": "Nach Prompt-Schlüssel filtern…",
+      "allProviders": "Alle Anbieter",
+      "all": "Alle",
+      "success": "Erfolgreich",
+      "error": "Fehler"
+    },
+    "columns": {
+      "promptKey": "Prompt-Schlüssel",
+      "provider": "Anbieter",
+      "fallback": "Fallback",
+      "inputTokens": "Eingabe-Tok.",
+      "outputTokens": "Ausgabe-Tok.",
+      "duration": "Dauer",
+      "date": "Datum",
+      "error": "Fehler"
+    },
+    "noLogsFound": "Keine Protokolle gefunden.",
+    "entries": "{{count}} Einträge",
+    "pagination": {
+      "page": "Seite {{page}} / {{total}}"
+    }
+  }
+}

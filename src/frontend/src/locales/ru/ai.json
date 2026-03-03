@@ -1,1 +1,145 @@
-{}
+{
+  "providers": {
+    "title": "Управление поставщиками ИИ",
+    "description": "Настройка и тестирование API-ключей для каждого поставщика ИИ. Ключи хранятся с шифрованием AES-256.",
+    "noKeyConfigured": "Ключ не настроен",
+    "lastTested": "Последнее тестирование: {{date}}",
+    "defaultModel": "Модель по умолчанию:",
+    "notTested": "Не протестировано",
+    "healthy": "Работает",
+    "unhealthy": "Неработоспособен",
+    "updateKey": "Обновить ключ",
+    "addKey": "Добавить ключ",
+    "dialog": {
+      "title": "Настройка API-ключа {{provider}}",
+      "apiKeyLabel": "API-ключ *",
+      "apiKeyPlaceholder": "Вставьте ваш API-ключ…",
+      "apiKeyHint": "После сохранения будут показаны только последние 4 символа.",
+      "baseUrlLabel": "Пользовательский базовый URL",
+      "baseUrlOptional": "(необязательно)",
+      "baseUrlPlaceholder": "https://ваш-эндпоинт.com/v1",
+      "modelLabel": "Модель по умолчанию",
+      "modelOptional": "(необязательно)",
+      "modelPlaceholder": "например, claude-sonnet-4-20250514",
+      "saveAndTest": "Сохранить и протестировать"
+    },
+    "toast": {
+      "saveSuccess": "API-ключ успешно сохранён и протестирован",
+      "saveError": "Не удалось сохранить API-ключ",
+      "testHealthy": "{{provider}} работает нормально ({{durationMs}} мс)",
+      "testFailed": "Тест {{provider}} завершился ошибкой: {{error}}",
+      "testError": "Тестирование поставщика завершилось ошибкой"
+    }
+  },
+  "prompts": {
+    "title": "Управление промптами",
+    "description": "Все промпты ИИ управляются здесь. Каждый вызов ИИ в системе должен ссылаться на промпт по ключу.",
+    "searchPlaceholder": "Поиск по ключу или имени…",
+    "columns": {
+      "status": "Статус",
+      "promptKey": "Ключ промпта",
+      "name": "Название",
+      "module": "Модуль",
+      "primary": "Основной",
+      "fallback": "Резервный",
+      "version": "Версия",
+      "updated": "Обновлён"
+    },
+    "noPromptsFound": "Промпты не найдены.",
+    "modules": {
+      "All": "Все",
+      "System": "Система",
+      "Document": "Документ",
+      "CashFlow": "Денежный поток",
+      "KPI": "KPI",
+      "Scenario": "Сценарий",
+      "Budget": "Бюджет",
+      "Accounting": "Бухгалтерия"
+    },
+    "detail": {
+      "active": "Активен",
+      "inactive": "Неактивен",
+      "systemBadge": "Система",
+      "primaryProvider": "Основной поставщик",
+      "primaryModel": "Основная модель",
+      "primaryModelPlaceholder": "например, claude-sonnet-4-20250514",
+      "fallbackProvider": "Резервный поставщик",
+      "fallbackModel": "Резервная модель",
+      "fallbackModelPlaceholder": "например, gpt-4o",
+      "temperature": "Температура",
+      "maxTokens": "Макс. токенов",
+      "systemPrompt": "Системный промпт",
+      "enhancePrompt": "Улучшить промпт",
+      "userPromptTemplate": "Шаблон пользовательского промпта",
+      "userPromptTemplatePlaceholder": "Необязательно: шаблон с заполнителями {{variable}}…",
+      "userPromptTemplateHint": "(используйте заполнители {{variable}})",
+      "versionHistory": "История версий",
+      "enhancePreview": {
+        "title": "Предпросмотр улучшенного промпта",
+        "description": "Проверьте улучшенный промпт. «Применить» заменит текущий системный промпт; «Отклонить» сохранит оригинал.",
+        "current": "Текущий",
+        "enhanced": "Улучшенный",
+        "discard": "Отклонить",
+        "apply": "Применить улучшенную версию"
+      },
+      "saveDialog": {
+        "title": "Сохранить изменения",
+        "changeSummaryLabel": "Описание изменений *",
+        "changeSummaryPlaceholder": "Опишите, что и почему было изменено…",
+        "changeSummaryHint": "Обязательно – сохраняется в истории версий.",
+        "saveVersion": "Сохранить версию"
+      }
+    },
+    "history": {
+      "columns": {
+        "version": "Версия",
+        "provider": "Поставщик",
+        "changeSummary": "Описание изменений",
+        "date": "Дата"
+      },
+      "restore": "Восстановить"
+    },
+    "toast": {
+      "saveSuccess": "Промпт сохранён",
+      "saveError": "Не удалось сохранить промпт",
+      "enhanceError": "Улучшение промпта завершилось ошибкой",
+      "restoreSuccess": "Версия восстановлена",
+      "restoreError": "Не удалось восстановить версию"
+    }
+  },
+  "callLogs": {
+    "title": "Журнал вызовов ИИ",
+    "description": "Журнал аудита всех вызовов ИИ через движок выполнения промптов.",
+    "stats": {
+      "totalCalls": "Всего вызовов",
+      "successRate": "Успешность",
+      "avgDuration": "Ср. длительность",
+      "fallbacks": "Резервные вызовы",
+      "inputTokens": "Входные токены",
+      "outputTokens": "Выходные токены",
+      "totalTokens": "Всего токенов"
+    },
+    "filters": {
+      "promptKeyPlaceholder": "Фильтр по ключу промпта…",
+      "allProviders": "Все поставщики",
+      "all": "Все",
+      "success": "Успешно",
+      "error": "Ошибка"
+    },
+    "columns": {
+      "promptKey": "Ключ промпта",
+      "provider": "Поставщик",
+      "fallback": "Резервный",
+      "inputTokens": "Вх. токены",
+      "outputTokens": "Исх. токены",
+      "duration": "Длительность",
+      "date": "Дата",
+      "error": "Ошибка"
+    },
+    "noLogsFound": "Записи журнала не найдены.",
+    "entries": "{{count}} записей",
+    "pagination": {
+      "page": "Страница {{page}} / {{total}}"
+    }
+  }
+}

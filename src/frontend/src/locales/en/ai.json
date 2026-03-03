@@ -1,1 +1,145 @@
-{}
+{
+  "providers": {
+    "title": "AI Provider Management",
+    "description": "Configure and test API keys for each AI provider. Keys are stored AES-256 encrypted.",
+    "noKeyConfigured": "No key configured",
+    "lastTested": "Last tested: {{date}}",
+    "defaultModel": "Default model:",
+    "notTested": "Not tested",
+    "healthy": "Healthy",
+    "unhealthy": "Unhealthy",
+    "updateKey": "Update Key",
+    "addKey": "Add Key",
+    "dialog": {
+      "title": "Configure {{provider}} API Key",
+      "apiKeyLabel": "API Key *",
+      "apiKeyPlaceholder": "Paste your API key…",
+      "apiKeyHint": "Only the last 4 characters will be shown after saving.",
+      "baseUrlLabel": "Custom Base URL",
+      "baseUrlOptional": "(optional)",
+      "baseUrlPlaceholder": "https://your-custom-endpoint.com/v1",
+      "modelLabel": "Default Model",
+      "modelOptional": "(optional)",
+      "modelPlaceholder": "e.g. claude-sonnet-4-20250514",
+      "saveAndTest": "Save & Test"
+    },
+    "toast": {
+      "saveSuccess": "API key saved and tested successfully",
+      "saveError": "Failed to save API key",
+      "testHealthy": "{{provider}} is healthy ({{durationMs}}ms)",
+      "testFailed": "{{provider}} test failed: {{error}}",
+      "testError": "Provider test failed"
+    }
+  },
+  "prompts": {
+    "title": "Prompt Management",
+    "description": "All AI prompts are managed here. Every AI call in the system must reference a prompt by key.",
+    "searchPlaceholder": "Search key or name…",
+    "columns": {
+      "status": "Status",
+      "promptKey": "Prompt Key",
+      "name": "Name",
+      "module": "Module",
+      "primary": "Primary",
+      "fallback": "Fallback",
+      "version": "Version",
+      "updated": "Updated"
+    },
+    "noPromptsFound": "No prompts found.",
+    "modules": {
+      "All": "All",
+      "System": "System",
+      "Document": "Document",
+      "CashFlow": "CashFlow",
+      "KPI": "KPI",
+      "Scenario": "Scenario",
+      "Budget": "Budget",
+      "Accounting": "Accounting"
+    },
+    "detail": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "systemBadge": "System",
+      "primaryProvider": "Primary Provider",
+      "primaryModel": "Primary Model",
+      "primaryModelPlaceholder": "e.g. claude-sonnet-4-20250514",
+      "fallbackProvider": "Fallback Provider",
+      "fallbackModel": "Fallback Model",
+      "fallbackModelPlaceholder": "e.g. gpt-4o",
+      "temperature": "Temperature",
+      "maxTokens": "Max Tokens",
+      "systemPrompt": "System Prompt",
+      "enhancePrompt": "Enhance Prompt",
+      "userPromptTemplate": "User Prompt Template",
+      "userPromptTemplatePlaceholder": "Optional: template with {{variable}} placeholders…",
+      "userPromptTemplateHint": "(use {{variable}} placeholders)",
+      "versionHistory": "Version History",
+      "enhancePreview": {
+        "title": "Enhanced Prompt Preview",
+        "description": "Review the enhanced prompt. \"Apply\" replaces the current system prompt; \"Discard\" keeps the original.",
+        "current": "Current",
+        "enhanced": "Enhanced",
+        "discard": "Discard",
+        "apply": "Apply Enhanced Version"
+      },
+      "saveDialog": {
+        "title": "Save Changes",
+        "changeSummaryLabel": "Change Summary *",
+        "changeSummaryPlaceholder": "Describe what changed and why…",
+        "changeSummaryHint": "Required – stored in the version history.",
+        "saveVersion": "Save Version"
+      }
+    },
+    "history": {
+      "columns": {
+        "version": "Version",
+        "provider": "Provider",
+        "changeSummary": "Change Summary",
+        "date": "Date"
+      },
+      "restore": "Restore"
+    },
+    "toast": {
+      "saveSuccess": "Prompt saved",
+      "saveError": "Failed to save prompt",
+      "enhanceError": "Prompt enhancement failed",
+      "restoreSuccess": "Version restored",
+      "restoreError": "Failed to restore version"
+    }
+  },
+  "callLogs": {
+    "title": "AI Call Logs",
+    "description": "Audit trail of all AI calls made through the prompt execution engine.",
+    "stats": {
+      "totalCalls": "Total Calls",
+      "successRate": "Success Rate",
+      "avgDuration": "Avg. Duration",
+      "fallbacks": "Fallbacks",
+      "inputTokens": "Input Tokens",
+      "outputTokens": "Output Tokens",
+      "totalTokens": "Total Tokens"
+    },
+    "filters": {
+      "promptKeyPlaceholder": "Filter by prompt key…",
+      "allProviders": "All Providers",
+      "all": "All",
+      "success": "Success",
+      "error": "Error"
+    },
+    "columns": {
+      "promptKey": "Prompt Key",
+      "provider": "Provider",
+      "fallback": "Fallback",
+      "inputTokens": "Input Tok.",
+      "outputTokens": "Output Tok.",
+      "duration": "Duration",
+      "date": "Date",
+      "error": "Error"
+    },
+    "noLogsFound": "No logs found.",
+    "entries": "{{count}} entries",
+    "pagination": {
+      "page": "Page {{page}} / {{total}}"
+    }
+  }
+}

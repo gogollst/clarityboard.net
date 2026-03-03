@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle2, XCircle, RefreshCw, Key, Loader2 } from 'lucide-react';
 import { useAiProviders, useUpsertAiProvider, useTestAiProvider } from '@/hooks/useAiManagement';
 import { AI_PROVIDERS } from '@/types/ai';
@@ -24,13 +25,15 @@ const PROVIDER_COLORS: Record<string, string> = {
 };
 
 function HealthBadge({ isHealthy, lastTestedAt }: Pick<AiProviderConfig, 'isHealthy' | 'lastTestedAt'>) {
-  if (!lastTestedAt) return <Badge variant="secondary">Not tested</Badge>;
+  const { t } = useTranslation('ai');
+  if (!lastTestedAt) return <Badge variant="secondary">{t('providers.notTested')}</Badge>;
   return isHealthy
-    ? <Badge className="bg-emerald-100 text-emerald-800"><CheckCircle2 className="mr-1 h-3 w-3" />Healthy</Badge>
-    : <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" />Unhealthy</Badge>;
+    ? <Badge className="bg-emerald-100 text-emerald-800"><CheckCircle2 className="mr-1 h-3 w-3" />{t('providers.healthy')}</Badge>
+    : <Badge variant="destructive"><XCircle className="mr-1 h-3 w-3" />{t('providers.unhealthy')}</Badge>;
 }
 
 export function Component() {
+  const { t, i18n } = useTranslation('ai');
   const { data: providers = [], isLoading } = useAiProviders();
   const upsert = useUpsertAiProvider();
   const test   = useTestAiProvider();
@@ -63,8 +66,8 @@ export function Component() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-semibold">AI Provider Management</h1>
-        <p className="text-muted-foreground mt-1">Configure and test API keys for each AI provider. Keys are stored AES-256 encrypted.</p>
+        <h1 className="text-2xl font-semibold">{t('providers.title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('providers.description')}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -78,21 +81,21 @@ export function Component() {
                   <HealthBadge isHealthy={cfg?.isHealthy ?? false} lastTestedAt={cfg?.lastTestedAt ?? null} />
                 </div>
                 <CardDescription className="font-mono text-xs">
-                  {cfg ? cfg.keyHint : 'No key configured'}
+                  {cfg ? cfg.keyHint : t('providers.noKeyConfigured')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
                 {cfg?.lastTestedAt && (
                   <p className="text-muted-foreground text-xs">
-                    Last tested: {new Date(cfg.lastTestedAt).toLocaleString('de-DE')}
+                    {t('providers.lastTested', { date: new Date(cfg.lastTestedAt).toLocaleString(i18n.language) })}
                   </p>
                 )}
                 {cfg?.modelDefault && (
-                  <p className="text-xs text-slate-600">Default model: <code>{cfg.modelDefault}</code></p>
+                  <p className="text-xs text-slate-600">{t('providers.defaultModel')} <code>{cfg.modelDefault}</code></p>
                 )}
                 <div className="flex gap-2 pt-1">
                   <Button size="sm" variant="outline" className="flex-1" onClick={() => openEdit(provider)}>
-                    <Key className="mr-1 h-3 w-3" />{cfg ? 'Update Key' : 'Add Key'}
+                    <Key className="mr-1 h-3 w-3" />{cfg ? t('providers.updateKey') : t('providers.addKey')}
                   </Button>
                   {cfg && (
                     <Button size="sm" variant="ghost" disabled={test.isPending} onClick={() => test.mutate(provider)}>
@@ -109,28 +112,28 @@ export function Component() {
       <Dialog open={!!editProvider} onOpenChange={open => !open && setEditProvider(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Configure {editProvider} API Key</DialogTitle>
+            <DialogTitle>{t('providers.dialog.title', { provider: editProvider })}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>API Key *</Label>
-              <Input type="password" placeholder="Paste your API key…" value={apiKey} onChange={e => setApiKey(e.target.value)} />
-              <p className="text-muted-foreground text-xs">Only the last 4 characters will be shown after saving.</p>
+              <Label>{t('providers.dialog.apiKeyLabel')}</Label>
+              <Input type="password" placeholder={t('providers.dialog.apiKeyPlaceholder')} value={apiKey} onChange={e => setApiKey(e.target.value)} />
+              <p className="text-muted-foreground text-xs">{t('providers.dialog.apiKeyHint')}</p>
             </div>
             <div className="space-y-1.5">
-              <Label>Custom Base URL <span className="text-muted-foreground">(optional)</span></Label>
-              <Input placeholder="https://your-custom-endpoint.com/v1" value={baseUrl} onChange={e => setBaseUrl(e.target.value)} />
+              <Label>{t('providers.dialog.baseUrlLabel')} <span className="text-muted-foreground">{t('providers.dialog.baseUrlOptional')}</span></Label>
+              <Input placeholder={t('providers.dialog.baseUrlPlaceholder')} value={baseUrl} onChange={e => setBaseUrl(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Default Model <span className="text-muted-foreground">(optional)</span></Label>
-              <Input placeholder="e.g. claude-sonnet-4-20250514" value={model} onChange={e => setModel(e.target.value)} />
+              <Label>{t('providers.dialog.modelLabel')} <span className="text-muted-foreground">{t('providers.dialog.modelOptional')}</span></Label>
+              <Input placeholder={t('providers.dialog.modelPlaceholder')} value={model} onChange={e => setModel(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditProvider(null)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setEditProvider(null)}>{t('common:buttons.cancel')}</Button>
             <Button disabled={!apiKey.trim() || upsert.isPending} onClick={handleSave}>
               {upsert.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Save & Test
+              {t('providers.dialog.saveAndTest')}
             </Button>
           </DialogFooter>
         </DialogContent>

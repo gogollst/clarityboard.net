@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import i18n from '@/i18n';
 import type {
   AiProviderConfig,
   AiProvider,
@@ -47,10 +48,10 @@ export function useUpsertAiProvider() {
       return data;
     },
     onSuccess: () => {
-      toast.success('API key saved and tested successfully');
+      toast.success(i18n.t('ai:providers.toast.saveSuccess'));
       qc.invalidateQueries({ queryKey: queryKeys.ai.providers() });
     },
-    onError: () => toast.error('Failed to save API key'),
+    onError: () => toast.error(i18n.t('ai:providers.toast.saveError')),
   });
 }
 
@@ -64,11 +65,13 @@ export function useTestAiProvider() {
       return data;
     },
     onSuccess: (result) => {
-      if (result.isHealthy) toast.success(`${result.provider} is healthy (${result.durationMs}ms)`);
-      else toast.error(`${result.provider} test failed: ${result.errorMessage}`);
+      if (result.isHealthy)
+        toast.success(i18n.t('ai:providers.toast.testHealthy', { provider: result.provider, durationMs: result.durationMs }));
+      else
+        toast.error(i18n.t('ai:providers.toast.testFailed', { provider: result.provider, error: result.errorMessage }));
       qc.invalidateQueries({ queryKey: queryKeys.ai.providers() });
     },
-    onError: () => toast.error('Provider test failed'),
+    onError: () => toast.error(i18n.t('ai:providers.toast.testError')),
   });
 }
 
@@ -110,11 +113,11 @@ export function useUpdateAiPrompt() {
       await api.put(`/AiManagement/prompts/${promptKey}`, request);
     },
     onSuccess: (_, { promptKey }) => {
-      toast.success('Prompt saved');
+      toast.success(i18n.t('ai:prompts.toast.saveSuccess'));
       qc.invalidateQueries({ queryKey: queryKeys.ai.promptDetail(promptKey) });
       qc.invalidateQueries({ queryKey: queryKeys.ai.prompts() });
     },
-    onError: () => toast.error('Failed to save prompt'),
+    onError: () => toast.error(i18n.t('ai:prompts.toast.saveError')),
   });
 }
 
@@ -133,7 +136,7 @@ export function useEnhancePrompt() {
       );
       return data.enhancedSystemPrompt;
     },
-    onError: () => toast.error('Prompt enhancement failed'),
+    onError: () => toast.error(i18n.t('ai:prompts.toast.enhanceError')),
   });
 }
 
@@ -144,10 +147,10 @@ export function useRestorePromptVersion() {
       await api.post(`/AiManagement/prompts/${promptKey}/versions/${version}/restore`);
     },
     onSuccess: (_, { promptKey }) => {
-      toast.success('Version restored');
+      toast.success(i18n.t('ai:prompts.toast.restoreSuccess'));
       qc.invalidateQueries({ queryKey: queryKeys.ai.promptDetail(promptKey) });
     },
-    onError: () => toast.error('Failed to restore version'),
+    onError: () => toast.error(i18n.t('ai:prompts.toast.restoreError')),
   });
 }
 

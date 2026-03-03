@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Search, Loader2, ChevronRight, CheckCircle2, XCircle, Bot } from 'lucide-react';
 import { useAiPrompts } from '@/hooks/useAiManagement';
 import type { AiProvider, AiPromptListItem } from '@/types/ai';
@@ -39,6 +40,7 @@ function StatusIcon({ isActive }: { isActive: boolean }) {
 }
 
 export function Component() {
+  const { t, i18n } = useTranslation('ai');
   const navigate                = useNavigate();
   const [module, setModule]     = useState<string>('All');
   const [search, setSearch]     = useState('');
@@ -57,10 +59,10 @@ export function Component() {
     <div className="space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Bot className="h-6 w-6" /> Prompt Management
+          <Bot className="h-6 w-6" /> {t('prompts.title')}
         </h1>
         <p className="text-muted-foreground mt-1">
-          All AI prompts are managed here. Every AI call in the system must reference a prompt by key.
+          {t('prompts.description')}
         </p>
       </div>
 
@@ -70,7 +72,7 @@ export function Component() {
           <Search className="text-muted-foreground absolute left-2.5 top-2.5 h-4 w-4" />
           <Input
             className="pl-8"
-            placeholder="Search key or name…"
+            placeholder={t('prompts.searchPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -80,7 +82,11 @@ export function Component() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {MODULES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+            {MODULES.map(m => (
+              <SelectItem key={m} value={m}>
+                {t(`prompts.modules.${m}`)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -93,14 +99,14 @@ export function Component() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-8">Status</TableHead>
-                <TableHead>Prompt Key</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Module</TableHead>
-                <TableHead>Primary</TableHead>
-                <TableHead>Fallback</TableHead>
-                <TableHead>Version</TableHead>
-                <TableHead>Updated</TableHead>
+                <TableHead className="w-8">{t('prompts.columns.status')}</TableHead>
+                <TableHead>{t('prompts.columns.promptKey')}</TableHead>
+                <TableHead>{t('prompts.columns.name')}</TableHead>
+                <TableHead>{t('prompts.columns.module')}</TableHead>
+                <TableHead>{t('prompts.columns.primary')}</TableHead>
+                <TableHead>{t('prompts.columns.fallback')}</TableHead>
+                <TableHead>{t('prompts.columns.version')}</TableHead>
+                <TableHead>{t('prompts.columns.updated')}</TableHead>
                 <TableHead className="w-8" />
               </TableRow>
             </TableHeader>
@@ -121,7 +127,7 @@ export function Component() {
                   <TableCell><ProviderBadge provider={prompt.fallbackProvider} /></TableCell>
                   <TableCell className="text-muted-foreground text-xs">v{prompt.version}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">
-                    {new Date(prompt.updatedAt).toLocaleDateString('de-DE')}
+                    {new Date(prompt.updatedAt).toLocaleDateString(i18n.language)}
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="icon" className="h-7 w-7">
@@ -133,7 +139,7 @@ export function Component() {
               {filtered.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={9} className="text-muted-foreground py-12 text-center">
-                    No prompts found.
+                    {t('prompts.noPromptsFound')}
                   </TableCell>
                 </TableRow>
               )}
