@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEmployees } from '@/hooks/useHr';
 import { useEntity } from '@/hooks/useEntity';
+import { useDebounced } from '@/hooks/useDebounced';
 import type { EmployeeListItem } from '@/types/hr';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
@@ -16,15 +17,6 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { Plus, Search } from 'lucide-react';
-
-function useDebounced<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -69,20 +61,8 @@ export function Component() {
   const debouncedSearch = useDebounced(search, 300);
 
   // Reset to page 1 when filters change
-  const prevSearch = useRef(debouncedSearch);
-  const prevStatus = useRef(status);
-  const prevType = useRef(employeeType);
   useEffect(() => {
-    if (
-      prevSearch.current !== debouncedSearch ||
-      prevStatus.current !== status ||
-      prevType.current !== employeeType
-    ) {
-      setPage(1);
-      prevSearch.current = debouncedSearch;
-      prevStatus.current = status;
-      prevType.current = employeeType;
-    }
+    setPage(1);
   }, [debouncedSearch, status, employeeType]);
 
   const { data, isLoading } = useEmployees({
