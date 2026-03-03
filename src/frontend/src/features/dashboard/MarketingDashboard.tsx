@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useKpiDashboard, useKpiDefinitions, useKpiHistory } from '@/hooks/useKpis';
 import { formatCurrency, formatPercent, formatNumber } from '@/lib/format';
@@ -32,6 +33,7 @@ function computeDates(range: DateRange) {
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t } = useTranslation('dashboard');
   const { selectedEntityId, selectedEntity } = useEntity();
   const [dateRange, setDateRange] = useState<DateRange>('12m');
 
@@ -78,13 +80,13 @@ export function Component() {
       dashboard?.kpis.find((k) => k.kpiId === kpiId)?.value ?? 0;
 
     return [
-      { stage: 'Visitors', Count: getKpiValue('website_visitors') },
-      { stage: 'Leads', Count: getKpiValue('total_leads') },
-      { stage: 'MQLs', Count: getKpiValue('mqls') },
-      { stage: 'SQLs', Count: getKpiValue('sqls') },
-      { stage: 'Customers', Count: getKpiValue('new_customers') },
+      { stage: t('marketing.funnel.visitors'), Count: getKpiValue('website_visitors') },
+      { stage: t('marketing.funnel.leads'), Count: getKpiValue('total_leads') },
+      { stage: t('marketing.funnel.mqls'), Count: getKpiValue('mqls') },
+      { stage: t('marketing.funnel.sqls'), Count: getKpiValue('sqls') },
+      { stage: t('marketing.funnel.customers'), Count: getKpiValue('new_customers') },
     ];
-  }, [dashboard]);
+  }, [dashboard, t]);
 
   // -----------------------------------------------------------------------
   // Marketing ROI trend data
@@ -120,13 +122,13 @@ export function Component() {
 
     // Placeholder structure when no data is available
     return [
-      { channel: 'Organic Search', Spend: 0 },
-      { channel: 'Paid Search', Spend: 0 },
-      { channel: 'Social Media', Spend: 0 },
-      { channel: 'Email', Spend: 0 },
-      { channel: 'Referral', Spend: 0 },
+      { channel: t('marketing.channels.organicSearch'), Spend: 0 },
+      { channel: t('marketing.channels.paidSearch'), Spend: 0 },
+      { channel: t('marketing.channels.socialMedia'), Spend: 0 },
+      { channel: t('marketing.channels.email'), Spend: 0 },
+      { channel: t('marketing.channels.referral'), Spend: 0 },
     ];
-  }, [dashboard]);
+  }, [dashboard, t]);
 
   // -----------------------------------------------------------------------
   // Loading state
@@ -152,8 +154,8 @@ export function Component() {
   if (!selectedEntityId) {
     return (
       <EmptyState
-        title="No Entity Selected"
-        description="Select a legal entity to view marketing data."
+        title={t('noEntitySelected.title')}
+        description={t('noEntitySelected.marketingDescription')}
       />
     );
   }
@@ -165,7 +167,7 @@ export function Component() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Marketing Dashboard"
+        title={t('marketing.title')}
         description={selectedEntity?.name ?? undefined}
         actions={
           <div className="flex gap-1 rounded-lg bg-muted p-1">
@@ -188,8 +190,8 @@ export function Component() {
         <KpiGrid kpis={marketingKpis} />
       ) : (
         <EmptyState
-          title="No Marketing KPIs"
-          description="Marketing KPIs have not been configured yet."
+          title={t('emptyKpis.marketing.title')}
+          description={t('emptyKpis.marketing.description')}
         />
       )}
 
@@ -198,7 +200,7 @@ export function Component() {
         {/* Lead Funnel */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Lead Funnel</CardTitle>
+            <CardTitle className="text-base">{t('marketing.leadFunnel')}</CardTitle>
           </CardHeader>
           <CardContent>
             <BarChart
@@ -215,7 +217,7 @@ export function Component() {
         {/* Marketing ROI Trend */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Marketing ROI Trend</CardTitle>
+            <CardTitle className="text-base">{t('marketing.roiTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             {roiTrendData.length > 0 ? (
@@ -229,7 +231,7 @@ export function Component() {
               />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                No marketing ROI history available.
+                {t('marketing.noRoiHistory')}
               </p>
             )}
           </CardContent>
@@ -238,7 +240,7 @@ export function Component() {
         {/* Channel Performance */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Channel Performance</CardTitle>
+            <CardTitle className="text-base">{t('marketing.channelPerformance')}</CardTitle>
           </CardHeader>
           <CardContent>
             <BarChart

@@ -1,1 +1,108 @@
-{}
+{
+  "title": "Dashboard",
+  "noEntitySelected": {
+    "title": "No Entity Selected",
+    "description": "Select a legal entity from the sidebar to view your KPI dashboard.",
+    "hrDescription": "Select a legal entity to view HR data.",
+    "salesDescription": "Select a legal entity to view sales data.",
+    "marketingDescription": "Select a legal entity to view marketing data."
+  },
+  "domains": {
+    "financial": "Financial",
+    "sales": "Sales",
+    "marketing": "Marketing",
+    "hr": "HR",
+    "general": "General"
+  },
+  "emptyKpis": {
+    "financial": {
+      "title": "No Financial KPIs",
+      "description": "No financial KPIs have been configured yet."
+    },
+    "sales": {
+      "title": "No Sales KPIs",
+      "description": "Sales KPIs have not been configured yet."
+    },
+    "marketing": {
+      "title": "No Marketing KPIs",
+      "description": "Marketing KPIs have not been configured yet."
+    },
+    "hr": {
+      "title": "No HR KPIs",
+      "description": "HR KPIs have not been configured yet."
+    },
+    "general": {
+      "title": "No General KPIs",
+      "description": "No general KPIs have been configured yet."
+    }
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "cashFlow": "Cash Flow",
+    "scenarios": "Scenarios",
+    "datevExport": "DATEV Export",
+    "financialDetails": "Financial Details"
+  },
+  "hr": {
+    "title": "HR Dashboard",
+    "headcountTrend": "Headcount Trend",
+    "turnoverVsRetention": "Turnover vs Retention",
+    "costBreakdown": "HR Cost Breakdown",
+    "noHeadcountHistory": "No headcount history available.",
+    "noTurnoverHistory": "No turnover/retention history available.",
+    "costCategories": {
+      "salary": "Salary",
+      "benefits": "Benefits",
+      "recruiting": "Recruiting",
+      "training": "Training"
+    }
+  },
+  "sales": {
+    "title": "Sales Dashboard",
+    "mrrTrend": "MRR Trend",
+    "pipelineFunnel": "Pipeline Funnel",
+    "churnVsRetention": "Churn vs Retention",
+    "noMrrHistory": "No MRR history data available.",
+    "pipeline": {
+      "leads": "Leads",
+      "qualified": "Qualified",
+      "proposal": "Proposal",
+      "won": "Won"
+    },
+    "churn": {
+      "retained": "Retained",
+      "churned": "Churned"
+    }
+  },
+  "marketing": {
+    "title": "Marketing Dashboard",
+    "leadFunnel": "Lead Funnel",
+    "roiTrend": "Marketing ROI Trend",
+    "channelPerformance": "Channel Performance",
+    "noRoiHistory": "No marketing ROI history available.",
+    "funnel": {
+      "visitors": "Visitors",
+      "leads": "Leads",
+      "mqls": "MQLs",
+      "sqls": "SQLs",
+      "customers": "Customers"
+    },
+    "channels": {
+      "organicSearch": "Organic Search",
+      "paidSearch": "Paid Search",
+      "socialMedia": "Social Media",
+      "email": "Email",
+      "referral": "Referral"
+    }
+  },
+  "alerts": {
+    "acknowledge": "Acknowledge",
+    "dismiss": "Dismiss",
+    "showLess": "Show less",
+    "showMore_one": "Show {{count}} more alert",
+    "showMore_other": "Show {{count}} more alerts"
+  },
+  "kpi": {
+    "target": "Target: {{value}}"
+  }
+}

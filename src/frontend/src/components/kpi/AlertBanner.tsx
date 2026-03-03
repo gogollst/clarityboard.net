@@ -8,6 +8,7 @@ import {
   Check,
   X,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { AlertDto } from '@/types/kpi';
@@ -49,6 +50,7 @@ export default function AlertBanner({
   onAcknowledge,
   onDismiss,
 }: AlertBannerProps) {
+  const { t } = useTranslation('dashboard');
   const [expanded, setExpanded] = useState(false);
 
   // Only show active alerts
@@ -102,7 +104,7 @@ export default function AlertBanner({
                   size="icon"
                   className="h-7 w-7"
                   onClick={() => onAcknowledge(alert.id)}
-                  title="Acknowledge"
+                  title={t('alerts.acknowledge')}
                 >
                   <Check className="h-3.5 w-3.5" />
                 </Button>
@@ -113,7 +115,7 @@ export default function AlertBanner({
                   size="icon"
                   className="h-7 w-7"
                   onClick={() => onDismiss(alert.id)}
-                  title="Dismiss"
+                  title={t('alerts.dismiss')}
                 >
                   <X className="h-3.5 w-3.5" />
                 </Button>
@@ -132,11 +134,11 @@ export default function AlertBanner({
         >
           {expanded ? (
             <>
-              Show less <ChevronUp className="ml-1 h-3 w-3" />
+              {t('alerts.showLess')} <ChevronUp className="ml-1 h-3 w-3" />
             </>
           ) : (
             <>
-              Show {activeAlerts.length - INITIAL_DISPLAY_COUNT} more alerts{' '}
+              {t('alerts.showMore', { count: activeAlerts.length - INITIAL_DISPLAY_COUNT })}{' '}
               <ChevronDown className="ml-1 h-3 w-3" />
             </>
           )}

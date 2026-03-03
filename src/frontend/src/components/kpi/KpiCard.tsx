@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -87,6 +88,8 @@ export default function KpiCard({
   sparklineData,
   isLoading,
 }: KpiCardProps) {
+  const { t } = useTranslation('dashboard');
+
   if (isLoading) {
     return (
       <Card className="border-t-2 border-t-slate-200">
@@ -138,7 +141,7 @@ export default function KpiCard({
           )}
           {targetValue !== undefined && (
             <Badge variant="outline" className="text-xs">
-              Target: {formatValue(targetValue, unit)}
+              {t('kpi.target', { value: formatValue(targetValue, unit) })}
             </Badge>
           )}
         </div>

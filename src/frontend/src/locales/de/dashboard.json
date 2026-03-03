@@ -1,1 +1,108 @@
-{}
+{
+  "title": "Dashboard",
+  "noEntitySelected": {
+    "title": "Keine Entity ausgewählt",
+    "description": "Wähle eine juristische Person aus der Seitenleiste, um dein KPI-Dashboard anzuzeigen.",
+    "hrDescription": "Wähle eine juristische Person aus, um HR-Daten anzuzeigen.",
+    "salesDescription": "Wähle eine juristische Person aus, um Vertriebsdaten anzuzeigen.",
+    "marketingDescription": "Wähle eine juristische Person aus, um Marketingdaten anzuzeigen."
+  },
+  "domains": {
+    "financial": "Finanzen",
+    "sales": "Vertrieb",
+    "marketing": "Marketing",
+    "hr": "HR",
+    "general": "Allgemein"
+  },
+  "emptyKpis": {
+    "financial": {
+      "title": "Keine Finanz-KPIs",
+      "description": "Es wurden noch keine Finanz-KPIs konfiguriert."
+    },
+    "sales": {
+      "title": "Keine Vertriebs-KPIs",
+      "description": "Es wurden noch keine Vertriebs-KPIs konfiguriert."
+    },
+    "marketing": {
+      "title": "Keine Marketing-KPIs",
+      "description": "Es wurden noch keine Marketing-KPIs konfiguriert."
+    },
+    "hr": {
+      "title": "Keine HR-KPIs",
+      "description": "Es wurden noch keine HR-KPIs konfiguriert."
+    },
+    "general": {
+      "title": "Keine allgemeinen KPIs",
+      "description": "Es wurden noch keine allgemeinen KPIs konfiguriert."
+    }
+  },
+  "quickActions": {
+    "title": "Schnellzugriff",
+    "cashFlow": "Cash Flow",
+    "scenarios": "Szenarien",
+    "datevExport": "DATEV-Export",
+    "financialDetails": "Finanzdetails"
+  },
+  "hr": {
+    "title": "HR Dashboard",
+    "headcountTrend": "Headcount-Verlauf",
+    "turnoverVsRetention": "Fluktuation vs. Verbleib",
+    "costBreakdown": "HR-Kostenaufschlüsselung",
+    "noHeadcountHistory": "Kein Headcount-Verlauf verfügbar.",
+    "noTurnoverHistory": "Kein Fluktuations-/Verbleibsverlauf verfügbar.",
+    "costCategories": {
+      "salary": "Gehalt",
+      "benefits": "Sozialleistungen",
+      "recruiting": "Recruiting",
+      "training": "Weiterbildung"
+    }
+  },
+  "sales": {
+    "title": "Vertriebs-Dashboard",
+    "mrrTrend": "MRR-Verlauf",
+    "pipelineFunnel": "Pipeline-Trichter",
+    "churnVsRetention": "Churn vs. Verbleib",
+    "noMrrHistory": "Keine MRR-Verlaufsdaten verfügbar.",
+    "pipeline": {
+      "leads": "Leads",
+      "qualified": "Qualifiziert",
+      "proposal": "Angebot",
+      "won": "Gewonnen"
+    },
+    "churn": {
+      "retained": "Verbleibend",
+      "churned": "Abgewandert"
+    }
+  },
+  "marketing": {
+    "title": "Marketing-Dashboard",
+    "leadFunnel": "Lead-Trichter",
+    "roiTrend": "Marketing-ROI-Verlauf",
+    "channelPerformance": "Kanal-Performance",
+    "noRoiHistory": "Kein Marketing-ROI-Verlauf verfügbar.",
+    "funnel": {
+      "visitors": "Besucher",
+      "leads": "Leads",
+      "mqls": "MQLs",
+      "sqls": "SQLs",
+      "customers": "Kunden"
+    },
+    "channels": {
+      "organicSearch": "Organische Suche",
+      "paidSearch": "Bezahlte Suche",
+      "socialMedia": "Social Media",
+      "email": "E-Mail",
+      "referral": "Empfehlung"
+    }
+  },
+  "alerts": {
+    "acknowledge": "Bestätigen",
+    "dismiss": "Schließen",
+    "showLess": "Weniger anzeigen",
+    "showMore_one": "{{count}} weiteren Alert anzeigen",
+    "showMore_other": "{{count}} weitere Alerts anzeigen"
+  },
+  "kpi": {
+    "target": "Ziel: {{value}}"
+  }
+}

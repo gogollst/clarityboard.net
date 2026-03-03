@@ -1,1 +1,110 @@
-{}
+{
+  "title": "Дашборд",
+  "noEntitySelected": {
+    "title": "Юридическое лицо не выбрано",
+    "description": "Выберите юридическое лицо в боковой панели для просмотра KPI-дашборда.",
+    "hrDescription": "Выберите юридическое лицо для просмотра данных HR.",
+    "salesDescription": "Выберите юридическое лицо для просмотра данных продаж.",
+    "marketingDescription": "Выберите юридическое лицо для просмотра данных маркетинга."
+  },
+  "domains": {
+    "financial": "Финансы",
+    "sales": "Продажи",
+    "marketing": "Маркетинг",
+    "hr": "HR",
+    "general": "Общее"
+  },
+  "emptyKpis": {
+    "financial": {
+      "title": "Нет финансовых KPI",
+      "description": "Финансовые KPI ещё не настроены."
+    },
+    "sales": {
+      "title": "Нет KPI продаж",
+      "description": "KPI продаж ещё не настроены."
+    },
+    "marketing": {
+      "title": "Нет маркетинговых KPI",
+      "description": "Маркетинговые KPI ещё не настроены."
+    },
+    "hr": {
+      "title": "Нет HR-KPI",
+      "description": "HR-KPI ещё не настроены."
+    },
+    "general": {
+      "title": "Нет общих KPI",
+      "description": "Общие KPI ещё не настроены."
+    }
+  },
+  "quickActions": {
+    "title": "Быстрые действия",
+    "cashFlow": "Денежный поток",
+    "scenarios": "Сценарии",
+    "datevExport": "Экспорт DATEV",
+    "financialDetails": "Финансовые подробности"
+  },
+  "hr": {
+    "title": "HR-дашборд",
+    "headcountTrend": "Динамика численности",
+    "turnoverVsRetention": "Текучесть и удержание",
+    "costBreakdown": "Структура затрат HR",
+    "noHeadcountHistory": "История численности персонала отсутствует.",
+    "noTurnoverHistory": "История текучести/удержания отсутствует.",
+    "costCategories": {
+      "salary": "Зарплата",
+      "benefits": "Льготы",
+      "recruiting": "Рекрутинг",
+      "training": "Обучение"
+    }
+  },
+  "sales": {
+    "title": "Дашборд продаж",
+    "mrrTrend": "Динамика MRR",
+    "pipelineFunnel": "Воронка продаж",
+    "churnVsRetention": "Отток и удержание",
+    "noMrrHistory": "Данные по истории MRR отсутствуют.",
+    "pipeline": {
+      "leads": "Лиды",
+      "qualified": "Квалифицированные",
+      "proposal": "Предложение",
+      "won": "Закрытые сделки"
+    },
+    "churn": {
+      "retained": "Удержанные",
+      "churned": "Ушедшие"
+    }
+  },
+  "marketing": {
+    "title": "Маркетинговый дашборд",
+    "leadFunnel": "Воронка лидов",
+    "roiTrend": "Динамика ROI маркетинга",
+    "channelPerformance": "Эффективность каналов",
+    "noRoiHistory": "История ROI маркетинга отсутствует.",
+    "funnel": {
+      "visitors": "Посетители",
+      "leads": "Лиды",
+      "mqls": "MQL",
+      "sqls": "SQL",
+      "customers": "Клиенты"
+    },
+    "channels": {
+      "organicSearch": "Органический поиск",
+      "paidSearch": "Платный поиск",
+      "socialMedia": "Социальные сети",
+      "email": "Эл. почта",
+      "referral": "Реферальный"
+    }
+  },
+  "alerts": {
+    "acknowledge": "Подтвердить",
+    "dismiss": "Закрыть",
+    "showLess": "Показать меньше",
+    "showMore_one": "Показать ещё {{count}} уведомление",
+    "showMore_few": "Показать ещё {{count}} уведомления",
+    "showMore_many": "Показать ещё {{count}} уведомлений",
+    "showMore_other": "Показать ещё {{count}} уведомлений"
+  },
+  "kpi": {
+    "target": "Цель: {{value}}"
+  }
+}

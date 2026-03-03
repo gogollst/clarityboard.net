@@ -5,6 +5,7 @@ import {
   FileSpreadsheet,
   FlaskConical,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useKpiDashboard, useKpiDefinitions } from '@/hooks/useKpis';
 import KpiGrid from '@/components/kpi/KpiGrid';
@@ -23,13 +24,7 @@ import type { KpiDefinition } from '@/types/kpi';
 
 type Domain = KpiDefinition['domain'];
 
-const DOMAIN_TABS: { value: Domain; label: string }[] = [
-  { value: 'financial', label: 'Financial' },
-  { value: 'sales', label: 'Sales' },
-  { value: 'marketing', label: 'Marketing' },
-  { value: 'hr', label: 'HR' },
-  { value: 'general', label: 'General' },
-];
+const DOMAIN_KEYS: Domain[] = ['financial', 'sales', 'marketing', 'hr', 'general'];
 
 function buildKpiCards(
   domain: Domain,
@@ -56,6 +51,7 @@ function buildKpiCards(
 // ---------------------------------------------------------------------------
 
 export default function DashboardPage() {
+  const { t } = useTranslation('dashboard');
   const { selectedEntityId, selectedEntity } = useEntity();
   const { data: dashboard, isLoading } = useKpiDashboard(selectedEntityId);
   const { data: definitions } = useKpiDefinitions();
@@ -87,8 +83,8 @@ export default function DashboardPage() {
   if (!selectedEntityId) {
     return (
       <EmptyState
-        title="No Entity Selected"
-        description="Select a legal entity from the sidebar to view your KPI dashboard."
+        title={t('noEntitySelected.title')}
+        description={t('noEntitySelected.description')}
       />
     );
   }
@@ -100,7 +96,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Dashboard"
+        title={t('title')}
         description={selectedEntity?.name ?? undefined}
       />
 
@@ -112,23 +108,23 @@ export default function DashboardPage() {
       {/* Domain tabs */}
       <Tabs defaultValue="financial">
         <TabsList>
-          {DOMAIN_TABS.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}
+          {DOMAIN_KEYS.map((domain) => (
+            <TabsTrigger key={domain} value={domain}>
+              {t(`domains.${domain}`)}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {DOMAIN_TABS.map((tab) => {
-          const kpis = buildKpiCards(tab.value, definitions, dashboard);
+        {DOMAIN_KEYS.map((domain) => {
+          const kpis = buildKpiCards(domain, definitions, dashboard);
           return (
-            <TabsContent key={tab.value} value={tab.value}>
+            <TabsContent key={domain} value={domain}>
               {kpis.length > 0 ? (
                 <KpiGrid kpis={kpis} />
               ) : (
                 <EmptyState
-                  title={`No ${tab.label} KPIs`}
-                  description={`No ${tab.label.toLowerCase()} KPIs have been configured yet.`}
+                  title={t(`emptyKpis.${domain}.title`)}
+                  description={t(`emptyKpis.${domain}.description`)}
                 />
               )}
             </TabsContent>
@@ -139,32 +135,32 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Quick Actions</CardTitle>
+          <CardTitle className="text-base">{t('quickActions.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
             <Button variant="outline" asChild>
               <Link to="/cashflow">
                 <Banknote className="h-4 w-4" />
-                Cash Flow
+                {t('quickActions.cashFlow')}
               </Link>
             </Button>
             <Button variant="outline" asChild>
               <Link to="/scenarios">
                 <FlaskConical className="h-4 w-4" />
-                Scenarios
+                {t('quickActions.scenarios')}
               </Link>
             </Button>
             <Button variant="outline" asChild>
               <Link to="/datev">
                 <FileSpreadsheet className="h-4 w-4" />
-                DATEV Export
+                {t('quickActions.datevExport')}
               </Link>
             </Button>
             <Button variant="outline" asChild>
               <Link to="/kpis/financial">
                 <BarChart3 className="h-4 w-4" />
-                Financial Details
+                {t('quickActions.financialDetails')}
               </Link>
             </Button>
           </div>

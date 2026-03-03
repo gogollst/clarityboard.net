@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useKpiDashboard, useKpiDefinitions, useKpiHistory } from '@/hooks/useKpis';
 import { formatCurrency, formatPercent, formatNumber } from '@/lib/format';
@@ -33,6 +34,7 @@ function computeDates(range: DateRange) {
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t } = useTranslation('dashboard');
   const { selectedEntityId, selectedEntity } = useEntity();
   const [dateRange, setDateRange] = useState<DateRange>('12m');
 
@@ -149,7 +151,9 @@ export function Component() {
         training: '#8b5cf6',
       };
       return Object.entries(costKpi.components).map(([category, value]) => ({
-        name: category.charAt(0).toUpperCase() + category.slice(1),
+        name: t(`hr.costCategories.${category}`, {
+          defaultValue: category.charAt(0).toUpperCase() + category.slice(1),
+        }),
         value,
         color: colorMap[category] ?? undefined,
       }));
@@ -164,23 +168,13 @@ export function Component() {
     const recruiting = getKpiValue('recruiting_cost');
     const training = getKpiValue('training_cost');
 
-    // Only show if we have at least some data
-    if (salary === 0 && benefits === 0 && recruiting === 0 && training === 0) {
-      return [
-        { name: 'Salary', value: 0, color: '#3b82f6' },
-        { name: 'Benefits', value: 0, color: '#10b981' },
-        { name: 'Recruiting', value: 0, color: '#f59e0b' },
-        { name: 'Training', value: 0, color: '#8b5cf6' },
-      ];
-    }
-
     return [
-      { name: 'Salary', value: salary, color: '#3b82f6' },
-      { name: 'Benefits', value: benefits, color: '#10b981' },
-      { name: 'Recruiting', value: recruiting, color: '#f59e0b' },
-      { name: 'Training', value: training, color: '#8b5cf6' },
+      { name: t('hr.costCategories.salary'), value: salary, color: '#3b82f6' },
+      { name: t('hr.costCategories.benefits'), value: benefits, color: '#10b981' },
+      { name: t('hr.costCategories.recruiting'), value: recruiting, color: '#f59e0b' },
+      { name: t('hr.costCategories.training'), value: training, color: '#8b5cf6' },
     ];
-  }, [dashboard]);
+  }, [dashboard, t]);
 
   // -----------------------------------------------------------------------
   // Loading state
@@ -206,8 +200,8 @@ export function Component() {
   if (!selectedEntityId) {
     return (
       <EmptyState
-        title="No Entity Selected"
-        description="Select a legal entity to view HR data."
+        title={t('noEntitySelected.title')}
+        description={t('noEntitySelected.hrDescription')}
       />
     );
   }
@@ -219,7 +213,7 @@ export function Component() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="HR Dashboard"
+        title={t('hr.title')}
         description={selectedEntity?.name ?? undefined}
         actions={
           <div className="flex gap-1 rounded-lg bg-muted p-1">
@@ -242,8 +236,8 @@ export function Component() {
         <KpiGrid kpis={hrKpis} />
       ) : (
         <EmptyState
-          title="No HR KPIs"
-          description="HR KPIs have not been configured yet."
+          title={t('emptyKpis.hr.title')}
+          description={t('emptyKpis.hr.description')}
         />
       )}
 
@@ -252,7 +246,7 @@ export function Component() {
         {/* Headcount Trend */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Headcount Trend</CardTitle>
+            <CardTitle className="text-base">{t('hr.headcountTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             {headcountTrendData.length > 0 ? (
@@ -266,7 +260,7 @@ export function Component() {
               />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                No headcount history available.
+                {t('hr.noHeadcountHistory')}
               </p>
             )}
           </CardContent>
@@ -275,7 +269,7 @@ export function Component() {
         {/* Turnover vs Retention */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Turnover vs Retention</CardTitle>
+            <CardTitle className="text-base">{t('hr.turnoverVsRetention')}</CardTitle>
           </CardHeader>
           <CardContent>
             {turnoverVsRetentionData.length > 0 ? (
@@ -288,7 +282,7 @@ export function Component() {
               />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                No turnover/retention history available.
+                {t('hr.noTurnoverHistory')}
               </p>
             )}
           </CardContent>
@@ -297,7 +291,7 @@ export function Component() {
         {/* Cost Breakdown */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">HR Cost Breakdown</CardTitle>
+            <CardTitle className="text-base">{t('hr.costBreakdown')}</CardTitle>
           </CardHeader>
           <CardContent>
             <DonutChart

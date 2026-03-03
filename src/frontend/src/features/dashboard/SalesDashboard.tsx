@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useKpiDashboard, useKpiDefinitions, useKpiHistory } from '@/hooks/useKpis';
 import { formatCurrency, formatPercent, formatNumber } from '@/lib/format';
@@ -33,6 +34,7 @@ function computeDates(range: DateRange) {
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t } = useTranslation('dashboard');
   const { selectedEntityId, selectedEntity } = useEntity();
   const [dateRange, setDateRange] = useState<DateRange>('12m');
 
@@ -95,12 +97,12 @@ export function Component() {
       dashboard?.kpis.find((k) => k.kpiId === kpiId)?.value ?? 0;
 
     return [
-      { stage: 'Leads', Count: getKpiValue('pipeline_leads') },
-      { stage: 'Qualified', Count: getKpiValue('pipeline_qualified') },
-      { stage: 'Proposal', Count: getKpiValue('pipeline_proposal') },
-      { stage: 'Won', Count: getKpiValue('pipeline_won') },
+      { stage: t('sales.pipeline.leads'), Count: getKpiValue('pipeline_leads') },
+      { stage: t('sales.pipeline.qualified'), Count: getKpiValue('pipeline_qualified') },
+      { stage: t('sales.pipeline.proposal'), Count: getKpiValue('pipeline_proposal') },
+      { stage: t('sales.pipeline.won'), Count: getKpiValue('pipeline_won') },
     ];
-  }, [dashboard]);
+  }, [dashboard, t]);
 
   // -----------------------------------------------------------------------
   // Churn vs Retention donut data
@@ -110,10 +112,10 @@ export function Component() {
     const churn = dashboard?.kpis.find((k) => k.kpiId === 'churn_rate')?.value ?? 0;
     const retention = 100 - churn;
     return [
-      { name: 'Retained', value: retention, color: '#10b981' },
-      { name: 'Churned', value: churn, color: '#ef4444' },
+      { name: t('sales.churn.retained'), value: retention, color: '#10b981' },
+      { name: t('sales.churn.churned'), value: churn, color: '#ef4444' },
     ];
-  }, [dashboard]);
+  }, [dashboard, t]);
 
   // -----------------------------------------------------------------------
   // Loading state
@@ -139,8 +141,8 @@ export function Component() {
   if (!selectedEntityId) {
     return (
       <EmptyState
-        title="No Entity Selected"
-        description="Select a legal entity to view sales data."
+        title={t('noEntitySelected.title')}
+        description={t('noEntitySelected.salesDescription')}
       />
     );
   }
@@ -152,7 +154,7 @@ export function Component() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Sales Dashboard"
+        title={t('sales.title')}
         description={selectedEntity?.name ?? undefined}
         actions={
           <div className="flex gap-1 rounded-lg bg-muted p-1">
@@ -175,8 +177,8 @@ export function Component() {
         <KpiGrid kpis={salesKpis} />
       ) : (
         <EmptyState
-          title="No Sales KPIs"
-          description="Sales KPIs have not been configured yet."
+          title={t('emptyKpis.sales.title')}
+          description={t('emptyKpis.sales.description')}
         />
       )}
 
@@ -185,7 +187,7 @@ export function Component() {
         {/* MRR Trend */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">MRR Trend</CardTitle>
+            <CardTitle className="text-base">{t('sales.mrrTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             {mrrTrendData.length > 0 ? (
@@ -199,7 +201,7 @@ export function Component() {
               />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                No MRR history data available.
+                {t('sales.noMrrHistory')}
               </p>
             )}
           </CardContent>
@@ -208,7 +210,7 @@ export function Component() {
         {/* Pipeline Funnel */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Pipeline Funnel</CardTitle>
+            <CardTitle className="text-base">{t('sales.pipelineFunnel')}</CardTitle>
           </CardHeader>
           <CardContent>
             <BarChart
@@ -225,7 +227,7 @@ export function Component() {
         {/* Churn vs Retention */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Churn vs Retention</CardTitle>
+            <CardTitle className="text-base">{t('sales.churnVsRetention')}</CardTitle>
           </CardHeader>
           <CardContent>
             <DonutChart
