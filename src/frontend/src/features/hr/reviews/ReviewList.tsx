@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useReviews } from '@/hooks/useHr';
 import PageHeader from '@/components/shared/PageHeader';
 import { Badge } from '@/components/ui/badge';
@@ -28,46 +29,6 @@ import type { PerformanceReview } from '@/types/hr';
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatDate(iso: string | undefined): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('de-DE');
-}
-
-function reviewTypeLabel(type: string): string {
-  switch (type) {
-    case 'Annual':      return 'Jährlich';
-    case 'Probation':   return 'Probezeit';
-    case 'Quarterly':   return 'Quartal';
-    case 'ThreeSixty':  return '360°';
-    default:            return type;
-  }
-}
-
-function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case 'Draft':
-      return (
-        <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-          Entwurf
-        </Badge>
-      );
-    case 'InProgress':
-      return (
-        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
-          In Bearbeitung
-        </Badge>
-      );
-    case 'Completed':
-      return (
-        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
-          Abgeschlossen
-        </Badge>
-      );
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-}
-
 function RatingDisplay({ rating }: { rating?: number }) {
   if (rating == null) return <span className="text-muted-foreground">—</span>;
   return (
@@ -88,6 +49,48 @@ interface ReviewRowProps {
 }
 
 function ReviewRow({ review, onDetails }: ReviewRowProps) {
+  const { t, i18n } = useTranslation('hr');
+
+  function formatDate(iso: string | undefined): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString(i18n.language);
+  }
+
+  function reviewTypeLabel(type: string): string {
+    switch (type) {
+      case 'Annual':      return t('reviews.reviewType.Annual');
+      case 'Probation':   return t('reviews.reviewType.Probation');
+      case 'Quarterly':   return t('reviews.reviewType.Quarterly');
+      case 'ThreeSixty':  return t('reviews.reviewType.ThreeSixty');
+      default:            return type;
+    }
+  }
+
+  function StatusBadge({ status }: { status: string }) {
+    switch (status) {
+      case 'Draft':
+        return (
+          <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+            {t('reviews.status.Draft')}
+          </Badge>
+        );
+      case 'InProgress':
+        return (
+          <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+            {t('reviews.status.InProgress')}
+          </Badge>
+        );
+      case 'Completed':
+        return (
+          <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
+            {t('reviews.status.Completed')}
+          </Badge>
+        );
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  }
+
   return (
     <TableRow>
       <TableCell className="font-medium">{review.employeeFullName || '—'}</TableCell>
@@ -107,7 +110,7 @@ function ReviewRow({ review, onDetails }: ReviewRowProps) {
       </TableCell>
       <TableCell>
         <Button variant="ghost" size="sm" onClick={() => onDetails(review.id)}>
-          Details
+          {t('travel.detailsButton')}
         </Button>
       </TableCell>
     </TableRow>
@@ -119,6 +122,7 @@ function ReviewRow({ review, onDetails }: ReviewRowProps) {
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t } = useTranslation('hr');
   const navigate = useNavigate();
   const [reviewType, setReviewType] = useState<string>('');
   const [status, setStatus] = useState<string>('');
@@ -137,7 +141,7 @@ export function Component() {
 
   return (
     <div>
-      <PageHeader title="Beurteilungen" />
+      <PageHeader title={t('reviews.title')} />
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-3">
@@ -146,14 +150,14 @@ export function Component() {
           onValueChange={(v) => { setReviewType(v === 'all' ? '' : v); setPage(1); }}
         >
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Typ" />
+            <SelectValue placeholder={t('reviews.allTypes')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle Typen</SelectItem>
-            <SelectItem value="Annual">Jährlich</SelectItem>
-            <SelectItem value="Probation">Probezeit</SelectItem>
-            <SelectItem value="Quarterly">Quartal</SelectItem>
-            <SelectItem value="ThreeSixty">360°</SelectItem>
+            <SelectItem value="all">{t('reviews.allTypes')}</SelectItem>
+            <SelectItem value="Annual">{t('reviews.reviewType.Annual')}</SelectItem>
+            <SelectItem value="Probation">{t('reviews.reviewType.Probation')}</SelectItem>
+            <SelectItem value="Quarterly">{t('reviews.reviewType.Quarterly')}</SelectItem>
+            <SelectItem value="ThreeSixty">{t('reviews.reviewType.ThreeSixty')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -162,13 +166,13 @@ export function Component() {
           onValueChange={(v) => { setStatus(v === 'all' ? '' : v); setPage(1); }}
         >
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t('reviews.allStatuses')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle Status</SelectItem>
-            <SelectItem value="Draft">Entwurf</SelectItem>
-            <SelectItem value="InProgress">In Bearbeitung</SelectItem>
-            <SelectItem value="Completed">Abgeschlossen</SelectItem>
+            <SelectItem value="all">{t('reviews.allStatuses')}</SelectItem>
+            <SelectItem value="Draft">{t('reviews.status.Draft')}</SelectItem>
+            <SelectItem value="InProgress">{t('reviews.status.InProgress')}</SelectItem>
+            <SelectItem value="Completed">{t('reviews.status.Completed')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -183,19 +187,19 @@ export function Component() {
             </div>
           ) : reviews.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">
-              Keine Beurteilungen vorhanden.
+              {t('reviews.noReviews')}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Mitarbeiter</TableHead>
-                  <TableHead>Beurteiler</TableHead>
-                  <TableHead>Zeitraum</TableHead>
-                  <TableHead>Typ</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Bewertung</TableHead>
-                  <TableHead>Erstellt am</TableHead>
+                  <TableHead>{t('reviews.columns.employee')}</TableHead>
+                  <TableHead>{t('reviews.columns.reviewer')}</TableHead>
+                  <TableHead>{t('reviews.columns.period')}</TableHead>
+                  <TableHead>{t('reviews.columns.type')}</TableHead>
+                  <TableHead>{t('reviews.columns.status')}</TableHead>
+                  <TableHead>{t('reviews.columns.rating')}</TableHead>
+                  <TableHead>{t('reviews.columns.createdAt')}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -217,7 +221,7 @@ export function Component() {
       {totalPages > 1 && (
         <div className="mt-4 flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            Seite {page} von {totalPages} ({data?.totalCount ?? 0} Einträge)
+            {t('reviews.pagination', { page, total: totalPages, count: data?.totalCount ?? 0 })}
           </span>
           <div className="flex gap-2">
             <Button

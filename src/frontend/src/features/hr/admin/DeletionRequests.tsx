@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useDeletionRequests } from '@/hooks/useHr';
 import PageHeader from '@/components/shared/PageHeader';
 import { Badge } from '@/components/ui/badge';
@@ -14,53 +15,50 @@ import { Card, CardContent } from '@/components/ui/card';
 import type { DeletionRequest } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatDate(iso: string | undefined): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('de-DE');
-}
-
-function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case 'Pending':
-      return (
-        <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-          Ausstehend
-        </Badge>
-      );
-    case 'Completed':
-      return (
-        <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-          Abgeschlossen
-        </Badge>
-      );
-    case 'Blocked':
-      return (
-        <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-          Blockiert
-        </Badge>
-      );
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Main Page Component
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t, i18n } = useTranslation('hr');
   const { data, isLoading, isError } = useDeletionRequests();
 
   const requests: DeletionRequest[] = data?.items ?? [];
 
+  function formatDate(iso: string | undefined): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString(i18n.language);
+  }
+
+  function StatusBadge({ status }: { status: string }) {
+    switch (status) {
+      case 'Pending':
+        return (
+          <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+            {t('admin.status.Pending')}
+          </Badge>
+        );
+      case 'Completed':
+        return (
+          <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            {t('admin.status.Completed')}
+          </Badge>
+        );
+      case 'Blocked':
+        return (
+          <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+            {t('admin.status.Blocked')}
+          </Badge>
+        );
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
-        title="DSGVO-Löschanträge"
-        description="Verwaltung geplanter Datenlöschungen gemäß DSGVO und steuerrechtlicher Aufbewahrungspflichten"
+        title={t('admin.deletionTitle')}
+        description={t('admin.deletionDescription')}
       />
 
       <Card>
@@ -75,13 +73,13 @@ export function Component() {
 
           {isError && (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              Fehler beim Laden der Löschanträge.
+              {t('admin.loadError')}
             </div>
           )}
 
           {!isLoading && !isError && requests.length === 0 && (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              Keine Löschanträge vorhanden.
+              {t('admin.noRequests')}
             </div>
           )}
 
@@ -89,12 +87,12 @@ export function Component() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Mitarbeiter</TableHead>
-                  <TableHead>Beantragt am</TableHead>
-                  <TableHead>Geplante Löschung</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Blockierungsgrund</TableHead>
-                  <TableHead>Abgeschlossen am</TableHead>
+                  <TableHead>{t('admin.columns.employee')}</TableHead>
+                  <TableHead>{t('admin.columns.requestedAt')}</TableHead>
+                  <TableHead>{t('admin.columns.scheduledAt')}</TableHead>
+                  <TableHead>{t('admin.columns.status')}</TableHead>
+                  <TableHead>{t('admin.columns.blockReason')}</TableHead>
+                  <TableHead>{t('admin.columns.completedAt')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

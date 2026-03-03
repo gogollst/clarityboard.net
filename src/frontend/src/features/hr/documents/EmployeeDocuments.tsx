@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEmployeeDocuments, useDeleteDocument, useEmployee, useUploadDocument } from '@/hooks/useHr';
 import { api } from '@/lib/api';
 import PageHeader from '@/components/shared/PageHeader';
@@ -39,25 +40,10 @@ import type { EmployeeDocument } from '@/types/hr';
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatDate(iso: string | undefined): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('de-DE');
-}
-
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1_048_576) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / 1_048_576).toFixed(1)} MB`;
-}
-
-function documentTypeLabel(type: string): string {
-  switch (type) {
-    case 'Contract':     return 'Vertrag';
-    case 'Certificate':  return 'Zertifikat';
-    case 'IdCopy':       return 'Ausweiskopie';
-    case 'Payslip':      return 'Gehaltszettel';
-    default:             return type;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -71,25 +57,28 @@ interface DeleteDialogProps {
 }
 
 function DeleteDialog({ document, onConfirm, onCancel }: DeleteDialogProps) {
+  const { t } = useTranslation('hr');
   return (
     <Dialog open={!!document} onOpenChange={(open) => { if (!open) onCancel(); }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Dokument löschen?</DialogTitle>
+          <DialogTitle>{t('documents.deleteDialogTitle')}</DialogTitle>
           <DialogDescription>
-            Soll das Dokument &quot;{document?.title}&quot; ({document?.fileName}) wirklich gelöscht
-            werden? Diese Aktion kann nicht rückgängig gemacht werden.
+            {t('documents.deleteDialogDescription', {
+              title: document?.title ?? '',
+              fileName: document?.fileName ?? '',
+            })}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
-            Abbrechen
+            {t('common:buttons.cancel')}
           </Button>
           <Button
             variant="destructive"
             onClick={onConfirm}
           >
-            Löschen
+            {t('common:buttons.delete')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -102,6 +91,7 @@ function DeleteDialog({ document, onConfirm, onCancel }: DeleteDialogProps) {
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t, i18n } = useTranslation('hr');
   const { employeeId } = useParams<{ employeeId: string }>();
   const [deleteTarget, setDeleteTarget] = useState<EmployeeDocument | null>(null);
 
@@ -116,6 +106,21 @@ export function Component() {
   const { data: documents, isLoading, isError } = useEmployeeDocuments(employeeId ?? '');
   const deleteDoc = useDeleteDocument(employeeId ?? '');
   const uploadDocument = useUploadDocument(employeeId ?? '');
+
+  function formatDate(iso: string | undefined): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString(i18n.language);
+  }
+
+  function documentTypeLabel(type: string): string {
+    switch (type) {
+      case 'Contract':     return t('documents.documentType.Contract');
+      case 'Certificate':  return t('documents.documentType.Certificate');
+      case 'IdCopy':       return t('documents.documentType.IdCopy');
+      case 'Payslip':      return t('documents.documentType.Payslip');
+      default:             return type;
+    }
+  }
 
   const handleDelete = () => {
     if (!deleteTarget) return;
@@ -157,17 +162,17 @@ export function Component() {
 
   const employeeName = employee
     ? `${employee.firstName} ${employee.lastName}`
-    : 'Mitarbeiter';
+    : t('documents.defaultEmployee');
 
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
-        title="Dokumente"
-        description={`Dokumentenverwaltung für ${employeeName}`}
+        title={t('documents.title')}
+        description={t('documents.description', { name: employeeName })}
         actions={
           <Button onClick={() => setUploadOpen(true)}>
             <Upload className="h-4 w-4 mr-2" />
-            Dokument hochladen
+            {t('documents.uploadButton')}
           </Button>
         }
       />
@@ -184,13 +189,13 @@ export function Component() {
 
           {isError && (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              Fehler beim Laden der Dokumente.
+              {t('documents.loadError')}
             </div>
           )}
 
           {!isLoading && !isError && documents && documents.length === 0 && (
             <div className="p-8 text-center text-sm text-muted-foreground">
-              Keine Dokumente vorhanden.
+              {t('documents.noDocuments')}
             </div>
           )}
 
@@ -198,14 +203,14 @@ export function Component() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Titel</TableHead>
-                  <TableHead>Typ</TableHead>
-                  <TableHead>Dateiname</TableHead>
-                  <TableHead>Größe</TableHead>
-                  <TableHead>Hochgeladen am</TableHead>
-                  <TableHead>Läuft ab</TableHead>
-                  <TableHead>Flags</TableHead>
-                  <TableHead className="text-right">Aktionen</TableHead>
+                  <TableHead>{t('documents.columns.title')}</TableHead>
+                  <TableHead>{t('documents.columns.type')}</TableHead>
+                  <TableHead>{t('documents.columns.fileName')}</TableHead>
+                  <TableHead>{t('documents.columns.size')}</TableHead>
+                  <TableHead>{t('documents.columns.uploadedAt')}</TableHead>
+                  <TableHead>{t('documents.columns.expiresAt')}</TableHead>
+                  <TableHead>{t('documents.columns.flags')}</TableHead>
+                  <TableHead className="text-right">{t('documents.columns.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -232,12 +237,12 @@ export function Component() {
                         {doc.isConfidential && (
                           <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 gap-1">
                             <Lock className="h-3 w-3" />
-                            Vertraulich
+                            {t('documents.flags.confidential')}
                           </Badge>
                         )}
                         {doc.deletionScheduledAt && (
                           <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                            Zur Löschung vorgesehen
+                            {t('documents.flags.scheduledForDeletion')}
                           </Badge>
                         )}
                       </div>
@@ -247,7 +252,7 @@ export function Component() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Herunterladen"
+                          title={t('documents.downloading')}
                           onClick={() => downloadDocument(doc.id, doc.fileName)}
                         >
                           <Download className="h-4 w-4" />
@@ -256,7 +261,7 @@ export function Component() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            title="Löschen"
+                            title={t('documents.deleting')}
                             className="text-red-500 hover:text-red-700"
                             onClick={() => setDeleteTarget(doc)}
                           >
@@ -277,7 +282,7 @@ export function Component() {
       <Dialog open={uploadOpen} onOpenChange={(open) => { if (!open) setUploadOpen(false); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Dokument hochladen</DialogTitle>
+            <DialogTitle>{t('documents.uploadDialogTitle')}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-2">
             {/* Hidden file input */}
@@ -292,14 +297,14 @@ export function Component() {
               }}
             />
             <div className="flex flex-col gap-1.5">
-              <Label>Datei</Label>
+              <Label>{t('documents.upload.file')}</Label>
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  Datei auswählen
+                  {t('documents.upload.selectFile')}
                 </Button>
                 {uploadFile && (
                   <span className="text-sm text-muted-foreground truncate max-w-[200px]">
@@ -309,25 +314,25 @@ export function Component() {
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="upload-type">Dokumenttyp</Label>
+              <Label htmlFor="upload-type">{t('documents.upload.documentType')}</Label>
               <Select value={uploadType} onValueChange={setUploadType}>
                 <SelectTrigger id="upload-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Contract">Vertrag</SelectItem>
-                  <SelectItem value="Certificate">Zertifikat</SelectItem>
-                  <SelectItem value="IdCopy">Ausweiskopie</SelectItem>
-                  <SelectItem value="Payslip">Gehaltszettel</SelectItem>
-                  <SelectItem value="Other">Sonstiges</SelectItem>
+                  <SelectItem value="Contract">{t('documents.documentType.Contract')}</SelectItem>
+                  <SelectItem value="Certificate">{t('documents.documentType.Certificate')}</SelectItem>
+                  <SelectItem value="IdCopy">{t('documents.documentType.IdCopy')}</SelectItem>
+                  <SelectItem value="Payslip">{t('documents.documentType.Payslip')}</SelectItem>
+                  <SelectItem value="Other">{t('documents.documentType.Other')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="upload-title">Titel (optional)</Label>
+              <Label htmlFor="upload-title">{t('documents.upload.title')}</Label>
               <Input
                 id="upload-title"
-                placeholder="Dateiname wird verwendet, wenn leer"
+                placeholder={t('documents.upload.titlePlaceholder')}
                 value={uploadTitle}
                 onChange={(e) => setUploadTitle(e.target.value)}
               />
@@ -335,13 +340,13 @@ export function Component() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setUploadOpen(false)}>
-              Abbrechen
+              {t('common:buttons.cancel')}
             </Button>
             <Button
               onClick={handleUpload}
               disabled={!uploadFile || uploadDocument.isPending}
             >
-              {uploadDocument.isPending ? 'Wird hochgeladen…' : 'Hochladen'}
+              {uploadDocument.isPending ? t('documents.uploading') : t('documents.uploadSubmit')}
             </Button>
           </DialogFooter>
         </DialogContent>

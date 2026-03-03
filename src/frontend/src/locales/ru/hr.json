@@ -1,1 +1,427 @@
-{}
+{
+  "employees": {
+    "title": "Сотрудники",
+    "newEmployee": "Новый сотрудник",
+    "searchPlaceholder": "Имя или табельный номер...",
+    "noEmployees": "Сотрудники не найдены.",
+    "notFound": "Сотрудник не найден.",
+    "createTitle": "Новый сотрудник",
+    "createCardTitle": "Данные сотрудника",
+    "createCardDescription": "Заполните все обязательные поля для создания нового сотрудника.",
+    "createButton": "Создать сотрудника",
+    "terminateButton": "Уволить сотрудника",
+    "noEntitySelected": "Пожалуйста, сначала выберите организацию.",
+    "columns": {
+      "employeeNumber": "Табельный №",
+      "name": "Имя",
+      "type": "Тип",
+      "status": "Статус",
+      "department": "Отдел",
+      "manager": "Руководитель",
+      "hireDate": "Дата приёма"
+    },
+    "status": {
+      "Active": "Активен",
+      "OnLeave": "В отпуске",
+      "Terminated": "Уволен"
+    },
+    "type": {
+      "Employee": "Штатный",
+      "Contractor": "Подрядчик"
+    },
+    "allStatuses": "Все статусы",
+    "allTypes": "Все типы",
+    "filterStatus": "Статус",
+    "filterType": "Тип занятости",
+    "fields": {
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "employeeNumber": "Табельный номер",
+      "employeeType": "Тип занятости",
+      "hireDate": "Дата приёма",
+      "dateOfBirth": "Дата рождения",
+      "taxId": "ИНН",
+      "department": "Отдел",
+      "status": "Статус"
+    },
+    "placeholders": {
+      "firstName": "Иван",
+      "lastName": "Иванов",
+      "employeeNumber": "EMP-001",
+      "taxId": "12345678901",
+      "selectType": "Выберите тип занятости",
+      "selectDepartment": "Выберите отдел (необязательно)",
+      "noDepartment": "Без отдела"
+    },
+    "validation": {
+      "firstNameRequired": "Имя обязательно",
+      "lastNameRequired": "Фамилия обязательна",
+      "employeeNumberRequired": "Табельный номер обязателен",
+      "employeeNumberMaxLength": "Табельный номер не должен превышать 20 символов",
+      "employeeTypeRequired": "Тип занятости обязателен",
+      "hireDateRequired": "Дата приёма обязательна",
+      "dateOfBirthRequired": "Дата рождения обязательна",
+      "taxIdRequired": "ИНН обязателен",
+      "taxIdMaxLength": "ИНН не должен превышать 50 символов"
+    },
+    "tabs": {
+      "profile": "Профиль",
+      "salary": "Зарплата",
+      "contracts": "Договоры"
+    },
+    "profile": {
+      "terminationDialogTitle": "Увольнение сотрудника",
+      "terminationDate": "Дата увольнения",
+      "terminationReason": "Причина",
+      "terminationReasonPlaceholder": "Укажите причину увольнения...",
+      "confirmTermination": "Подтвердить увольнение"
+    },
+    "salary": {
+      "noEntries": "Записи о зарплате отсутствуют.",
+      "type": "Тип",
+      "grossAmount": "Брутто",
+      "validFrom": "Действует с",
+      "changeReason": "Причина изменения",
+      "current": "Текущий",
+      "typeMonthly": "Ежемесячно",
+      "typeHourly": "Почасово",
+      "typeDailyRate": "Дневная ставка"
+    },
+    "contracts": {
+      "noEntries": "Записи о договорах отсутствуют.",
+      "contractType": "Тип договора",
+      "weeklyHours": "Часов в неделю",
+      "startDate": "Дата начала",
+      "validFrom": "Действует с",
+      "typePermanent": "Бессрочный",
+      "typeFixedTerm": "Срочный",
+      "typeFreelance": "Фриланс",
+      "typeWorkingStudent": "Студент-практикант"
+    }
+  },
+  "leave": {
+    "title": "Заявки на отпуск",
+    "noRequests": "Заявки на отпуск не найдены.",
+    "rejectDialogTitle": "Отклонить заявку на отпуск",
+    "rejectionReason": "Причина отклонения",
+    "rejectionReasonPlaceholder": "Укажите причину отклонения...",
+    "allStatuses": "Все статусы",
+    "filterYear": "Год",
+    "columns": {
+      "employee": "Сотрудник",
+      "leaveType": "Тип отпуска",
+      "period": "Период",
+      "workingDays": "Рабочих дней",
+      "status": "Статус",
+      "requestedAt": "Подано"
+    },
+    "actions": {
+      "approve": "Одобрить",
+      "reject": "Отклонить"
+    },
+    "status": {
+      "Pending": "На рассмотрении",
+      "Approved": "Одобрено",
+      "Rejected": "Отклонено",
+      "Cancelled": "Отменено"
+    }
+  },
+  "worktime": {
+    "title": "Учёт рабочего времени",
+    "noEmployee": "Сотрудник не выбран. Перейдите к просмотру рабочего времени со страницы сотрудника.",
+    "noEntries": "Записи за этот месяц отсутствуют.",
+    "month": "Месяц",
+    "total": "Итого",
+    "columns": {
+      "date": "Дата",
+      "from": "С",
+      "to": "До",
+      "breakMin": "Перерыв (мин)",
+      "total": "Итого",
+      "type": "Тип",
+      "project": "Проект",
+      "status": "Статус"
+    },
+    "entryType": {
+      "Work": "Работа",
+      "Overtime": "Сверхурочные",
+      "Oncall": "Дежурство"
+    },
+    "status": {
+      "Open": "Открыто",
+      "Locked": "Заблокировано"
+    }
+  },
+  "travel": {
+    "title": "Командировочные расходы",
+    "newReport": "Новый отчёт",
+    "noReports": "Отчёты о командировочных расходах не найдены.",
+    "notFound": "Отчёт не найден.",
+    "createTitle": "Новый отчёт о командировке",
+    "createCardTitle": "Данные отчёта",
+    "createCardDescription": "Заполните все обязательные поля для создания нового отчёта о командировочных расходах.",
+    "createButton": "Создать отчёт",
+    "submitButton": "Отправить",
+    "approveButton": "Одобрить",
+    "detailsButton": "Подробности",
+    "receiptsTitle": "Чеки",
+    "noReceipts": "Чеки отсутствуют.",
+    "allStatuses": "Все статусы",
+    "columns": {
+      "employee": "Сотрудник",
+      "title": "Название",
+      "tripPeriod": "Период командировки",
+      "destination": "Место назначения",
+      "totalAmount": "Сумма",
+      "status": "Статус"
+    },
+    "fields": {
+      "employeeId": "ID сотрудника",
+      "title": "Название",
+      "tripStartDate": "С",
+      "tripEndDate": "По",
+      "destination": "Место назначения",
+      "businessPurpose": "Цель командировки",
+      "employee": "Сотрудник",
+      "tripPeriod": "Период командировки",
+      "totalAmount": "Сумма",
+      "createdAt": "Создано"
+    },
+    "placeholders": {
+      "employeeId": "UUID сотрудника",
+      "title": "напр. Командировка в Берлин — встреча с клиентом",
+      "destination": "напр. Берлин, Германия",
+      "businessPurpose": "напр. Встреча с клиентом, конференция, проектная работа"
+    },
+    "validation": {
+      "invalidEmployeeId": "Неверный ID сотрудника",
+      "required": "Обязательное поле"
+    },
+    "status": {
+      "Draft": "Черновик",
+      "Submitted": "Отправлено",
+      "Approved": "Одобрено",
+      "Reimbursed": "Возмещено",
+      "Rejected": "Отклонено"
+    },
+    "receiptColumns": {
+      "date": "Дата",
+      "type": "Тип",
+      "description": "Описание",
+      "originalAmount": "Сумма (оригинал)",
+      "exchangeRate": "Курс",
+      "amountEur": "Сумма (EUR)",
+      "vatPercent": "НДС %",
+      "deductible": "Вычитаемый"
+    },
+    "deductible": {
+      "yes": "Да",
+      "no": "Нет"
+    },
+    "expenseType": {
+      "Accommodation": "Проживание",
+      "Transport": "Транспорт",
+      "Meal": "Питание",
+      "Other": "Прочее"
+    }
+  },
+  "reviews": {
+    "title": "Оценка персонала",
+    "noReviews": "Оценки не найдены.",
+    "notFound": "Оценка не найдена.",
+    "detailTitle": "Оценка: {{name}}",
+    "detailsCardTitle": "Сведения",
+    "notesCardTitle": "Заметки по оценке",
+    "feedbackCardTitle": "Обратная связь ({{count}})",
+    "submitFeedbackCardTitle": "Оставить обратную связь",
+    "completeReviewCardTitle": "Завершить оценку",
+    "noFeedback": "Обратная связь ещё не предоставлена.",
+    "allTypes": "Все типы",
+    "allStatuses": "Все статусы",
+    "pagination": "Страница {{page}} из {{total}} ({{count}} записей)",
+    "columns": {
+      "employee": "Сотрудник",
+      "reviewer": "Оценивающий",
+      "period": "Период",
+      "type": "Тип",
+      "status": "Статус",
+      "rating": "Оценка",
+      "createdAt": "Создано"
+    },
+    "fields": {
+      "employee": "Сотрудник",
+      "reviewer": "Оценивающий",
+      "type": "Тип",
+      "period": "Период",
+      "status": "Статус",
+      "overallRating": "Общая оценка",
+      "completedAt": "Завершено",
+      "strengths": "Сильные стороны",
+      "improvement": "Области для улучшения",
+      "goals": "Цели"
+    },
+    "feedback": {
+      "type": "Тип обратной связи",
+      "rating": "Оценка (1-5)",
+      "anonymous": "Отправить анонимно",
+      "comment": "Комментарий (необязательно)",
+      "commentPlaceholder": "Введите обратную связь...",
+      "submitButton": "Отправить отзыв",
+      "anonymous_label": "Анонимно",
+      "submittedAt": "Отправлено"
+    },
+    "complete": {
+      "overallRating": "Общая оценка (1-5)",
+      "strengths": "Сильные стороны",
+      "strengthsPlaceholder": "Сильные стороны сотрудника...",
+      "improvement": "Области для улучшения",
+      "improvementPlaceholder": "Области с потенциалом развития...",
+      "goals": "Цели",
+      "goalsPlaceholder": "Цели на следующий период...",
+      "completeButton": "Завершить оценку"
+    },
+    "reviewType": {
+      "Annual": "Ежегодная",
+      "Probation": "Испытательный срок",
+      "Quarterly": "Квартальная",
+      "ThreeSixty": "360°"
+    },
+    "respondentType": {
+      "Self": "Самооценка",
+      "Peer": "Коллега",
+      "Manager": "Руководитель",
+      "DirectReport": "Прямой подчинённый"
+    },
+    "status": {
+      "Draft": "Черновик",
+      "InProgress": "В процессе",
+      "Completed": "Завершено"
+    }
+  },
+  "documents": {
+    "title": "Документы",
+    "description": "Управление документами для {{name}}",
+    "uploadButton": "Загрузить документ",
+    "uploadDialogTitle": "Загрузить документ",
+    "loadError": "Ошибка при загрузке документов.",
+    "noDocuments": "Документы отсутствуют.",
+    "deleteDialogTitle": "Удалить документ?",
+    "deleteDialogDescription": "Вы уверены, что хотите удалить документ «{{title}}» ({{fileName}})? Это действие нельзя отменить.",
+    "downloading": "Скачать",
+    "deleting": "Удалить",
+    "uploading": "Загрузка…",
+    "uploadSubmit": "Загрузить",
+    "columns": {
+      "title": "Название",
+      "type": "Тип",
+      "fileName": "Имя файла",
+      "size": "Размер",
+      "uploadedAt": "Загружено",
+      "expiresAt": "Истекает",
+      "flags": "Флаги",
+      "actions": "Действия"
+    },
+    "upload": {
+      "file": "Файл",
+      "selectFile": "Выбрать файл",
+      "documentType": "Тип документа",
+      "title": "Название (необязательно)",
+      "titlePlaceholder": "Если не указано, будет использовано имя файла"
+    },
+    "flags": {
+      "confidential": "Конфиденциально",
+      "scheduledForDeletion": "Запланировано удаление"
+    },
+    "documentType": {
+      "Contract": "Договор",
+      "Certificate": "Сертификат",
+      "IdCopy": "Копия удостоверения",
+      "Payslip": "Расчётный листок",
+      "Other": "Прочее"
+    },
+    "defaultEmployee": "Сотрудник"
+  },
+  "admin": {
+    "deletionTitle": "Запросы на удаление (GDPR)",
+    "deletionDescription": "Управление запланированными удалениями данных в соответствии с GDPR и законодательными требованиями к хранению",
+    "loadError": "Ошибка при загрузке запросов на удаление.",
+    "noRequests": "Запросы на удаление отсутствуют.",
+    "columns": {
+      "employee": "Сотрудник",
+      "requestedAt": "Запрошено",
+      "scheduledAt": "Запланированное удаление",
+      "status": "Статус",
+      "blockReason": "Причина блокировки",
+      "completedAt": "Выполнено"
+    },
+    "status": {
+      "Pending": "На рассмотрении",
+      "Completed": "Выполнено",
+      "Blocked": "Заблокировано"
+    }
+  },
+  "stats": {
+    "title": "Кадровая статистика",
+    "noEntitySelected": "Пожалуйста, выберите организацию.",
+    "kpi": {
+      "activeEmployees": "Активные сотрудники",
+      "permanentEmployees": "Штатные",
+      "contractors": "Подрядчики"
+    },
+    "headcountTrend": "Численность персонала (последние 12 месяцев)",
+    "turnoverTrend": "Текучесть кадров (последние 12 месяцев)",
+    "salaryOverview": "Обзор зарплат",
+    "salaryDistribution": "Распределение зарплат",
+    "salaryMin": "Минимум",
+    "salaryMax": "Максимум",
+    "salaryAvg": "Среднее",
+    "salaryMedian": "Медиана",
+    "chartHires": "Принятые",
+    "chartTerminations": "Уволенные",
+    "chartEmployees": "Сотрудники"
+  },
+  "toast": {
+    "employeeCreated": "Сотрудник создан",
+    "employeeUpdated": "Данные сотрудника обновлены",
+    "employeeTerminated": "Сотрудник уволен",
+    "employeeCreateError": "Не удалось создать сотрудника",
+    "employeeUpdateError": "Не удалось обновить данные сотрудника",
+    "employeeTerminateError": "Не удалось уволить сотрудника",
+    "salaryUpdated": "Зарплата обновлена",
+    "salaryUpdateError": "Не удалось обновить зарплату",
+    "contractCreated": "Договор создан",
+    "contractCreateError": "Не удалось создать договор",
+    "departmentCreated": "Отдел создан",
+    "departmentCreateError": "Не удалось создать отдел",
+    "leaveTypeCreated": "Тип отпуска создан",
+    "leaveTypeCreateError": "Не удалось создать тип отпуска",
+    "leaveSubmitted": "Заявка на отпуск отправлена",
+    "leaveSubmitError": "Не удалось отправить заявку на отпуск",
+    "leaveApproved": "Заявка на отпуск одобрена",
+    "leaveApproveError": "Не удалось одобрить заявку",
+    "leaveRejected": "Заявка на отпуск отклонена",
+    "leaveRejectError": "Не удалось отклонить заявку",
+    "workTimeLogged": "Рабочее время зафиксировано",
+    "workTimeLogError": "Не удалось зафиксировать рабочее время",
+    "travelReportCreated": "Отчёт о командировке создан",
+    "travelReportCreateError": "Не удалось создать отчёт",
+    "travelItemAdded": "Чек добавлен",
+    "travelItemAddError": "Не удалось добавить чек",
+    "travelSubmitted": "Отчёт отправлен",
+    "travelSubmitError": "Не удалось отправить отчёт",
+    "travelApproved": "Отчёт одобрен",
+    "travelApproveError": "Не удалось одобрить отчёт",
+    "reviewCreated": "Оценка создана",
+    "reviewCreateError": "Не удалось создать оценку",
+    "feedbackSubmitted": "Обратная связь отправлена",
+    "feedbackSubmitError": "Не удалось отправить обратную связь",
+    "reviewCompleted": "Оценка завершена",
+    "reviewCompleteError": "Не удалось завершить оценку",
+    "documentDeleted": "Документ удалён",
+    "documentDeleteError": "Не удалось удалить документ",
+    "documentUploaded": "Документ загружен",
+    "documentUploadError": "Не удалось загрузить документ",
+    "deletionScheduled": "Удаление запланировано",
+    "deletionScheduleError": "Не удалось запланировать удаление"
+  }
+}

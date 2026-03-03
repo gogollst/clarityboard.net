@@ -1,1 +1,427 @@
-{}
+{
+  "employees": {
+    "title": "Mitarbeiter",
+    "newEmployee": "Neuer Mitarbeiter",
+    "searchPlaceholder": "Name oder Personalnummer...",
+    "noEmployees": "Keine Mitarbeiter gefunden.",
+    "notFound": "Mitarbeiter nicht gefunden.",
+    "createTitle": "Neuer Mitarbeiter",
+    "createCardTitle": "Mitarbeiterdaten",
+    "createCardDescription": "Füllen Sie alle Pflichtfelder aus, um einen neuen Mitarbeiter anzulegen.",
+    "createButton": "Mitarbeiter anlegen",
+    "terminateButton": "Mitarbeiter kündigen",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Organisation aus.",
+    "columns": {
+      "employeeNumber": "Personalnummer",
+      "name": "Name",
+      "type": "Typ",
+      "status": "Status",
+      "department": "Abteilung",
+      "manager": "Manager",
+      "hireDate": "Einstellungsdatum"
+    },
+    "status": {
+      "Active": "Aktiv",
+      "OnLeave": "Im Urlaub",
+      "Terminated": "Gekündigt"
+    },
+    "type": {
+      "Employee": "Festangestellt",
+      "Contractor": "Contractor"
+    },
+    "allStatuses": "Alle Status",
+    "allTypes": "Alle Typen",
+    "filterStatus": "Status",
+    "filterType": "Anstellungsart",
+    "fields": {
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "employeeNumber": "Personalnummer",
+      "employeeType": "Anstellungsart",
+      "hireDate": "Einstellungsdatum",
+      "dateOfBirth": "Geburtsdatum",
+      "taxId": "Steuer-ID",
+      "department": "Abteilung",
+      "status": "Status"
+    },
+    "placeholders": {
+      "firstName": "Max",
+      "lastName": "Mustermann",
+      "employeeNumber": "EMP-001",
+      "taxId": "12345678901",
+      "selectType": "Anstellungsart wählen",
+      "selectDepartment": "Abteilung wählen (optional)",
+      "noDepartment": "Keine Abteilung"
+    },
+    "validation": {
+      "firstNameRequired": "Vorname ist erforderlich",
+      "lastNameRequired": "Nachname ist erforderlich",
+      "employeeNumberRequired": "Personalnummer ist erforderlich",
+      "employeeNumberMaxLength": "Personalnummer darf maximal 20 Zeichen haben",
+      "employeeTypeRequired": "Anstellungsart ist erforderlich",
+      "hireDateRequired": "Einstellungsdatum ist erforderlich",
+      "dateOfBirthRequired": "Geburtsdatum ist erforderlich",
+      "taxIdRequired": "Steuer-ID ist erforderlich",
+      "taxIdMaxLength": "Steuer-ID darf maximal 50 Zeichen haben"
+    },
+    "tabs": {
+      "profile": "Profil",
+      "salary": "Gehalt",
+      "contracts": "Verträge"
+    },
+    "profile": {
+      "terminationDialogTitle": "Mitarbeiter kündigen",
+      "terminationDate": "Kündigungsdatum",
+      "terminationReason": "Grund",
+      "terminationReasonPlaceholder": "Kündigungsgrund eingeben...",
+      "confirmTermination": "Kündigung bestätigen"
+    },
+    "salary": {
+      "noEntries": "Keine Gehaltseinträge vorhanden.",
+      "type": "Typ",
+      "grossAmount": "Bruttobetrag",
+      "validFrom": "Gültig ab",
+      "changeReason": "Änderungsgrund",
+      "current": "Aktuell",
+      "typeMonthly": "Monatlich",
+      "typeHourly": "Stündlich",
+      "typeDailyRate": "Tagessatz"
+    },
+    "contracts": {
+      "noEntries": "Keine Vertragseinträge vorhanden.",
+      "contractType": "Vertragsart",
+      "weeklyHours": "Wochenstunden",
+      "startDate": "Startdatum",
+      "validFrom": "Gültig ab",
+      "typePermanent": "Unbefristet",
+      "typeFixedTerm": "Befristet",
+      "typeFreelance": "Freiberuflich",
+      "typeWorkingStudent": "Werkstudent"
+    }
+  },
+  "leave": {
+    "title": "Urlaubsanträge",
+    "noRequests": "Keine Urlaubsanträge gefunden.",
+    "rejectDialogTitle": "Urlaubsantrag ablehnen",
+    "rejectionReason": "Ablehnungsgrund",
+    "rejectionReasonPlaceholder": "Grund für die Ablehnung eingeben...",
+    "allStatuses": "Alle Status",
+    "filterYear": "Jahr",
+    "columns": {
+      "employee": "Mitarbeiter",
+      "leaveType": "Urlaubstyp",
+      "period": "Zeitraum",
+      "workingDays": "Arbeitstage",
+      "status": "Status",
+      "requestedAt": "Eingereicht am"
+    },
+    "actions": {
+      "approve": "Genehmigen",
+      "reject": "Ablehnen"
+    },
+    "status": {
+      "Pending": "Ausstehend",
+      "Approved": "Genehmigt",
+      "Rejected": "Abgelehnt",
+      "Cancelled": "Storniert"
+    }
+  },
+  "worktime": {
+    "title": "Arbeitszeitübersicht",
+    "noEmployee": "Kein Mitarbeiter ausgewählt. Navigiere über die Mitarbeiter-Seite zur Arbeitszeitansicht.",
+    "noEntries": "Keine Einträge für diesen Monat.",
+    "month": "Monat",
+    "total": "Gesamt",
+    "columns": {
+      "date": "Datum",
+      "from": "Von",
+      "to": "Bis",
+      "breakMin": "Pause (min)",
+      "total": "Gesamt",
+      "type": "Typ",
+      "project": "Projekt",
+      "status": "Status"
+    },
+    "entryType": {
+      "Work": "Arbeit",
+      "Overtime": "Überstunden",
+      "Oncall": "Bereitschaft"
+    },
+    "status": {
+      "Open": "Offen",
+      "Locked": "Gesperrt"
+    }
+  },
+  "travel": {
+    "title": "Reisekosten",
+    "newReport": "Neue Abrechnung",
+    "noReports": "Keine Reisekostenabrechnungen gefunden.",
+    "notFound": "Abrechnung nicht gefunden.",
+    "createTitle": "Neue Reisekostenabrechnung",
+    "createCardTitle": "Abrechnungsdaten",
+    "createCardDescription": "Füllen Sie alle Pflichtfelder aus, um eine neue Reisekostenabrechnung anzulegen.",
+    "createButton": "Abrechnung anlegen",
+    "submitButton": "Einreichen",
+    "approveButton": "Genehmigen",
+    "detailsButton": "Details",
+    "receiptsTitle": "Belege",
+    "noReceipts": "Keine Belege vorhanden.",
+    "allStatuses": "Alle Status",
+    "columns": {
+      "employee": "Mitarbeiter",
+      "title": "Titel",
+      "tripPeriod": "Reisezeitraum",
+      "destination": "Ziel",
+      "totalAmount": "Gesamtbetrag",
+      "status": "Status"
+    },
+    "fields": {
+      "employeeId": "Mitarbeiter-ID",
+      "title": "Titel",
+      "tripStartDate": "Von",
+      "tripEndDate": "Bis",
+      "destination": "Ziel",
+      "businessPurpose": "Geschäftszweck",
+      "employee": "Mitarbeiter",
+      "tripPeriod": "Reisezeitraum",
+      "totalAmount": "Gesamtbetrag",
+      "createdAt": "Erstellt am"
+    },
+    "placeholders": {
+      "employeeId": "UUID des Mitarbeiters",
+      "title": "z. B. Dienstreise Berlin – Kundentermin",
+      "destination": "z. B. Berlin, Deutschland",
+      "businessPurpose": "z. B. Kundentermin, Konferenz, Projektarbeit"
+    },
+    "validation": {
+      "invalidEmployeeId": "Ungültige Mitarbeiter-ID",
+      "required": "Pflichtfeld"
+    },
+    "status": {
+      "Draft": "Entwurf",
+      "Submitted": "Eingereicht",
+      "Approved": "Genehmigt",
+      "Reimbursed": "Erstattet",
+      "Rejected": "Abgelehnt"
+    },
+    "receiptColumns": {
+      "date": "Datum",
+      "type": "Typ",
+      "description": "Beschreibung",
+      "originalAmount": "Betrag (Original)",
+      "exchangeRate": "Kurs",
+      "amountEur": "Betrag (EUR)",
+      "vatPercent": "MwSt %",
+      "deductible": "Abzugsfähig"
+    },
+    "deductible": {
+      "yes": "Ja",
+      "no": "Nein"
+    },
+    "expenseType": {
+      "Accommodation": "Unterkunft",
+      "Transport": "Transport",
+      "Meal": "Verpflegung",
+      "Other": "Sonstiges"
+    }
+  },
+  "reviews": {
+    "title": "Beurteilungen",
+    "noReviews": "Keine Beurteilungen vorhanden.",
+    "notFound": "Beurteilung nicht gefunden.",
+    "detailTitle": "Beurteilung: {{name}}",
+    "detailsCardTitle": "Details",
+    "notesCardTitle": "Beurteilungsnotizen",
+    "feedbackCardTitle": "Feedback ({{count}})",
+    "submitFeedbackCardTitle": "Feedback einreichen",
+    "completeReviewCardTitle": "Beurteilung abschließen",
+    "noFeedback": "Noch kein Feedback eingereicht.",
+    "allTypes": "Alle Typen",
+    "allStatuses": "Alle Status",
+    "pagination": "Seite {{page}} von {{total}} ({{count}} Einträge)",
+    "columns": {
+      "employee": "Mitarbeiter",
+      "reviewer": "Beurteiler",
+      "period": "Zeitraum",
+      "type": "Typ",
+      "status": "Status",
+      "rating": "Bewertung",
+      "createdAt": "Erstellt am"
+    },
+    "fields": {
+      "employee": "Mitarbeiter",
+      "reviewer": "Beurteiler",
+      "type": "Typ",
+      "period": "Zeitraum",
+      "status": "Status",
+      "overallRating": "Gesamtbewertung",
+      "completedAt": "Abgeschlossen am",
+      "strengths": "Stärken",
+      "improvement": "Verbesserungspotenzial",
+      "goals": "Ziele"
+    },
+    "feedback": {
+      "type": "Feedbacktyp",
+      "rating": "Bewertung (1-5)",
+      "anonymous": "Anonym einreichen",
+      "comment": "Kommentar (optional)",
+      "commentPlaceholder": "Feedback eingeben...",
+      "submitButton": "Feedback einreichen",
+      "anonymous_label": "Anonym",
+      "submittedAt": "Eingereicht am"
+    },
+    "complete": {
+      "overallRating": "Gesamtbewertung (1-5)",
+      "strengths": "Stärken",
+      "strengthsPlaceholder": "Stärken des Mitarbeiters...",
+      "improvement": "Verbesserungspotenzial",
+      "improvementPlaceholder": "Bereiche mit Entwicklungspotenzial...",
+      "goals": "Ziele",
+      "goalsPlaceholder": "Ziele für die nächste Periode...",
+      "completeButton": "Beurteilung abschließen"
+    },
+    "reviewType": {
+      "Annual": "Jährlich",
+      "Probation": "Probezeit",
+      "Quarterly": "Quartal",
+      "ThreeSixty": "360°"
+    },
+    "respondentType": {
+      "Self": "Selbstbeurteilung",
+      "Peer": "Peer",
+      "Manager": "Vorgesetzter",
+      "DirectReport": "Direkter Bericht"
+    },
+    "status": {
+      "Draft": "Entwurf",
+      "InProgress": "In Bearbeitung",
+      "Completed": "Abgeschlossen"
+    }
+  },
+  "documents": {
+    "title": "Dokumente",
+    "description": "Dokumentenverwaltung für {{name}}",
+    "uploadButton": "Dokument hochladen",
+    "uploadDialogTitle": "Dokument hochladen",
+    "loadError": "Fehler beim Laden der Dokumente.",
+    "noDocuments": "Keine Dokumente vorhanden.",
+    "deleteDialogTitle": "Dokument löschen?",
+    "deleteDialogDescription": "Soll das Dokument \"{{title}}\" ({{fileName}}) wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "downloading": "Herunterladen",
+    "deleting": "Löschen",
+    "uploading": "Wird hochgeladen…",
+    "uploadSubmit": "Hochladen",
+    "columns": {
+      "title": "Titel",
+      "type": "Typ",
+      "fileName": "Dateiname",
+      "size": "Größe",
+      "uploadedAt": "Hochgeladen am",
+      "expiresAt": "Läuft ab",
+      "flags": "Flags",
+      "actions": "Aktionen"
+    },
+    "upload": {
+      "file": "Datei",
+      "selectFile": "Datei auswählen",
+      "documentType": "Dokumenttyp",
+      "title": "Titel (optional)",
+      "titlePlaceholder": "Dateiname wird verwendet, wenn leer"
+    },
+    "flags": {
+      "confidential": "Vertraulich",
+      "scheduledForDeletion": "Zur Löschung vorgesehen"
+    },
+    "documentType": {
+      "Contract": "Vertrag",
+      "Certificate": "Zertifikat",
+      "IdCopy": "Ausweiskopie",
+      "Payslip": "Gehaltszettel",
+      "Other": "Sonstiges"
+    },
+    "defaultEmployee": "Mitarbeiter"
+  },
+  "admin": {
+    "deletionTitle": "DSGVO-Löschanträge",
+    "deletionDescription": "Verwaltung geplanter Datenlöschungen gemäß DSGVO und steuerrechtlicher Aufbewahrungspflichten",
+    "loadError": "Fehler beim Laden der Löschanträge.",
+    "noRequests": "Keine Löschanträge vorhanden.",
+    "columns": {
+      "employee": "Mitarbeiter",
+      "requestedAt": "Beantragt am",
+      "scheduledAt": "Geplante Löschung",
+      "status": "Status",
+      "blockReason": "Blockierungsgrund",
+      "completedAt": "Abgeschlossen am"
+    },
+    "status": {
+      "Pending": "Ausstehend",
+      "Completed": "Abgeschlossen",
+      "Blocked": "Blockiert"
+    }
+  },
+  "stats": {
+    "title": "HR-Statistiken",
+    "noEntitySelected": "Bitte wählen Sie eine Entity aus.",
+    "kpi": {
+      "activeEmployees": "Aktive Mitarbeiter",
+      "permanentEmployees": "Festangestellt",
+      "contractors": "Contractors"
+    },
+    "headcountTrend": "Headcount (letzte 12 Monate)",
+    "turnoverTrend": "Fluktuation (letzte 12 Monate)",
+    "salaryOverview": "Gehaltsübersicht",
+    "salaryDistribution": "Gehaltsverteilung",
+    "salaryMin": "Minimum",
+    "salaryMax": "Maximum",
+    "salaryAvg": "Durchschnitt",
+    "salaryMedian": "Median",
+    "chartHires": "Einstellungen",
+    "chartTerminations": "Kündigungen",
+    "chartEmployees": "Mitarbeiter"
+  },
+  "toast": {
+    "employeeCreated": "Mitarbeiter angelegt",
+    "employeeUpdated": "Mitarbeiter aktualisiert",
+    "employeeTerminated": "Mitarbeiter gekündigt",
+    "employeeCreateError": "Fehler beim Anlegen des Mitarbeiters",
+    "employeeUpdateError": "Fehler beim Aktualisieren des Mitarbeiters",
+    "employeeTerminateError": "Fehler beim Kündigen des Mitarbeiters",
+    "salaryUpdated": "Gehalt aktualisiert",
+    "salaryUpdateError": "Fehler beim Aktualisieren des Gehalts",
+    "contractCreated": "Vertrag erstellt",
+    "contractCreateError": "Fehler beim Erstellen des Vertrags",
+    "departmentCreated": "Abteilung erstellt",
+    "departmentCreateError": "Fehler beim Erstellen der Abteilung",
+    "leaveTypeCreated": "Urlaubstyp erstellt",
+    "leaveTypeCreateError": "Fehler beim Erstellen des Urlaubstyps",
+    "leaveSubmitted": "Urlaubsantrag eingereicht",
+    "leaveSubmitError": "Fehler beim Einreichen des Urlaubsantrags",
+    "leaveApproved": "Urlaubsantrag genehmigt",
+    "leaveApproveError": "Fehler bei der Genehmigung",
+    "leaveRejected": "Urlaubsantrag abgelehnt",
+    "leaveRejectError": "Fehler bei der Ablehnung",
+    "workTimeLogged": "Arbeitszeit eingetragen",
+    "workTimeLogError": "Fehler beim Eintragen der Arbeitszeit",
+    "travelReportCreated": "Reisekostenabrechnung erstellt",
+    "travelReportCreateError": "Fehler beim Erstellen der Abrechnung",
+    "travelItemAdded": "Beleg hinzugefügt",
+    "travelItemAddError": "Fehler beim Hinzufügen des Belegs",
+    "travelSubmitted": "Abrechnung eingereicht",
+    "travelSubmitError": "Fehler beim Einreichen",
+    "travelApproved": "Abrechnung genehmigt",
+    "travelApproveError": "Fehler bei der Genehmigung",
+    "reviewCreated": "Beurteilung erstellt",
+    "reviewCreateError": "Fehler beim Erstellen der Beurteilung",
+    "feedbackSubmitted": "Feedback eingereicht",
+    "feedbackSubmitError": "Fehler beim Einreichen des Feedbacks",
+    "reviewCompleted": "Beurteilung abgeschlossen",
+    "reviewCompleteError": "Fehler beim Abschließen der Beurteilung",
+    "documentDeleted": "Dokument gelöscht",
+    "documentDeleteError": "Fehler beim Löschen",
+    "documentUploaded": "Dokument hochgeladen",
+    "documentUploadError": "Fehler beim Hochladen",
+    "deletionScheduled": "Löschung geplant",
+    "deletionScheduleError": "Fehler beim Planen der Löschung"
+  }
+}

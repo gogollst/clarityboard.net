@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEmployees } from '@/hooks/useHr';
 import { useEntity } from '@/hooks/useEntity';
 import { useDebounced } from '@/hooks/useDebounced';
@@ -18,39 +19,8 @@ import {
 } from '@/components/ui/select';
 import { Plus, Search } from 'lucide-react';
 
-function getStatusBadge(status: string) {
-  switch (status) {
-    case 'Active':
-      return (
-        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
-          Aktiv
-        </Badge>
-      );
-    case 'OnLeave':
-      return (
-        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
-          Im Urlaub
-        </Badge>
-      );
-    case 'Terminated':
-      return (
-        <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-          Gekündigt
-        </Badge>
-      );
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-}
-
-function getTypeBadge(employeeType: string) {
-  if (employeeType === 'Contractor') {
-    return <Badge variant="outline">Contractor</Badge>;
-  }
-  return <Badge variant="secondary">Festangestellt</Badge>;
-}
-
 export function Component() {
+  const { t, i18n } = useTranslation('hr');
   const navigate = useNavigate();
   const { selectedEntityId } = useEntity();
 
@@ -78,14 +48,46 @@ export function Component() {
   const totalCount = data?.totalCount ?? 0;
   const pageSize = data?.pageSize ?? 25;
 
+  function getStatusBadge(empStatus: string) {
+    switch (empStatus) {
+      case 'Active':
+        return (
+          <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
+            {t('employees.status.Active')}
+          </Badge>
+        );
+      case 'OnLeave':
+        return (
+          <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+            {t('employees.status.OnLeave')}
+          </Badge>
+        );
+      case 'Terminated':
+        return (
+          <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+            {t('employees.status.Terminated')}
+          </Badge>
+        );
+      default:
+        return <Badge variant="secondary">{empStatus}</Badge>;
+    }
+  }
+
+  function getTypeBadge(empType: string) {
+    if (empType === 'Contractor') {
+      return <Badge variant="outline">{t('employees.type.Contractor')}</Badge>;
+    }
+    return <Badge variant="secondary">{t('employees.type.Employee')}</Badge>;
+  }
+
   const columns = [
     {
       key: 'employeeNumber',
-      header: 'Personalnummer',
+      header: t('employees.columns.employeeNumber'),
     },
     {
       key: 'fullName',
-      header: 'Name',
+      header: t('employees.columns.name'),
       render: (item: Record<string, unknown>) => (
         <button
           className="font-medium text-left hover:underline text-foreground"
@@ -97,19 +99,19 @@ export function Component() {
     },
     {
       key: 'employeeType',
-      header: 'Typ',
+      header: t('employees.columns.type'),
       render: (item: Record<string, unknown>) =>
         getTypeBadge(String(item.employeeType ?? '')),
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('employees.columns.status'),
       render: (item: Record<string, unknown>) =>
         getStatusBadge(String(item.status ?? '')),
     },
     {
       key: 'departmentName',
-      header: 'Abteilung',
+      header: t('employees.columns.department'),
       render: (item: Record<string, unknown>) => (
         <span className="text-sm text-muted-foreground">
           {String(item.departmentName ?? '—')}
@@ -118,7 +120,7 @@ export function Component() {
     },
     {
       key: 'managerName',
-      header: 'Manager',
+      header: t('employees.columns.manager'),
       render: (item: Record<string, unknown>) => (
         <span className="text-sm text-muted-foreground">
           {String(item.managerName ?? '—')}
@@ -127,12 +129,12 @@ export function Component() {
     },
     {
       key: 'hireDate',
-      header: 'Einstellungsdatum',
+      header: t('employees.columns.hireDate'),
       render: (item: Record<string, unknown>) => {
         const raw = item.hireDate as string | undefined;
         if (!raw) return '—';
         const d = new Date(raw);
-        return d.toLocaleDateString('de-DE');
+        return d.toLocaleDateString(i18n.language);
       },
     },
   ];
@@ -140,11 +142,11 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Mitarbeiter"
+        title={t('employees.title')}
         actions={
           <Button onClick={() => navigate('/hr/employees/new')}>
             <Plus className="mr-1 h-4 w-4" />
-            Neuer Mitarbeiter
+            {t('employees.newEmployee')}
           </Button>
         }
       />
@@ -155,7 +157,7 @@ export function Component() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
-            placeholder="Name oder Personalnummer..."
+            placeholder={t('employees.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -166,13 +168,13 @@ export function Component() {
           onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
         >
           <SelectTrigger className="w-40">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t('employees.filterStatus')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle Status</SelectItem>
-            <SelectItem value="Active">Aktiv</SelectItem>
-            <SelectItem value="OnLeave">Im Urlaub</SelectItem>
-            <SelectItem value="Terminated">Gekündigt</SelectItem>
+            <SelectItem value="all">{t('employees.allStatuses')}</SelectItem>
+            <SelectItem value="Active">{t('employees.status.Active')}</SelectItem>
+            <SelectItem value="OnLeave">{t('employees.status.OnLeave')}</SelectItem>
+            <SelectItem value="Terminated">{t('employees.status.Terminated')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -181,12 +183,12 @@ export function Component() {
           onValueChange={(v) => setEmployeeType(v === 'all' ? '' : v)}
         >
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Anstellungsart" />
+            <SelectValue placeholder={t('employees.filterType')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle Typen</SelectItem>
-            <SelectItem value="Employee">Festangestellt</SelectItem>
-            <SelectItem value="Contractor">Contractor</SelectItem>
+            <SelectItem value="all">{t('employees.allTypes')}</SelectItem>
+            <SelectItem value="Employee">{t('employees.type.Employee')}</SelectItem>
+            <SelectItem value="Contractor">{t('employees.type.Contractor')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -195,7 +197,7 @@ export function Component() {
         columns={columns}
         data={employees as unknown as Record<string, unknown>[]}
         isLoading={isLoading}
-        emptyMessage="Keine Mitarbeiter gefunden."
+        emptyMessage={t('employees.noEmployees')}
         pagination={
           totalCount > pageSize
             ? { page, pageSize, total: totalCount, onPageChange: setPage }

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useHeadcountStats, useTurnoverStats, useSalaryBands } from '@/hooks/useHr';
 import PageHeader from '@/components/shared/PageHeader';
@@ -16,12 +17,8 @@ import {
   Legend,
 } from 'recharts';
 
-function formatCents(cents: number | null | undefined): string {
-  if (cents == null) return '—';
-  return (cents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-}
-
 export function Component() {
+  const { t, i18n } = useTranslation('hr');
   const { selectedEntityId } = useEntity();
   const entityId = selectedEntityId ?? '';
 
@@ -29,17 +26,22 @@ export function Component() {
   const { data: turnover, isLoading: toLoading } = useTurnoverStats(entityId);
   const { data: salaryBands, isLoading: sbLoading } = useSalaryBands(entityId);
 
+  function formatCents(cents: number | null | undefined): string {
+    if (cents == null) return '—';
+    return (cents / 100).toLocaleString(i18n.language, { style: 'currency', currency: 'EUR' });
+  }
+
   if (!selectedEntityId) {
     return (
       <div className="py-12 text-center text-muted-foreground">
-        Bitte wählen Sie eine Entity aus.
+        {t('stats.noEntitySelected')}
       </div>
     );
   }
 
   return (
     <div>
-      <PageHeader title="HR-Statistiken" />
+      <PageHeader title={t('stats.title')} />
 
       {/* KPI cards */}
       <div className="mb-6 grid grid-cols-3 gap-4">
@@ -48,7 +50,7 @@ export function Component() {
             <div className="text-2xl font-bold">
               {hcLoading ? <Skeleton className="h-8 w-16" /> : headcount?.totalActive ?? 0}
             </div>
-            <p className="text-sm text-muted-foreground">Aktive Mitarbeiter</p>
+            <p className="text-sm text-muted-foreground">{t('stats.kpi.activeEmployees')}</p>
           </CardContent>
         </Card>
         <Card>
@@ -56,7 +58,7 @@ export function Component() {
             <div className="text-2xl font-bold">
               {hcLoading ? <Skeleton className="h-8 w-16" /> : headcount?.totalEmployees ?? 0}
             </div>
-            <p className="text-sm text-muted-foreground">Festangestellt</p>
+            <p className="text-sm text-muted-foreground">{t('stats.kpi.permanentEmployees')}</p>
           </CardContent>
         </Card>
         <Card>
@@ -64,7 +66,7 @@ export function Component() {
             <div className="text-2xl font-bold">
               {hcLoading ? <Skeleton className="h-8 w-16" /> : headcount?.totalContractors ?? 0}
             </div>
-            <p className="text-sm text-muted-foreground">Contractors</p>
+            <p className="text-sm text-muted-foreground">{t('stats.kpi.contractors')}</p>
           </CardContent>
         </Card>
       </div>
@@ -73,7 +75,7 @@ export function Component() {
         {/* Headcount trend */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Headcount (letzte 12 Monate)</CardTitle>
+            <CardTitle className="text-base">{t('stats.headcountTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             {hcLoading ? (
@@ -95,7 +97,7 @@ export function Component() {
         {/* Turnover */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Fluktuation (letzte 12 Monate)</CardTitle>
+            <CardTitle className="text-base">{t('stats.turnoverTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             {toLoading ? (
@@ -108,8 +110,8 @@ export function Component() {
                   <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="newHires" name="Einstellungen" fill="#34d399" />
-                  <Bar dataKey="terminations" name="Kündigungen" fill="#f87171" />
+                  <Bar dataKey="newHires" name={t('stats.chartHires')} fill="#34d399" />
+                  <Bar dataKey="terminations" name={t('stats.chartTerminations')} fill="#f87171" />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -121,7 +123,7 @@ export function Component() {
         {/* Salary summary */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Gehaltsübersicht</CardTitle>
+            <CardTitle className="text-base">{t('stats.salaryOverview')}</CardTitle>
           </CardHeader>
           <CardContent>
             {sbLoading ? (
@@ -129,19 +131,19 @@ export function Component() {
             ) : (
               <dl className="grid grid-cols-2 gap-4">
                 <div>
-                  <dt className="text-xs uppercase text-muted-foreground">Minimum</dt>
+                  <dt className="text-xs uppercase text-muted-foreground">{t('stats.salaryMin')}</dt>
                   <dd className="font-medium">{formatCents(salaryBands?.minSalaryCents)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase text-muted-foreground">Maximum</dt>
+                  <dt className="text-xs uppercase text-muted-foreground">{t('stats.salaryMax')}</dt>
                   <dd className="font-medium">{formatCents(salaryBands?.maxSalaryCents)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase text-muted-foreground">Durchschnitt</dt>
+                  <dt className="text-xs uppercase text-muted-foreground">{t('stats.salaryAvg')}</dt>
                   <dd className="font-medium">{formatCents(salaryBands?.avgSalaryCents)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs uppercase text-muted-foreground">Median</dt>
+                  <dt className="text-xs uppercase text-muted-foreground">{t('stats.salaryMedian')}</dt>
                   <dd className="font-medium">{formatCents(salaryBands?.medianSalaryCents)}</dd>
                 </div>
               </dl>
@@ -152,7 +154,7 @@ export function Component() {
         {/* Salary bands */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Gehaltsverteilung</CardTitle>
+            <CardTitle className="text-base">{t('stats.salaryDistribution')}</CardTitle>
           </CardHeader>
           <CardContent>
             {sbLoading ? (
@@ -164,7 +166,7 @@ export function Component() {
                   <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                   <YAxis allowDecimals={false} />
                   <Tooltip />
-                  <Bar dataKey="count" name="Mitarbeiter" fill="#6366f1" />
+                  <Bar dataKey="count" name={t('stats.chartEmployees')} fill="#6366f1" />
                 </BarChart>
               </ResponsiveContainer>
             )}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useReview, useSubmitFeedback, useCompleteReview } from '@/hooks/useHr';
 import PageHeader from '@/components/shared/PageHeader';
 import { Badge } from '@/components/ui/badge';
@@ -28,72 +29,6 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import type { FeedbackEntry } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatDate(iso: string | undefined): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('de-DE');
-}
-
-function reviewTypeLabel(type: string): string {
-  switch (type) {
-    case 'Annual':      return 'Jährlich';
-    case 'Probation':   return 'Probezeit';
-    case 'Quarterly':   return 'Quartal';
-    case 'ThreeSixty':  return '360°';
-    default:            return type;
-  }
-}
-
-function respondentTypeLabel(type: string): string {
-  switch (type) {
-    case 'Self':          return 'Selbstbeurteilung';
-    case 'Peer':          return 'Peer';
-    case 'Manager':       return 'Vorgesetzter';
-    case 'DirectReport':  return 'Direkter Bericht';
-    default:              return type;
-  }
-}
-
-function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
-  return (
-    <span className="text-base tracking-tight">
-      {Array.from({ length: max }).map((_, i) => (
-        <span key={i} className={i < rating ? 'text-amber-400' : 'text-muted-foreground/30'}>
-          {i < rating ? '★' : '☆'}
-        </span>
-      ))}
-    </span>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case 'Draft':
-      return (
-        <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-          Entwurf
-        </Badge>
-      );
-    case 'InProgress':
-      return (
-        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
-          In Bearbeitung
-        </Badge>
-      );
-    case 'Completed':
-      return (
-        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
-          Abgeschlossen
-        </Badge>
-      );
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Detail row helper
 // ---------------------------------------------------------------------------
 
@@ -109,14 +44,77 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 }
 
 // ---------------------------------------------------------------------------
+// Star rating
+// ---------------------------------------------------------------------------
+
+function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
+  return (
+    <span className="text-base tracking-tight">
+      {Array.from({ length: max }).map((_, i) => (
+        <span key={i} className={i < rating ? 'text-amber-400' : 'text-muted-foreground/30'}>
+          {i < rating ? '★' : '☆'}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Status badge
+// ---------------------------------------------------------------------------
+
+function StatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation('hr');
+  switch (status) {
+    case 'Draft':
+      return (
+        <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+          {t('reviews.status.Draft')}
+        </Badge>
+      );
+    case 'InProgress':
+      return (
+        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+          {t('reviews.status.InProgress')}
+        </Badge>
+      );
+    case 'Completed':
+      return (
+        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
+          {t('reviews.status.Completed')}
+        </Badge>
+      );
+    default:
+      return <Badge variant="secondary">{status}</Badge>;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Feedback table
 // ---------------------------------------------------------------------------
 
 function FeedbackTable({ entries }: { entries: FeedbackEntry[] }) {
+  const { t, i18n } = useTranslation('hr');
+
+  function formatDate(iso: string | undefined): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString(i18n.language);
+  }
+
+  function respondentTypeLabel(type: string): string {
+    switch (type) {
+      case 'Self':          return t('reviews.respondentType.Self');
+      case 'Peer':          return t('reviews.respondentType.Peer');
+      case 'Manager':       return t('reviews.respondentType.Manager');
+      case 'DirectReport':  return t('reviews.respondentType.DirectReport');
+      default:              return type;
+    }
+  }
+
   if (entries.length === 0) {
     return (
       <p className="py-6 text-center text-sm text-muted-foreground">
-        Noch kein Feedback eingereicht.
+        {t('reviews.noFeedback')}
       </p>
     );
   }
@@ -125,10 +123,10 @@ function FeedbackTable({ entries }: { entries: FeedbackEntry[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Typ</TableHead>
-          <TableHead>Bewertung</TableHead>
-          <TableHead>Kommentar</TableHead>
-          <TableHead>Eingereicht am</TableHead>
+          <TableHead>{t('reviews.columns.type')}</TableHead>
+          <TableHead>{t('reviews.columns.rating')}</TableHead>
+          <TableHead>{t('reviews.feedback.comment')}</TableHead>
+          <TableHead>{t('reviews.feedback.submittedAt')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -136,7 +134,9 @@ function FeedbackTable({ entries }: { entries: FeedbackEntry[] }) {
           <TableRow key={entry.id}>
             <TableCell className="text-sm">
               {entry.isAnonymous ? (
-                <span className="italic text-muted-foreground">Anonym</span>
+                <span className="italic text-muted-foreground">
+                  {t('reviews.feedback.anonymous_label')}
+                </span>
               ) : (
                 respondentTypeLabel(entry.respondentType)
               )}
@@ -166,6 +166,7 @@ interface FeedbackFormProps {
 }
 
 function FeedbackForm({ reviewId }: FeedbackFormProps) {
+  const { t } = useTranslation('hr');
   const submitFeedback = useSubmitFeedback(reviewId);
   const [respondentType, setRespondentType] = useState('Self');
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -181,22 +182,22 @@ function FeedbackForm({ reviewId }: FeedbackFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Feedbacktyp</Label>
+          <Label>{t('reviews.feedback.type')}</Label>
           <Select value={respondentType} onValueChange={setRespondentType}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Self">Selbstbeurteilung</SelectItem>
-              <SelectItem value="Peer">Peer</SelectItem>
-              <SelectItem value="Manager">Vorgesetzter</SelectItem>
-              <SelectItem value="DirectReport">Direkter Bericht</SelectItem>
+              <SelectItem value="Self">{t('reviews.respondentType.Self')}</SelectItem>
+              <SelectItem value="Peer">{t('reviews.respondentType.Peer')}</SelectItem>
+              <SelectItem value="Manager">{t('reviews.respondentType.Manager')}</SelectItem>
+              <SelectItem value="DirectReport">{t('reviews.respondentType.DirectReport')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="rating">Bewertung (1-5)</Label>
+          <Label htmlFor="rating">{t('reviews.feedback.rating')}</Label>
           <Input
             id="rating"
             type="number"
@@ -217,16 +218,16 @@ function FeedbackForm({ reviewId }: FeedbackFormProps) {
           onChange={(e) => setIsAnonymous(e.target.checked)}
           className="h-4 w-4 rounded border-input"
         />
-        <Label htmlFor="anonymous">Anonym einreichen</Label>
+        <Label htmlFor="anonymous">{t('reviews.feedback.anonymous')}</Label>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="comments">Kommentar (optional)</Label>
+        <Label htmlFor="comments">{t('reviews.feedback.comment')}</Label>
         <Textarea
           id="comments"
           value={comments}
           onChange={(e) => setComments(e.target.value)}
-          placeholder="Feedback eingeben..."
+          placeholder={t('reviews.feedback.commentPlaceholder')}
           rows={3}
           maxLength={2000}
         />
@@ -235,7 +236,7 @@ function FeedbackForm({ reviewId }: FeedbackFormProps) {
       <div className="flex justify-end">
         <Button type="submit" disabled={submitFeedback.isPending}>
           {submitFeedback.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-          Feedback einreichen
+          {t('reviews.feedback.submitButton')}
         </Button>
       </div>
     </form>
@@ -251,6 +252,7 @@ interface CompleteReviewFormProps {
 }
 
 function CompleteReviewForm({ reviewId }: CompleteReviewFormProps) {
+  const { t } = useTranslation('hr');
   const completeReview = useCompleteReview(reviewId);
   const [overallRating, setOverallRating] = useState(3);
   const [strengthsNotes, setStrengthsNotes] = useState('');
@@ -266,7 +268,7 @@ function CompleteReviewForm({ reviewId }: CompleteReviewFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="overallRating">Gesamtbewertung (1-5)</Label>
+        <Label htmlFor="overallRating">{t('reviews.complete.overallRating')}</Label>
         <Input
           id="overallRating"
           type="number"
@@ -278,36 +280,36 @@ function CompleteReviewForm({ reviewId }: CompleteReviewFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="strengths">Stärken *</Label>
+        <Label htmlFor="strengths">{t('reviews.complete.strengths')} *</Label>
         <Textarea
           id="strengths"
           value={strengthsNotes}
           onChange={(e) => setStrengthsNotes(e.target.value)}
-          placeholder="Stärken des Mitarbeiters..."
+          placeholder={t('reviews.complete.strengthsPlaceholder')}
           rows={3}
           maxLength={2000}
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="improvement">Verbesserungspotenzial *</Label>
+        <Label htmlFor="improvement">{t('reviews.complete.improvement')} *</Label>
         <Textarea
           id="improvement"
           value={improvementNotes}
           onChange={(e) => setImprovementNotes(e.target.value)}
-          placeholder="Bereiche mit Entwicklungspotenzial..."
+          placeholder={t('reviews.complete.improvementPlaceholder')}
           rows={3}
           maxLength={2000}
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="goals">Ziele *</Label>
+        <Label htmlFor="goals">{t('reviews.complete.goals')} *</Label>
         <Textarea
           id="goals"
           value={goalsNotes}
           onChange={(e) => setGoalsNotes(e.target.value)}
-          placeholder="Ziele für die nächste Periode..."
+          placeholder={t('reviews.complete.goalsPlaceholder')}
           rows={3}
           maxLength={2000}
           required
@@ -316,7 +318,7 @@ function CompleteReviewForm({ reviewId }: CompleteReviewFormProps) {
       <div className="flex justify-end">
         <Button type="submit" disabled={completeReview.isPending}>
           {completeReview.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-          Beurteilung abschließen
+          {t('reviews.complete.completeButton')}
         </Button>
       </div>
     </form>
@@ -328,10 +330,26 @@ function CompleteReviewForm({ reviewId }: CompleteReviewFormProps) {
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t, i18n } = useTranslation('hr');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const { data: review, isLoading } = useReview(id ?? '');
+
+  function formatDate(iso: string | undefined): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString(i18n.language);
+  }
+
+  function reviewTypeLabel(type: string): string {
+    switch (type) {
+      case 'Annual':      return t('reviews.reviewType.Annual');
+      case 'Probation':   return t('reviews.reviewType.Probation');
+      case 'Quarterly':   return t('reviews.reviewType.Quarterly');
+      case 'ThreeSixty':  return t('reviews.reviewType.ThreeSixty');
+      default:            return type;
+    }
+  }
 
   if (isLoading) {
     return (
@@ -345,7 +363,7 @@ export function Component() {
   if (!review) {
     return (
       <div className="py-12 text-center text-muted-foreground">
-        Beurteilung nicht gefunden.
+        {t('reviews.notFound')}
       </div>
     );
   }
@@ -355,7 +373,7 @@ export function Component() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Beurteilung: ${review.employeeFullName}`}
+        title={t('reviews.detailTitle', { name: review.employeeFullName })}
         actions={
           <div className="flex items-center gap-2">
             <StatusBadge status={review.status} />
@@ -365,7 +383,7 @@ export function Component() {
               onClick={() => navigate('/hr/reviews')}
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
-              Zurück
+              {t('common:buttons.back')}
             </Button>
           </div>
         }
@@ -374,26 +392,26 @@ export function Component() {
       {/* Metadata */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Details</CardTitle>
+          <CardTitle className="text-base">{t('reviews.detailsCardTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           <dl className="grid grid-cols-2 gap-6 sm:grid-cols-3">
-            <DetailRow label="Mitarbeiter" value={review.employeeFullName || '—'} />
-            <DetailRow label="Beurteiler" value={review.reviewerFullName || '—'} />
-            <DetailRow label="Typ" value={reviewTypeLabel(review.reviewType)} />
+            <DetailRow label={t('reviews.fields.employee')} value={review.employeeFullName || '—'} />
+            <DetailRow label={t('reviews.fields.reviewer')} value={review.reviewerFullName || '—'} />
+            <DetailRow label={t('reviews.fields.type')} value={reviewTypeLabel(review.reviewType)} />
             <DetailRow
-              label="Zeitraum"
+              label={t('reviews.fields.period')}
               value={`${formatDate(review.reviewPeriodStart)} – ${formatDate(review.reviewPeriodEnd)}`}
             />
-            <DetailRow label="Status" value={<StatusBadge status={review.status} />} />
+            <DetailRow label={t('reviews.fields.status')} value={<StatusBadge status={review.status} />} />
             {isCompleted && review.overallRating != null && (
               <DetailRow
-                label="Gesamtbewertung"
+                label={t('reviews.fields.overallRating')}
                 value={<StarRating rating={review.overallRating} />}
               />
             )}
             {isCompleted && review.completedAt && (
-              <DetailRow label="Abgeschlossen am" value={formatDate(review.completedAt)} />
+              <DetailRow label={t('reviews.fields.completedAt')} value={formatDate(review.completedAt)} />
             )}
           </dl>
         </CardContent>
@@ -403,24 +421,24 @@ export function Component() {
       {isCompleted && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Beurteilungsnotizen</CardTitle>
+            <CardTitle className="text-base">{t('reviews.notesCardTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Stärken
+                {t('reviews.fields.strengths')}
               </p>
               <p className="mt-1 text-sm">{review.strengthsNotes || '—'}</p>
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Verbesserungspotenzial
+                {t('reviews.fields.improvement')}
               </p>
               <p className="mt-1 text-sm">{review.improvementNotes || '—'}</p>
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Ziele
+                {t('reviews.fields.goals')}
               </p>
               <p className="mt-1 text-sm">{review.goalsNotes || '—'}</p>
             </div>
@@ -432,7 +450,7 @@ export function Component() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            Feedback ({review.feedbackEntries.length})
+            {t('reviews.feedbackCardTitle', { count: review.feedbackEntries.length })}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -444,7 +462,7 @@ export function Component() {
       {!isCompleted && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Feedback einreichen</CardTitle>
+            <CardTitle className="text-base">{t('reviews.submitFeedbackCardTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <FeedbackForm reviewId={review.id} />
@@ -456,7 +474,7 @@ export function Component() {
       {!isCompleted && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Beurteilung abschließen</CardTitle>
+            <CardTitle className="text-base">{t('reviews.completeReviewCardTitle')}</CardTitle>
           </CardHeader>
           <CardContent>
             <CompleteReviewForm reviewId={review.id} />

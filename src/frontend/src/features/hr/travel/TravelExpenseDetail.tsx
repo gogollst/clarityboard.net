@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   useTravelExpense,
   useSubmitTravelExpense,
@@ -23,73 +24,6 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { formatDate, formatEur } from '../utils';
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatAmount(cents: number, currency: string): string {
-  try {
-    return (cents / 100).toLocaleString('de-DE', {
-      style: 'currency',
-      currency,
-    });
-  } catch {
-    return `${(cents / 100).toFixed(2)} ${currency}`;
-  }
-}
-
-function getTravelStatusBadge(status: string) {
-  switch (status) {
-    case 'Draft':
-      return (
-        <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-          Entwurf
-        </Badge>
-      );
-    case 'Submitted':
-      return (
-        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
-          Eingereicht
-        </Badge>
-      );
-    case 'Approved':
-      return (
-        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
-          Genehmigt
-        </Badge>
-      );
-    case 'Reimbursed':
-      return (
-        <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-          Erstattet
-        </Badge>
-      );
-    case 'Rejected':
-      return (
-        <Badge className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
-          Abgelehnt
-        </Badge>
-      );
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-}
-
-function expenseTypeLabel(type: string): string {
-  switch (type) {
-    case 'Accommodation':
-      return 'Unterkunft';
-    case 'Transport':
-      return 'Transport';
-    case 'Meal':
-      return 'Verpflegung';
-    case 'Other':
-      return 'Sonstiges';
-    default:
-      return type;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Detail row helper
 // ---------------------------------------------------------------------------
 
@@ -109,10 +43,33 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 // ---------------------------------------------------------------------------
 
 function ItemsTable({ items }: { items: TravelExpenseItem[] }) {
+  const { t, i18n } = useTranslation('hr');
+
+  function formatAmount(cents: number, currency: string): string {
+    try {
+      return (cents / 100).toLocaleString(i18n.language, {
+        style: 'currency',
+        currency,
+      });
+    } catch {
+      return `${(cents / 100).toFixed(2)} ${currency}`;
+    }
+  }
+
+  function expenseTypeLabel(type: string): string {
+    switch (type) {
+      case 'Accommodation': return t('travel.expenseType.Accommodation');
+      case 'Transport':     return t('travel.expenseType.Transport');
+      case 'Meal':          return t('travel.expenseType.Meal');
+      case 'Other':         return t('travel.expenseType.Other');
+      default:              return type;
+    }
+  }
+
   if (items.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">
-        Keine Belege vorhanden.
+        {t('travel.noReceipts')}
       </p>
     );
   }
@@ -121,14 +78,14 @@ function ItemsTable({ items }: { items: TravelExpenseItem[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Datum</TableHead>
-          <TableHead>Typ</TableHead>
-          <TableHead>Beschreibung</TableHead>
-          <TableHead className="text-right">Betrag (Original)</TableHead>
-          <TableHead className="text-right">Kurs</TableHead>
-          <TableHead className="text-right">Betrag (EUR)</TableHead>
-          <TableHead className="text-right">MwSt %</TableHead>
-          <TableHead>Abzugsfähig</TableHead>
+          <TableHead>{t('travel.receiptColumns.date')}</TableHead>
+          <TableHead>{t('travel.receiptColumns.type')}</TableHead>
+          <TableHead>{t('travel.receiptColumns.description')}</TableHead>
+          <TableHead className="text-right">{t('travel.receiptColumns.originalAmount')}</TableHead>
+          <TableHead className="text-right">{t('travel.receiptColumns.exchangeRate')}</TableHead>
+          <TableHead className="text-right">{t('travel.receiptColumns.amountEur')}</TableHead>
+          <TableHead className="text-right">{t('travel.receiptColumns.vatPercent')}</TableHead>
+          <TableHead>{t('travel.receiptColumns.deductible')}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -147,24 +104,24 @@ function ItemsTable({ items }: { items: TravelExpenseItem[] }) {
               {formatAmount(item.originalAmountCents, item.originalCurrencyCode)}
             </TableCell>
             <TableCell className="text-right text-sm tabular-nums text-muted-foreground">
-              {item.exchangeRate.toLocaleString('de-DE', { minimumFractionDigits: 4 })}
+              {item.exchangeRate.toLocaleString(i18n.language, { minimumFractionDigits: 4 })}
             </TableCell>
             <TableCell className="text-right text-sm font-medium tabular-nums">
               {formatEur(item.amountCents)}
             </TableCell>
             <TableCell className="text-right text-sm tabular-nums text-muted-foreground">
               {item.vatRatePercent != null
-                ? `${item.vatRatePercent.toLocaleString('de-DE')} %`
+                ? `${item.vatRatePercent.toLocaleString(i18n.language)} %`
                 : '—'}
             </TableCell>
             <TableCell>
               {item.isDeductible ? (
                 <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
-                  Ja
+                  {t('travel.deductible.yes')}
                 </Badge>
               ) : (
                 <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                  Nein
+                  {t('travel.deductible.no')}
                 </Badge>
               )}
             </TableCell>
@@ -180,6 +137,7 @@ function ItemsTable({ items }: { items: TravelExpenseItem[] }) {
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t, i18n } = useTranslation('hr');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
@@ -187,6 +145,43 @@ export function Component() {
   const { data: report, isLoading } = useTravelExpense(id ?? '');
   const submitMutation = useSubmitTravelExpense();
   const approveMutation = useApproveTravelExpense();
+
+  function getTravelStatusBadge(travelStatus: string) {
+    switch (travelStatus) {
+      case 'Draft':
+        return (
+          <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+            {t('travel.status.Draft')}
+          </Badge>
+        );
+      case 'Submitted':
+        return (
+          <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+            {t('travel.status.Submitted')}
+          </Badge>
+        );
+      case 'Approved':
+        return (
+          <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
+            {t('travel.status.Approved')}
+          </Badge>
+        );
+      case 'Reimbursed':
+        return (
+          <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+            {t('travel.status.Reimbursed')}
+          </Badge>
+        );
+      case 'Rejected':
+        return (
+          <Badge className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
+            {t('travel.status.Rejected')}
+          </Badge>
+        );
+      default:
+        return <Badge variant="secondary">{travelStatus}</Badge>;
+    }
+  }
 
   if (isLoading) {
     return (
@@ -201,7 +196,7 @@ export function Component() {
   if (!report) {
     return (
       <div className="py-12 text-center text-muted-foreground">
-        Abrechnung nicht gefunden.
+        {t('travel.notFound')}
       </div>
     );
   }
@@ -225,7 +220,7 @@ export function Component() {
                 {submitMutation.isPending && (
                   <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                 )}
-                Einreichen
+                {t('travel.submitButton')}
               </Button>
             )}
             {canApprove && (
@@ -237,12 +232,12 @@ export function Component() {
                 {approveMutation.isPending && (
                   <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                 )}
-                Genehmigen
+                {t('travel.approveButton')}
               </Button>
             )}
             <Button variant="outline" size="sm" onClick={() => navigate('/hr/travel')}>
               <ArrowLeft className="mr-1 h-4 w-4" />
-              Zurück
+              {t('common:buttons.back')}
             </Button>
           </div>
         }
@@ -252,27 +247,27 @@ export function Component() {
       <Card className="mb-6">
         <CardContent className="pt-6">
           <dl className="grid grid-cols-2 gap-6 sm:grid-cols-3">
-            <DetailRow label="Mitarbeiter" value={report.employeeFullName} />
-            <DetailRow label="Titel" value={report.title} />
+            <DetailRow label={t('travel.fields.employee')} value={report.employeeFullName} />
+            <DetailRow label={t('travel.fields.title')} value={report.title} />
             <DetailRow
-              label="Reisezeitraum"
+              label={t('travel.fields.tripPeriod')}
               value={`${formatDate(report.tripStartDate)} – ${formatDate(report.tripEndDate)}`}
             />
-            <DetailRow label="Ziel" value={report.destination} />
-            <DetailRow label="Geschäftszweck" value={report.businessPurpose} />
-            <DetailRow label="Status" value={getTravelStatusBadge(report.status)} />
+            <DetailRow label={t('travel.fields.destination')} value={report.destination} />
+            <DetailRow label={t('travel.fields.businessPurpose')} value={report.businessPurpose} />
+            <DetailRow label={t('travel.columns.status')} value={getTravelStatusBadge(report.status)} />
             <DetailRow
-              label="Gesamtbetrag"
+              label={t('travel.fields.totalAmount')}
               value={
                 <span className="tabular-nums">
-                  {(report.totalAmountCents / 100).toLocaleString('de-DE', {
+                  {(report.totalAmountCents / 100).toLocaleString(i18n.language, {
                     style: 'currency',
                     currency: 'EUR',
                   })}
                 </span>
               }
             />
-            <DetailRow label="Erstellt am" value={formatDate(report.createdAt)} />
+            <DetailRow label={t('travel.fields.createdAt')} value={formatDate(report.createdAt)} />
           </dl>
         </CardContent>
       </Card>
@@ -280,7 +275,7 @@ export function Component() {
       {/* Items */}
       <Card>
         <CardContent className="pt-6">
-          <h3 className="mb-4 text-sm font-semibold text-foreground">Belege</h3>
+          <h3 className="mb-4 text-sm font-semibold text-foreground">{t('travel.receiptsTitle')}</h3>
           <ItemsTable items={report.items} />
         </CardContent>
       </Card>

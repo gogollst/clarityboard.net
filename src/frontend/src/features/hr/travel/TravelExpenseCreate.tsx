@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { useCreateTravelExpenseReport } from '@/hooks/useHr';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -16,20 +18,32 @@ import {
 } from '@/components/ui/card';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
-const schema = z.object({
-  employeeId: z.string().uuid('Ungültige Mitarbeiter-ID'),
-  title: z.string().min(1, 'Pflichtfeld'),
-  tripStartDate: z.string().min(1, 'Pflichtfeld'),
-  tripEndDate: z.string().min(1, 'Pflichtfeld'),
-  destination: z.string().min(1, 'Pflichtfeld'),
-  businessPurpose: z.string().min(1, 'Pflichtfeld'),
-});
-
-type FormValues = z.infer<typeof schema>;
+type FormValues = {
+  employeeId: string;
+  title: string;
+  tripStartDate: string;
+  tripEndDate: string;
+  destination: string;
+  businessPurpose: string;
+};
 
 export function Component() {
+  const { t } = useTranslation('hr');
   const navigate = useNavigate();
   const createReport = useCreateTravelExpenseReport();
+
+  const schema = useMemo(
+    () =>
+      z.object({
+        employeeId: z.string().uuid(t('travel.validation.invalidEmployeeId')),
+        title: z.string().min(1, t('travel.validation.required')),
+        tripStartDate: z.string().min(1, t('travel.validation.required')),
+        tripEndDate: z.string().min(1, t('travel.validation.required')),
+        destination: z.string().min(1, t('travel.validation.required')),
+        businessPurpose: z.string().min(1, t('travel.validation.required')),
+      }),
+    [t],
+  );
 
   const {
     register,
@@ -58,11 +72,11 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Neue Reisekostenabrechnung"
+        title={t('travel.createTitle')}
         actions={
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Abbrechen
+            {t('common:buttons.cancel')}
           </Button>
         }
       />
@@ -70,9 +84,9 @@ export function Component() {
       <div className="max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Abrechnungsdaten</CardTitle>
+            <CardTitle className="text-base">{t('travel.createCardTitle')}</CardTitle>
             <CardDescription>
-              Füllen Sie alle Pflichtfelder aus, um eine neue Reisekostenabrechnung anzulegen.
+              {t('travel.createCardDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -80,10 +94,10 @@ export function Component() {
               {/* TODO: Replace with employee selector dropdown once a shared EmployeeSelect component exists */}
               {/* Mitarbeiter-ID */}
               <div className="space-y-1.5">
-                <Label htmlFor="employeeId">Mitarbeiter-ID *</Label>
+                <Label htmlFor="employeeId">{t('travel.fields.employeeId')} *</Label>
                 <Input
                   id="employeeId"
-                  placeholder="UUID des Mitarbeiters"
+                  placeholder={t('travel.placeholders.employeeId')}
                   {...register('employeeId')}
                 />
                 {errors.employeeId && (
@@ -93,10 +107,10 @@ export function Component() {
 
               {/* Titel */}
               <div className="space-y-1.5">
-                <Label htmlFor="title">Titel *</Label>
+                <Label htmlFor="title">{t('travel.fields.title')} *</Label>
                 <Input
                   id="title"
-                  placeholder="z. B. Dienstreise Berlin – Kundentermin"
+                  placeholder={t('travel.placeholders.title')}
                   {...register('title')}
                 />
                 {errors.title && (
@@ -107,7 +121,7 @@ export function Component() {
               {/* Reisezeitraum */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="tripStartDate">Von *</Label>
+                  <Label htmlFor="tripStartDate">{t('travel.fields.tripStartDate')} *</Label>
                   <Input
                     id="tripStartDate"
                     type="date"
@@ -118,7 +132,7 @@ export function Component() {
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="tripEndDate">Bis *</Label>
+                  <Label htmlFor="tripEndDate">{t('travel.fields.tripEndDate')} *</Label>
                   <Input
                     id="tripEndDate"
                     type="date"
@@ -132,10 +146,10 @@ export function Component() {
 
               {/* Ziel */}
               <div className="space-y-1.5">
-                <Label htmlFor="destination">Ziel *</Label>
+                <Label htmlFor="destination">{t('travel.fields.destination')} *</Label>
                 <Input
                   id="destination"
-                  placeholder="z. B. Berlin, Deutschland"
+                  placeholder={t('travel.placeholders.destination')}
                   {...register('destination')}
                 />
                 {errors.destination && (
@@ -145,10 +159,10 @@ export function Component() {
 
               {/* Geschäftszweck */}
               <div className="space-y-1.5">
-                <Label htmlFor="businessPurpose">Geschäftszweck *</Label>
+                <Label htmlFor="businessPurpose">{t('travel.fields.businessPurpose')} *</Label>
                 <Input
                   id="businessPurpose"
-                  placeholder="z. B. Kundentermin, Konferenz, Projektarbeit"
+                  placeholder={t('travel.placeholders.businessPurpose')}
                   {...register('businessPurpose')}
                 />
                 {errors.businessPurpose && (
@@ -162,10 +176,10 @@ export function Component() {
                   {createReport.isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Abrechnung anlegen
+                  {t('travel.createButton')}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                  Abbrechen
+                  {t('common:buttons.cancel')}
                 </Button>
               </div>
             </form>

@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { useCreateEmployee, useDepartments } from '@/hooks/useHr';
 import { useEntity } from '@/hooks/useEntity';
 import PageHeader from '@/components/shared/PageHeader';
@@ -24,30 +26,44 @@ import {
 } from '@/components/ui/card';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
-const schema = z.object({
-  firstName: z.string().min(1, 'Vorname ist erforderlich'),
-  lastName: z.string().min(1, 'Nachname ist erforderlich'),
-  employeeNumber: z
-    .string()
-    .min(1, 'Personalnummer ist erforderlich')
-    .max(20, 'Personalnummer darf maximal 20 Zeichen haben'),
-  employeeType: z.string().min(1, 'Anstellungsart ist erforderlich'),
-  hireDate: z.string().min(1, 'Einstellungsdatum ist erforderlich'),
-  dateOfBirth: z.string().min(1, 'Geburtsdatum ist erforderlich'),
-  taxId: z
-    .string()
-    .min(1, 'Steuer-ID ist erforderlich')
-    .max(50, 'Steuer-ID darf maximal 50 Zeichen haben'),
-  departmentId: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof schema>;
+type FormValues = {
+  firstName: string;
+  lastName: string;
+  employeeNumber: string;
+  employeeType: string;
+  hireDate: string;
+  dateOfBirth: string;
+  taxId: string;
+  departmentId?: string;
+};
 
 export function Component() {
+  const { t } = useTranslation('hr');
   const navigate = useNavigate();
   const { selectedEntityId } = useEntity();
   const createEmployee = useCreateEmployee();
   const { data: departments } = useDepartments(selectedEntityId ?? undefined);
+
+  const schema = useMemo(
+    () =>
+      z.object({
+        firstName: z.string().min(1, t('employees.validation.firstNameRequired')),
+        lastName: z.string().min(1, t('employees.validation.lastNameRequired')),
+        employeeNumber: z
+          .string()
+          .min(1, t('employees.validation.employeeNumberRequired'))
+          .max(20, t('employees.validation.employeeNumberMaxLength')),
+        employeeType: z.string().min(1, t('employees.validation.employeeTypeRequired')),
+        hireDate: z.string().min(1, t('employees.validation.hireDateRequired')),
+        dateOfBirth: z.string().min(1, t('employees.validation.dateOfBirthRequired')),
+        taxId: z
+          .string()
+          .min(1, t('employees.validation.taxIdRequired'))
+          .max(50, t('employees.validation.taxIdMaxLength')),
+        departmentId: z.string().optional(),
+      }),
+    [t],
+  );
 
   const {
     register,
@@ -98,11 +114,11 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Neuer Mitarbeiter"
+        title={t('employees.createTitle')}
         actions={
           <Button variant="outline" onClick={() => navigate('/hr/employees')}>
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Zurück
+            {t('common:buttons.back')}
           </Button>
         }
       />
@@ -110,9 +126,9 @@ export function Component() {
       <div className="max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Mitarbeiterdaten</CardTitle>
+            <CardTitle className="text-base">{t('employees.createCardTitle')}</CardTitle>
             <CardDescription>
-              Füllen Sie alle Pflichtfelder aus, um einen neuen Mitarbeiter anzulegen.
+              {t('employees.createCardDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -120,10 +136,10 @@ export function Component() {
               {/* Name */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="firstName">Vorname *</Label>
+                  <Label htmlFor="firstName">{t('employees.fields.firstName')} *</Label>
                   <Input
                     id="firstName"
-                    placeholder="Max"
+                    placeholder={t('employees.placeholders.firstName')}
                     {...register('firstName')}
                   />
                   {errors.firstName && (
@@ -133,10 +149,10 @@ export function Component() {
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="lastName">Nachname *</Label>
+                  <Label htmlFor="lastName">{t('employees.fields.lastName')} *</Label>
                   <Input
                     id="lastName"
-                    placeholder="Mustermann"
+                    placeholder={t('employees.placeholders.lastName')}
                     {...register('lastName')}
                   />
                   {errors.lastName && (
@@ -149,10 +165,10 @@ export function Component() {
 
               {/* Personalnummer */}
               <div className="space-y-1.5">
-                <Label htmlFor="employeeNumber">Personalnummer *</Label>
+                <Label htmlFor="employeeNumber">{t('employees.fields.employeeNumber')} *</Label>
                 <Input
                   id="employeeNumber"
-                  placeholder="EMP-001"
+                  placeholder={t('employees.placeholders.employeeNumber')}
                   maxLength={20}
                   {...register('employeeNumber')}
                 />
@@ -165,7 +181,7 @@ export function Component() {
 
               {/* Anstellungsart */}
               <div className="space-y-1.5">
-                <Label htmlFor="employeeType">Anstellungsart *</Label>
+                <Label htmlFor="employeeType">{t('employees.fields.employeeType')} *</Label>
                 <Select
                   value={employeeType}
                   onValueChange={(v) =>
@@ -176,11 +192,11 @@ export function Component() {
                   }
                 >
                   <SelectTrigger id="employeeType">
-                    <SelectValue placeholder="Anstellungsart wählen" />
+                    <SelectValue placeholder={t('employees.placeholders.selectType')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Employee">Festangestellt</SelectItem>
-                    <SelectItem value="Contractor">Contractor</SelectItem>
+                    <SelectItem value="Employee">{t('employees.type.Employee')}</SelectItem>
+                    <SelectItem value="Contractor">{t('employees.type.Contractor')}</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.employeeType && (
@@ -193,7 +209,7 @@ export function Component() {
               {/* Einstellungsdatum + Geburtsdatum */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="hireDate">Einstellungsdatum *</Label>
+                  <Label htmlFor="hireDate">{t('employees.fields.hireDate')} *</Label>
                   <Input
                     id="hireDate"
                     type="date"
@@ -206,7 +222,7 @@ export function Component() {
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="dateOfBirth">Geburtsdatum *</Label>
+                  <Label htmlFor="dateOfBirth">{t('employees.fields.dateOfBirth')} *</Label>
                   <Input
                     id="dateOfBirth"
                     type="date"
@@ -222,10 +238,10 @@ export function Component() {
 
               {/* Steuer-ID */}
               <div className="space-y-1.5">
-                <Label htmlFor="taxId">Steuer-ID *</Label>
+                <Label htmlFor="taxId">{t('employees.fields.taxId')} *</Label>
                 <Input
                   id="taxId"
-                  placeholder="12345678901"
+                  placeholder={t('employees.placeholders.taxId')}
                   maxLength={50}
                   {...register('taxId')}
                 />
@@ -238,7 +254,7 @@ export function Component() {
 
               {/* Abteilung */}
               <div className="space-y-1.5">
-                <Label htmlFor="departmentId">Abteilung</Label>
+                <Label htmlFor="departmentId">{t('employees.fields.department')}</Label>
                 <Select
                   value={departmentId || 'none'}
                   onValueChange={(v) =>
@@ -248,10 +264,10 @@ export function Component() {
                   }
                 >
                   <SelectTrigger id="departmentId">
-                    <SelectValue placeholder="Abteilung wählen (optional)" />
+                    <SelectValue placeholder={t('employees.placeholders.selectDepartment')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Keine Abteilung</SelectItem>
+                    <SelectItem value="none">{t('employees.placeholders.noDepartment')}</SelectItem>
                     {(departments ?? []).map((dept) => (
                       <SelectItem key={dept.id} value={dept.id}>
                         {dept.name}
@@ -275,20 +291,20 @@ export function Component() {
                   {createEmployee.isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Mitarbeiter anlegen
+                  {t('employees.createButton')}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => navigate('/hr/employees')}
                 >
-                  Abbrechen
+                  {t('common:buttons.cancel')}
                 </Button>
               </div>
 
               {!selectedEntityId && (
                 <p className="text-destructive text-sm">
-                  Bitte wählen Sie zuerst eine Organisation aus.
+                  {t('employees.noEntitySelected')}
                 </p>
               )}
             </form>

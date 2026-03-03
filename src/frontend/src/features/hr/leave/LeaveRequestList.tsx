@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   useLeaveRequests,
   useApproveLeaveRequest,
@@ -29,41 +30,6 @@ import {
 import { Check, X } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function getLeaveStatusBadge(status: string) {
-  switch (status) {
-    case 'Pending':
-      return (
-        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
-          Ausstehend
-        </Badge>
-      );
-    case 'Approved':
-      return (
-        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
-          Genehmigt
-        </Badge>
-      );
-    case 'Rejected':
-      return (
-        <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-          Abgelehnt
-        </Badge>
-      );
-    case 'Cancelled':
-      return (
-        <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-          Storniert
-        </Badge>
-      );
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Rejection Dialog
 // ---------------------------------------------------------------------------
 
@@ -75,6 +41,7 @@ interface RejectDialogProps {
 }
 
 function RejectDialog({ open, onClose, onConfirm, isPending }: RejectDialogProps) {
+  const { t } = useTranslation('hr');
   const [reason, setReason] = useState('');
 
   useEffect(() => {
@@ -95,20 +62,20 @@ function RejectDialog({ open, onClose, onConfirm, isPending }: RejectDialogProps
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Urlaubsantrag ablehnen</DialogTitle>
+          <DialogTitle>{t('leave.rejectDialogTitle')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
-          <Label htmlFor="rejectionReason">Ablehnungsgrund *</Label>
+          <Label htmlFor="rejectionReason">{t('leave.rejectionReason')} *</Label>
           <Input
             id="rejectionReason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Grund für die Ablehnung eingeben..."
+            placeholder={t('leave.rejectionReasonPlaceholder')}
           />
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleClose}>
-            Abbrechen
+            {t('common:buttons.cancel')}
           </Button>
           <Button
             type="button"
@@ -116,7 +83,7 @@ function RejectDialog({ open, onClose, onConfirm, isPending }: RejectDialogProps
             disabled={!reason.trim() || isPending}
             onClick={handleConfirm}
           >
-            Bestätigen
+            {t('common:buttons.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -129,6 +96,7 @@ function RejectDialog({ open, onClose, onConfirm, isPending }: RejectDialogProps
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t } = useTranslation('hr');
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
   const [year, setYear] = useState(new Date().getFullYear());
@@ -181,17 +149,48 @@ export function Component() {
     setSelectedRequestId(null);
   };
 
+  function getLeaveStatusBadge(leaveStatus: string) {
+    switch (leaveStatus) {
+      case 'Pending':
+        return (
+          <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+            {t('leave.status.Pending')}
+          </Badge>
+        );
+      case 'Approved':
+        return (
+          <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
+            {t('leave.status.Approved')}
+          </Badge>
+        );
+      case 'Rejected':
+        return (
+          <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+            {t('leave.status.Rejected')}
+          </Badge>
+        );
+      case 'Cancelled':
+        return (
+          <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+            {t('leave.status.Cancelled')}
+          </Badge>
+        );
+      default:
+        return <Badge variant="secondary">{leaveStatus}</Badge>;
+    }
+  }
+
   const columns = [
     {
       key: 'employeeFullName',
-      header: 'Mitarbeiter',
+      header: t('leave.columns.employee'),
       render: (item: Record<string, unknown>) => (
         <span className="font-medium">{String(item.employeeFullName ?? '')}</span>
       ),
     },
     {
       key: 'leaveTypeName',
-      header: 'Urlaubstyp',
+      header: t('leave.columns.leaveType'),
       render: (item: Record<string, unknown>) => (
         <span className="text-sm text-muted-foreground">
           {String(item.leaveTypeName ?? '')}
@@ -200,7 +199,7 @@ export function Component() {
     },
     {
       key: 'startDate',
-      header: 'Zeitraum',
+      header: t('leave.columns.period'),
       render: (item: Record<string, unknown>) => {
         const start = item.startDate as string | undefined;
         const end = item.endDate as string | undefined;
@@ -214,7 +213,7 @@ export function Component() {
     },
     {
       key: 'workingDays',
-      header: 'Arbeitstage',
+      header: t('leave.columns.workingDays'),
       render: (item: Record<string, unknown>) => (
         <span className="text-sm tabular-nums text-center">
           {String(item.workingDays ?? '—')}
@@ -223,13 +222,13 @@ export function Component() {
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('leave.columns.status'),
       render: (item: Record<string, unknown>) =>
         getLeaveStatusBadge(String(item.status ?? '')),
     },
     {
       key: 'requestedAt',
-      header: 'Eingereicht am',
+      header: t('leave.columns.requestedAt'),
       render: (item: Record<string, unknown>) => {
         const raw = item.requestedAt as string | undefined;
         if (!raw) return '—';
@@ -256,7 +255,7 @@ export function Component() {
               onClick={() => handleApprove(id)}
             >
               <Check className="mr-1 h-3 w-3" />
-              Genehmigen
+              {t('leave.actions.approve')}
             </Button>
             <Button
               size="sm"
@@ -266,7 +265,7 @@ export function Component() {
               onClick={() => handleRejectClick(id)}
             >
               <X className="mr-1 h-3 w-3" />
-              Ablehnen
+              {t('leave.actions.reject')}
             </Button>
           </div>
         );
@@ -279,7 +278,7 @@ export function Component() {
 
   return (
     <div>
-      <PageHeader title="Urlaubsanträge" />
+      <PageHeader title={t('leave.title')} />
 
       {/* Filter bar */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -288,14 +287,14 @@ export function Component() {
           onValueChange={(v) => setStatus(v === 'all' ? '' : v)}
         >
           <SelectTrigger className="w-44">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t('leave.allStatuses')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle Status</SelectItem>
-            <SelectItem value="Pending">Ausstehend</SelectItem>
-            <SelectItem value="Approved">Genehmigt</SelectItem>
-            <SelectItem value="Rejected">Abgelehnt</SelectItem>
-            <SelectItem value="Cancelled">Storniert</SelectItem>
+            <SelectItem value="all">{t('leave.allStatuses')}</SelectItem>
+            <SelectItem value="Pending">{t('leave.status.Pending')}</SelectItem>
+            <SelectItem value="Approved">{t('leave.status.Approved')}</SelectItem>
+            <SelectItem value="Rejected">{t('leave.status.Rejected')}</SelectItem>
+            <SelectItem value="Cancelled">{t('leave.status.Cancelled')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -304,7 +303,7 @@ export function Component() {
           onValueChange={(v) => setYear(Number(v))}
         >
           <SelectTrigger className="w-32">
-            <SelectValue placeholder="Jahr" />
+            <SelectValue placeholder={t('leave.filterYear')} />
           </SelectTrigger>
           <SelectContent>
             {yearOptions.map((y) => (
@@ -320,7 +319,7 @@ export function Component() {
         columns={columns}
         data={requests as unknown as Record<string, unknown>[]}
         isLoading={isLoading}
-        emptyMessage="Keine Urlaubsanträge gefunden."
+        emptyMessage={t('leave.noRequests')}
         pagination={
           totalCount > pageSize
             ? { page, pageSize, total: totalCount, onPageChange: setPage }

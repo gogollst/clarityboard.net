@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
+import i18n from '@/i18n';
 import { queryKeys } from '@/lib/queryKeys';
 import type { PaginatedResponse } from '@/types/api';
 import type {
@@ -76,11 +77,11 @@ export function useCreateEmployee() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Employee created');
+      toast.success(i18n.t('hr:toast.employeeCreated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.employees() });
     },
     onError: () => {
-      toast.error('Failed to create employee');
+      toast.error(i18n.t('hr:toast.employeeCreateError'));
     },
   });
 }
@@ -96,12 +97,12 @@ export function useUpdateEmployee() {
       await api.put(`/hr/employees/${id}`, request);
     },
     onSuccess: (_data, variables) => {
-      toast.success('Employee updated');
+      toast.success(i18n.t('hr:toast.employeeUpdated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.employee(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.employees() });
     },
     onError: () => {
-      toast.error('Failed to update employee');
+      toast.error(i18n.t('hr:toast.employeeUpdateError'));
     },
   });
 }
@@ -117,12 +118,12 @@ export function useTerminateEmployee() {
       await api.post(`/hr/employees/${id}/terminate`, request);
     },
     onSuccess: (_data, variables) => {
-      toast.success('Employee terminated');
+      toast.success(i18n.t('hr:toast.employeeTerminated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.employee(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.employees() });
     },
     onError: () => {
-      toast.error('Failed to terminate employee');
+      toast.error(i18n.t('hr:toast.employeeTerminateError'));
     },
   });
 }
@@ -155,13 +156,13 @@ export function useUpdateSalary() {
       await api.post(`/hr/employees/${employeeId}/salary`, request);
     },
     onSuccess: (_data, variables) => {
-      toast.success('Salary updated');
+      toast.success(i18n.t('hr:toast.salaryUpdated'));
       queryClient.invalidateQueries({
         queryKey: queryKeys.hr.salaryHistory(variables.employeeId),
       });
     },
     onError: () => {
-      toast.error('Failed to update salary');
+      toast.error(i18n.t('hr:toast.salaryUpdateError'));
     },
   });
 }
@@ -194,13 +195,13 @@ export function useCreateContract() {
       await api.post(`/hr/employees/${employeeId}/contracts`, request);
     },
     onSuccess: (_data, variables) => {
-      toast.success('Contract created');
+      toast.success(i18n.t('hr:toast.contractCreated'));
       queryClient.invalidateQueries({
         queryKey: queryKeys.hr.contracts(variables.employeeId),
       });
     },
     onError: () => {
-      toast.error('Failed to create contract');
+      toast.error(i18n.t('hr:toast.contractCreateError'));
     },
   });
 }
@@ -231,11 +232,11 @@ export function useCreateDepartment() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Department created');
+      toast.success(i18n.t('hr:toast.departmentCreated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.departments() });
     },
     onError: () => {
-      toast.error('Failed to create department');
+      toast.error(i18n.t('hr:toast.departmentCreateError'));
     },
   });
 }
@@ -263,10 +264,10 @@ export function useCreateLeaveType() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Urlaubstyp erstellt');
+      toast.success(i18n.t('hr:toast.leaveTypeCreated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.leaveTypes() });
     },
-    onError: () => toast.error('Fehler beim Erstellen des Urlaubstyps'),
+    onError: () => toast.error(i18n.t('hr:toast.leaveTypeCreateError')),
   });
 }
 
@@ -292,11 +293,11 @@ export function useSubmitLeaveRequest() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Urlaubsantrag eingereicht');
+      toast.success(i18n.t('hr:toast.leaveSubmitted'));
       queryClient.invalidateQueries({ queryKey: ['hr', 'leave-requests'] });
       queryClient.invalidateQueries({ queryKey: ['hr', 'leave-balance'] });
     },
-    onError: () => toast.error('Fehler beim Einreichen des Urlaubsantrags'),
+    onError: () => toast.error(i18n.t('hr:toast.leaveSubmitError')),
   });
 }
 
@@ -307,11 +308,11 @@ export function useApproveLeaveRequest() {
       await api.put(`/hr/leave-requests/${id}/approve`);
     },
     onSuccess: () => {
-      toast.success('Urlaubsantrag genehmigt');
+      toast.success(i18n.t('hr:toast.leaveApproved'));
       queryClient.invalidateQueries({ queryKey: ['hr', 'leave-requests'] });
       queryClient.invalidateQueries({ queryKey: ['hr', 'leave-balance'] });
     },
-    onError: () => toast.error('Fehler bei der Genehmigung'),
+    onError: () => toast.error(i18n.t('hr:toast.leaveApproveError')),
   });
 }
 
@@ -322,11 +323,11 @@ export function useRejectLeaveRequest() {
       await api.put(`/hr/leave-requests/${id}/reject`, { reason });
     },
     onSuccess: () => {
-      toast.success('Urlaubsantrag abgelehnt');
+      toast.success(i18n.t('hr:toast.leaveRejected'));
       queryClient.invalidateQueries({ queryKey: ['hr', 'leave-requests'] });
       queryClient.invalidateQueries({ queryKey: ['hr', 'leave-balance'] });
     },
-    onError: () => toast.error('Fehler bei der Ablehnung'),
+    onError: () => toast.error(i18n.t('hr:toast.leaveRejectError')),
   });
 }
 
@@ -372,11 +373,11 @@ export function useLogWorkTime() {
       return data;
     },
     onSuccess: (_, variables) => {
-      toast.success('Arbeitszeit eingetragen');
+      toast.success(i18n.t('hr:toast.workTimeLogged'));
       const month = variables.date.substring(0, 7);
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.workTime(variables.employeeId, month) });
     },
-    onError: () => toast.error('Fehler beim Eintragen der Arbeitszeit'),
+    onError: () => toast.error(i18n.t('hr:toast.workTimeLogError')),
   });
 }
 
@@ -413,10 +414,10 @@ export function useCreateTravelExpenseReport() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Reisekostenabrechnung erstellt');
+      toast.success(i18n.t('hr:toast.travelReportCreated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpenses() });
     },
-    onError: () => toast.error('Fehler beim Erstellen der Abrechnung'),
+    onError: () => toast.error(i18n.t('hr:toast.travelReportCreateError')),
   });
 }
 
@@ -428,11 +429,11 @@ export function useAddTravelExpenseItem(reportId: string) {
       return data;
     },
     onSuccess: () => {
-      toast.success('Beleg hinzugefügt');
+      toast.success(i18n.t('hr:toast.travelItemAdded'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpense(reportId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpenses() });
     },
-    onError: () => toast.error('Fehler beim Hinzufügen des Belegs'),
+    onError: () => toast.error(i18n.t('hr:toast.travelItemAddError')),
   });
 }
 
@@ -443,11 +444,11 @@ export function useSubmitTravelExpense() {
       await api.post(`/hr/travel-expenses/${reportId}/submit`);
     },
     onSuccess: (_data, reportId) => {
-      toast.success('Abrechnung eingereicht');
+      toast.success(i18n.t('hr:toast.travelSubmitted'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpense(reportId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpenses() });
     },
-    onError: () => toast.error('Fehler beim Einreichen'),
+    onError: () => toast.error(i18n.t('hr:toast.travelSubmitError')),
   });
 }
 
@@ -458,11 +459,11 @@ export function useApproveTravelExpense() {
       await api.put(`/hr/travel-expenses/${reportId}/approve`);
     },
     onSuccess: (_data, reportId) => {
-      toast.success('Abrechnung genehmigt');
+      toast.success(i18n.t('hr:toast.travelApproved'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpense(reportId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.travelExpenses() });
     },
-    onError: () => toast.error('Fehler bei der Genehmigung'),
+    onError: () => toast.error(i18n.t('hr:toast.travelApproveError')),
   });
 }
 
@@ -505,10 +506,10 @@ export function useCreateReview() {
       return data;
     },
     onSuccess: () => {
-      toast.success('Beurteilung erstellt');
+      toast.success(i18n.t('hr:toast.reviewCreated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.reviews() });
     },
-    onError: () => toast.error('Fehler beim Erstellen der Beurteilung'),
+    onError: () => toast.error(i18n.t('hr:toast.reviewCreateError')),
   });
 }
 
@@ -526,10 +527,10 @@ export function useSubmitFeedback(reviewId: string) {
       return data;
     },
     onSuccess: () => {
-      toast.success('Feedback eingereicht');
+      toast.success(i18n.t('hr:toast.feedbackSubmitted'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.review(reviewId) });
     },
-    onError: () => toast.error('Fehler beim Einreichen des Feedbacks'),
+    onError: () => toast.error(i18n.t('hr:toast.feedbackSubmitError')),
   });
 }
 
@@ -545,11 +546,11 @@ export function useCompleteReview(reviewId: string) {
       await api.put(`/hr/reviews/${reviewId}/complete`, request);
     },
     onSuccess: () => {
-      toast.success('Beurteilung abgeschlossen');
+      toast.success(i18n.t('hr:toast.reviewCompleted'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.review(reviewId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.reviews() });
     },
-    onError: () => toast.error('Fehler beim Abschließen der Beurteilung'),
+    onError: () => toast.error(i18n.t('hr:toast.reviewCompleteError')),
   });
 }
 
@@ -575,10 +576,10 @@ export function useDeleteDocument(employeeId: string) {
       await api.delete(`/hr/employees/${employeeId}/documents/${docId}`);
     },
     onSuccess: () => {
-      toast.success('Dokument gelöscht');
+      toast.success(i18n.t('hr:toast.documentDeleted'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.documents(employeeId) });
     },
-    onError: () => toast.error('Fehler beim Löschen'),
+    onError: () => toast.error(i18n.t('hr:toast.documentDeleteError')),
   });
 }
 
@@ -594,10 +595,10 @@ export function useUploadDocument(employeeId: string) {
       return data;
     },
     onSuccess: () => {
-      toast.success('Dokument hochgeladen');
+      toast.success(i18n.t('hr:toast.documentUploaded'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.documents(employeeId) });
     },
-    onError: () => toast.error('Fehler beim Hochladen'),
+    onError: () => toast.error(i18n.t('hr:toast.documentUploadError')),
   });
 }
 
@@ -622,10 +623,10 @@ export function useScheduleDeletion() {
       await api.post(`/hr/employees/${employeeId}/schedule-deletion`);
     },
     onSuccess: () => {
-      toast.success('Löschung geplant');
+      toast.success(i18n.t('hr:toast.deletionScheduled'));
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.deletionRequests() });
     },
-    onError: () => toast.error('Fehler beim Planen der Löschung'),
+    onError: () => toast.error(i18n.t('hr:toast.deletionScheduleError')),
   });
 }
 

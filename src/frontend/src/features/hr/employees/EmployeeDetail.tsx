@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   useEmployee,
   useSalaryHistory,
@@ -38,92 +39,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
-// Formatters
+// Profile detail row helper
 // ---------------------------------------------------------------------------
 
-function formatCents(cents: number): string {
-  return (cents / 100).toLocaleString('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-  });
-}
-
-function formatDate(iso: string | undefined): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('de-DE');
-}
-
-function salaryTypeLabel(type: string): string {
-  switch (type) {
-    case 'Monthly':
-      return 'Monatlich';
-    case 'Hourly':
-      return 'Stündlich';
-    case 'DailyRate':
-      return 'Tagessatz';
-    default:
-      return type;
-  }
-}
-
-function contractTypeLabel(type: string): string {
-  switch (type) {
-    case 'Permanent':
-      return 'Unbefristet';
-    case 'FixedTerm':
-      return 'Befristet';
-    case 'Freelance':
-      return 'Freiberuflich';
-    case 'WorkingStudent':
-      return 'Werkstudent';
-    default:
-      return type;
-  }
-}
-
-function employeeTypeLabel(type: string): string {
-  return type === 'Contractor' ? 'Contractor' : 'Festangestellt';
-}
-
-// ---------------------------------------------------------------------------
-// Status badge
-// ---------------------------------------------------------------------------
-
-function StatusBadge({ status }: { status: string }) {
-  switch (status) {
-    case 'Active':
-      return (
-        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
-          Aktiv
-        </Badge>
-      );
-    case 'OnLeave':
-      return (
-        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
-          Im Urlaub
-        </Badge>
-      );
-    case 'Terminated':
-      return (
-        <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-          Gekündigt
-        </Badge>
-      );
-    default:
-      return <Badge variant="secondary">{status}</Badge>;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Current badge
-// ---------------------------------------------------------------------------
-
-function CurrentBadge({ isCurrent }: { isCurrent: boolean }) {
-  if (!isCurrent) return null;
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-      Aktuell
-    </Badge>
+    <div>
+      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="mt-1 text-sm font-medium text-foreground">{value}</dd>
+    </div>
   );
 }
 
@@ -138,6 +64,7 @@ interface TerminationDialogProps {
 }
 
 function TerminationDialog({ open, onClose, employeeId }: TerminationDialogProps) {
+  const { t } = useTranslation('hr');
   const [terminationDate, setTerminationDate] = useState('');
   const [reason, setReason] = useState('');
   const terminateEmployee = useTerminateEmployee();
@@ -162,11 +89,11 @@ function TerminationDialog({ open, onClose, employeeId }: TerminationDialogProps
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Mitarbeiter kündigen</DialogTitle>
+          <DialogTitle>{t('employees.profile.terminationDialogTitle')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="terminationDate">Kündigungsdatum *</Label>
+            <Label htmlFor="terminationDate">{t('employees.profile.terminationDate')} *</Label>
             <Input
               id="terminationDate"
               type="date"
@@ -176,18 +103,18 @@ function TerminationDialog({ open, onClose, employeeId }: TerminationDialogProps
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="reason">Grund *</Label>
+            <Label htmlFor="reason">{t('employees.profile.terminationReason')} *</Label>
             <Input
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Kündigungsgrund eingeben..."
+              placeholder={t('employees.profile.terminationReasonPlaceholder')}
               required
             />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleClose}>
-              Abbrechen
+              {t('common:buttons.cancel')}
             </Button>
             <Button
               type="submit"
@@ -197,7 +124,7 @@ function TerminationDialog({ open, onClose, employeeId }: TerminationDialogProps
               {terminateEmployee.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Kündigung bestätigen
+              {t('employees.profile.confirmTermination')}
             </Button>
           </DialogFooter>
         </form>
@@ -207,14 +134,81 @@ function TerminationDialog({ open, onClose, employeeId }: TerminationDialogProps
 }
 
 // ---------------------------------------------------------------------------
+// Status badge
+// ---------------------------------------------------------------------------
+
+function StatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation('hr');
+  switch (status) {
+    case 'Active':
+      return (
+        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
+          {t('employees.status.Active')}
+        </Badge>
+      );
+    case 'OnLeave':
+      return (
+        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300">
+          {t('employees.status.OnLeave')}
+        </Badge>
+      );
+    case 'Terminated':
+      return (
+        <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+          {t('employees.status.Terminated')}
+        </Badge>
+      );
+    default:
+      return <Badge variant="secondary">{status}</Badge>;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Current badge
+// ---------------------------------------------------------------------------
+
+function CurrentBadge({ isCurrent }: { isCurrent: boolean }) {
+  const { t } = useTranslation('hr');
+  if (!isCurrent) return null;
+  return (
+    <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+      {t('employees.salary.current')}
+    </Badge>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Salary history tab
 // ---------------------------------------------------------------------------
 
 function SalaryTab({ entries }: { entries: SalaryEntry[] }) {
+  const { t, i18n } = useTranslation('hr');
+
+  function formatCents(cents: number): string {
+    return (cents / 100).toLocaleString(i18n.language, {
+      style: 'currency',
+      currency: 'EUR',
+    });
+  }
+
+  function formatDate(iso: string | undefined): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString(i18n.language);
+  }
+
+  function salaryTypeLabel(type: string): string {
+    switch (type) {
+      case 'Monthly':  return t('employees.salary.typeMonthly');
+      case 'Hourly':   return t('employees.salary.typeHourly');
+      case 'DailyRate': return t('employees.salary.typeDailyRate');
+      default:         return type;
+    }
+  }
+
   if (entries.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">
-        Keine Gehaltseinträge vorhanden.
+        {t('employees.salary.noEntries')}
       </p>
     );
   }
@@ -223,10 +217,10 @@ function SalaryTab({ entries }: { entries: SalaryEntry[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Typ</TableHead>
-          <TableHead className="text-right">Bruttobetrag</TableHead>
-          <TableHead>Gültig ab</TableHead>
-          <TableHead>Änderungsgrund</TableHead>
+          <TableHead>{t('employees.salary.type')}</TableHead>
+          <TableHead className="text-right">{t('employees.salary.grossAmount')}</TableHead>
+          <TableHead>{t('employees.salary.validFrom')}</TableHead>
+          <TableHead>{t('employees.salary.changeReason')}</TableHead>
           <TableHead />
         </TableRow>
       </TableHeader>
@@ -260,10 +254,27 @@ function SalaryTab({ entries }: { entries: SalaryEntry[] }) {
 // ---------------------------------------------------------------------------
 
 function ContractTab({ entries }: { entries: ContractEntry[] }) {
+  const { t, i18n } = useTranslation('hr');
+
+  function formatDate(iso: string | undefined): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString(i18n.language);
+  }
+
+  function contractTypeLabel(type: string): string {
+    switch (type) {
+      case 'Permanent':      return t('employees.contracts.typePermanent');
+      case 'FixedTerm':      return t('employees.contracts.typeFixedTerm');
+      case 'Freelance':      return t('employees.contracts.typeFreelance');
+      case 'WorkingStudent': return t('employees.contracts.typeWorkingStudent');
+      default:               return type;
+    }
+  }
+
   if (entries.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-muted-foreground">
-        Keine Vertragseinträge vorhanden.
+        {t('employees.contracts.noEntries')}
       </p>
     );
   }
@@ -272,10 +283,10 @@ function ContractTab({ entries }: { entries: ContractEntry[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Vertragsart</TableHead>
-          <TableHead className="text-right">Wochenstunden</TableHead>
-          <TableHead>Startdatum</TableHead>
-          <TableHead>Gültig ab</TableHead>
+          <TableHead>{t('employees.contracts.contractType')}</TableHead>
+          <TableHead className="text-right">{t('employees.contracts.weeklyHours')}</TableHead>
+          <TableHead>{t('employees.contracts.startDate')}</TableHead>
+          <TableHead>{t('employees.contracts.validFrom')}</TableHead>
           <TableHead />
         </TableRow>
       </TableHeader>
@@ -305,25 +316,11 @@ function ContractTab({ entries }: { entries: ContractEntry[] }) {
 }
 
 // ---------------------------------------------------------------------------
-// Profile detail row helper
-// ---------------------------------------------------------------------------
-
-function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="mt-1 text-sm font-medium text-foreground">{value}</dd>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t, i18n } = useTranslation('hr');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [terminateOpen, setTerminateOpen] = useState(false);
@@ -331,6 +328,17 @@ export function Component() {
   const { data: employee, isLoading } = useEmployee(id ?? '');
   const { data: salaryHistory = [] } = useSalaryHistory(id ?? '');
   const { data: contractHistory = [] } = useContractHistory(id ?? '');
+
+  function formatDate(iso: string | undefined): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString(i18n.language);
+  }
+
+  function employeeTypeLabel(type: string): string {
+    return type === 'Contractor'
+      ? t('employees.type.Contractor')
+      : t('employees.type.Employee');
+  }
 
   if (isLoading) {
     return (
@@ -344,7 +352,7 @@ export function Component() {
   if (!employee) {
     return (
       <div className="py-12 text-center text-muted-foreground">
-        Mitarbeiter nicht gefunden.
+        {t('employees.notFound')}
       </div>
     );
   }
@@ -364,7 +372,7 @@ export function Component() {
               onClick={() => navigate('/hr/employees')}
             >
               <ArrowLeft className="mr-1 h-4 w-4" />
-              Zurück
+              {t('common:buttons.back')}
             </Button>
           </div>
         }
@@ -372,48 +380,48 @@ export function Component() {
 
       <Tabs defaultValue="profil">
         <TabsList className="mb-6">
-          <TabsTrigger value="profil">Profil</TabsTrigger>
-          <TabsTrigger value="gehalt">Gehalt</TabsTrigger>
-          <TabsTrigger value="vertraege">Verträge</TabsTrigger>
+          <TabsTrigger value="profil">{t('employees.tabs.profile')}</TabsTrigger>
+          <TabsTrigger value="gehalt">{t('employees.tabs.salary')}</TabsTrigger>
+          <TabsTrigger value="vertraege">{t('employees.tabs.contracts')}</TabsTrigger>
         </TabsList>
 
         {/* ----------------------------------------------------------------- */}
-        {/* Profil tab                                                         */}
+        {/* Profile tab                                                        */}
         {/* ----------------------------------------------------------------- */}
         <TabsContent value="profil">
           <Card>
             <CardContent className="pt-6">
               <dl className="grid grid-cols-2 gap-6">
                 <DetailRow
-                  label="Personalnummer"
+                  label={t('employees.fields.employeeNumber')}
                   value={employee.employeeNumber}
                 />
                 <DetailRow
-                  label="Anstellungsart"
+                  label={t('employees.fields.employeeType')}
                   value={employeeTypeLabel(employee.employeeType)}
                 />
                 <DetailRow
-                  label="Status"
+                  label={t('employees.fields.status')}
                   value={<StatusBadge status={employee.status} />}
                 />
                 <DetailRow
-                  label="Einstellungsdatum"
+                  label={t('employees.fields.hireDate')}
                   value={formatDate(employee.hireDate)}
                 />
                 <DetailRow
-                  label="Geburtsdatum"
+                  label={t('employees.fields.dateOfBirth')}
                   value={formatDate(employee.dateOfBirth)}
                 />
                 <DetailRow
-                  label="Steuer-ID"
+                  label={t('employees.fields.taxId')}
                   value={employee.taxId || '—'}
                 />
                 <DetailRow
-                  label="Abteilung"
+                  label={t('employees.fields.department')}
                   value={employee.departmentName ?? '—'}
                 />
                 <DetailRow
-                  label="Manager"
+                  label={t('employees.columns.manager')}
                   value={employee.managerName ?? '—'}
                 />
               </dl>
@@ -424,7 +432,7 @@ export function Component() {
                     variant="destructive"
                     onClick={() => setTerminateOpen(true)}
                   >
-                    Mitarbeiter kündigen
+                    {t('employees.terminateButton')}
                   </Button>
                 </div>
               )}
@@ -433,7 +441,7 @@ export function Component() {
         </TabsContent>
 
         {/* ----------------------------------------------------------------- */}
-        {/* Gehalt tab                                                         */}
+        {/* Salary tab                                                         */}
         {/* ----------------------------------------------------------------- */}
         <TabsContent value="gehalt">
           <Card>
@@ -444,7 +452,7 @@ export function Component() {
         </TabsContent>
 
         {/* ----------------------------------------------------------------- */}
-        {/* Verträge tab                                                       */}
+        {/* Contracts tab                                                      */}
         {/* ----------------------------------------------------------------- */}
         <TabsContent value="vertraege">
           <Card>

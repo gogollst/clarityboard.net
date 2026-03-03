@@ -1,1 +1,427 @@
-{}
+{
+  "employees": {
+    "title": "Employees",
+    "newEmployee": "New Employee",
+    "searchPlaceholder": "Name or employee number...",
+    "noEmployees": "No employees found.",
+    "notFound": "Employee not found.",
+    "createTitle": "New Employee",
+    "createCardTitle": "Employee Data",
+    "createCardDescription": "Fill in all required fields to create a new employee.",
+    "createButton": "Create Employee",
+    "terminateButton": "Terminate Employee",
+    "noEntitySelected": "Please select an organisation first.",
+    "columns": {
+      "employeeNumber": "Employee No.",
+      "name": "Name",
+      "type": "Type",
+      "status": "Status",
+      "department": "Department",
+      "manager": "Manager",
+      "hireDate": "Hire Date"
+    },
+    "status": {
+      "Active": "Active",
+      "OnLeave": "On Leave",
+      "Terminated": "Terminated"
+    },
+    "type": {
+      "Employee": "Permanent",
+      "Contractor": "Contractor"
+    },
+    "allStatuses": "All Statuses",
+    "allTypes": "All Types",
+    "filterStatus": "Status",
+    "filterType": "Employment Type",
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "employeeNumber": "Employee Number",
+      "employeeType": "Employment Type",
+      "hireDate": "Hire Date",
+      "dateOfBirth": "Date of Birth",
+      "taxId": "Tax ID",
+      "department": "Department",
+      "status": "Status"
+    },
+    "placeholders": {
+      "firstName": "John",
+      "lastName": "Smith",
+      "employeeNumber": "EMP-001",
+      "taxId": "12345678901",
+      "selectType": "Select employment type",
+      "selectDepartment": "Select department (optional)",
+      "noDepartment": "No department"
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "employeeNumberRequired": "Employee number is required",
+      "employeeNumberMaxLength": "Employee number must not exceed 20 characters",
+      "employeeTypeRequired": "Employment type is required",
+      "hireDateRequired": "Hire date is required",
+      "dateOfBirthRequired": "Date of birth is required",
+      "taxIdRequired": "Tax ID is required",
+      "taxIdMaxLength": "Tax ID must not exceed 50 characters"
+    },
+    "tabs": {
+      "profile": "Profile",
+      "salary": "Salary",
+      "contracts": "Contracts"
+    },
+    "profile": {
+      "terminationDialogTitle": "Terminate Employee",
+      "terminationDate": "Termination Date",
+      "terminationReason": "Reason",
+      "terminationReasonPlaceholder": "Enter reason for termination...",
+      "confirmTermination": "Confirm Termination"
+    },
+    "salary": {
+      "noEntries": "No salary entries available.",
+      "type": "Type",
+      "grossAmount": "Gross Amount",
+      "validFrom": "Valid From",
+      "changeReason": "Change Reason",
+      "current": "Current",
+      "typeMonthly": "Monthly",
+      "typeHourly": "Hourly",
+      "typeDailyRate": "Daily Rate"
+    },
+    "contracts": {
+      "noEntries": "No contract entries available.",
+      "contractType": "Contract Type",
+      "weeklyHours": "Weekly Hours",
+      "startDate": "Start Date",
+      "validFrom": "Valid From",
+      "typePermanent": "Permanent",
+      "typeFixedTerm": "Fixed-Term",
+      "typeFreelance": "Freelance",
+      "typeWorkingStudent": "Working Student"
+    }
+  },
+  "leave": {
+    "title": "Leave Requests",
+    "noRequests": "No leave requests found.",
+    "rejectDialogTitle": "Reject Leave Request",
+    "rejectionReason": "Rejection Reason",
+    "rejectionReasonPlaceholder": "Enter reason for rejection...",
+    "allStatuses": "All Statuses",
+    "filterYear": "Year",
+    "columns": {
+      "employee": "Employee",
+      "leaveType": "Leave Type",
+      "period": "Period",
+      "workingDays": "Working Days",
+      "status": "Status",
+      "requestedAt": "Submitted On"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "status": {
+      "Pending": "Pending",
+      "Approved": "Approved",
+      "Rejected": "Rejected",
+      "Cancelled": "Cancelled"
+    }
+  },
+  "worktime": {
+    "title": "Work Time Overview",
+    "noEmployee": "No employee selected. Navigate from the employee page to the work time view.",
+    "noEntries": "No entries for this month.",
+    "month": "Month",
+    "total": "Total",
+    "columns": {
+      "date": "Date",
+      "from": "From",
+      "to": "To",
+      "breakMin": "Break (min)",
+      "total": "Total",
+      "type": "Type",
+      "project": "Project",
+      "status": "Status"
+    },
+    "entryType": {
+      "Work": "Work",
+      "Overtime": "Overtime",
+      "Oncall": "On-Call"
+    },
+    "status": {
+      "Open": "Open",
+      "Locked": "Locked"
+    }
+  },
+  "travel": {
+    "title": "Travel Expenses",
+    "newReport": "New Report",
+    "noReports": "No travel expense reports found.",
+    "notFound": "Report not found.",
+    "createTitle": "New Travel Expense Report",
+    "createCardTitle": "Report Data",
+    "createCardDescription": "Fill in all required fields to create a new travel expense report.",
+    "createButton": "Create Report",
+    "submitButton": "Submit",
+    "approveButton": "Approve",
+    "detailsButton": "Details",
+    "receiptsTitle": "Receipts",
+    "noReceipts": "No receipts available.",
+    "allStatuses": "All Statuses",
+    "columns": {
+      "employee": "Employee",
+      "title": "Title",
+      "tripPeriod": "Trip Period",
+      "destination": "Destination",
+      "totalAmount": "Total Amount",
+      "status": "Status"
+    },
+    "fields": {
+      "employeeId": "Employee ID",
+      "title": "Title",
+      "tripStartDate": "From",
+      "tripEndDate": "To",
+      "destination": "Destination",
+      "businessPurpose": "Business Purpose",
+      "employee": "Employee",
+      "tripPeriod": "Trip Period",
+      "totalAmount": "Total Amount",
+      "createdAt": "Created On"
+    },
+    "placeholders": {
+      "employeeId": "Employee UUID",
+      "title": "e.g. Business Trip Berlin – Client Meeting",
+      "destination": "e.g. Berlin, Germany",
+      "businessPurpose": "e.g. Client meeting, Conference, Project work"
+    },
+    "validation": {
+      "invalidEmployeeId": "Invalid employee ID",
+      "required": "Required field"
+    },
+    "status": {
+      "Draft": "Draft",
+      "Submitted": "Submitted",
+      "Approved": "Approved",
+      "Reimbursed": "Reimbursed",
+      "Rejected": "Rejected"
+    },
+    "receiptColumns": {
+      "date": "Date",
+      "type": "Type",
+      "description": "Description",
+      "originalAmount": "Amount (Original)",
+      "exchangeRate": "Rate",
+      "amountEur": "Amount (EUR)",
+      "vatPercent": "VAT %",
+      "deductible": "Deductible"
+    },
+    "deductible": {
+      "yes": "Yes",
+      "no": "No"
+    },
+    "expenseType": {
+      "Accommodation": "Accommodation",
+      "Transport": "Transport",
+      "Meal": "Meal",
+      "Other": "Other"
+    }
+  },
+  "reviews": {
+    "title": "Performance Reviews",
+    "noReviews": "No reviews found.",
+    "notFound": "Review not found.",
+    "detailTitle": "Review: {{name}}",
+    "detailsCardTitle": "Details",
+    "notesCardTitle": "Review Notes",
+    "feedbackCardTitle": "Feedback ({{count}})",
+    "submitFeedbackCardTitle": "Submit Feedback",
+    "completeReviewCardTitle": "Complete Review",
+    "noFeedback": "No feedback submitted yet.",
+    "allTypes": "All Types",
+    "allStatuses": "All Statuses",
+    "pagination": "Page {{page}} of {{total}} ({{count}} entries)",
+    "columns": {
+      "employee": "Employee",
+      "reviewer": "Reviewer",
+      "period": "Period",
+      "type": "Type",
+      "status": "Status",
+      "rating": "Rating",
+      "createdAt": "Created On"
+    },
+    "fields": {
+      "employee": "Employee",
+      "reviewer": "Reviewer",
+      "type": "Type",
+      "period": "Period",
+      "status": "Status",
+      "overallRating": "Overall Rating",
+      "completedAt": "Completed On",
+      "strengths": "Strengths",
+      "improvement": "Areas for Improvement",
+      "goals": "Goals"
+    },
+    "feedback": {
+      "type": "Feedback Type",
+      "rating": "Rating (1-5)",
+      "anonymous": "Submit anonymously",
+      "comment": "Comment (optional)",
+      "commentPlaceholder": "Enter feedback...",
+      "submitButton": "Submit Feedback",
+      "anonymous_label": "Anonymous",
+      "submittedAt": "Submitted On"
+    },
+    "complete": {
+      "overallRating": "Overall Rating (1-5)",
+      "strengths": "Strengths",
+      "strengthsPlaceholder": "Employee's strengths...",
+      "improvement": "Areas for Improvement",
+      "improvementPlaceholder": "Areas with development potential...",
+      "goals": "Goals",
+      "goalsPlaceholder": "Goals for the next period...",
+      "completeButton": "Complete Review"
+    },
+    "reviewType": {
+      "Annual": "Annual",
+      "Probation": "Probation",
+      "Quarterly": "Quarterly",
+      "ThreeSixty": "360°"
+    },
+    "respondentType": {
+      "Self": "Self-Assessment",
+      "Peer": "Peer",
+      "Manager": "Manager",
+      "DirectReport": "Direct Report"
+    },
+    "status": {
+      "Draft": "Draft",
+      "InProgress": "In Progress",
+      "Completed": "Completed"
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "description": "Document management for {{name}}",
+    "uploadButton": "Upload Document",
+    "uploadDialogTitle": "Upload Document",
+    "loadError": "Error loading documents.",
+    "noDocuments": "No documents available.",
+    "deleteDialogTitle": "Delete Document?",
+    "deleteDialogDescription": "Are you sure you want to delete the document \"{{title}}\" ({{fileName}})? This action cannot be undone.",
+    "downloading": "Download",
+    "deleting": "Delete",
+    "uploading": "Uploading…",
+    "uploadSubmit": "Upload",
+    "columns": {
+      "title": "Title",
+      "type": "Type",
+      "fileName": "File Name",
+      "size": "Size",
+      "uploadedAt": "Uploaded On",
+      "expiresAt": "Expires",
+      "flags": "Flags",
+      "actions": "Actions"
+    },
+    "upload": {
+      "file": "File",
+      "selectFile": "Select File",
+      "documentType": "Document Type",
+      "title": "Title (optional)",
+      "titlePlaceholder": "File name will be used if empty"
+    },
+    "flags": {
+      "confidential": "Confidential",
+      "scheduledForDeletion": "Scheduled for Deletion"
+    },
+    "documentType": {
+      "Contract": "Contract",
+      "Certificate": "Certificate",
+      "IdCopy": "ID Copy",
+      "Payslip": "Payslip",
+      "Other": "Other"
+    },
+    "defaultEmployee": "Employee"
+  },
+  "admin": {
+    "deletionTitle": "GDPR Deletion Requests",
+    "deletionDescription": "Management of scheduled data deletions in compliance with GDPR and statutory retention obligations",
+    "loadError": "Error loading deletion requests.",
+    "noRequests": "No deletion requests found.",
+    "columns": {
+      "employee": "Employee",
+      "requestedAt": "Requested On",
+      "scheduledAt": "Scheduled Deletion",
+      "status": "Status",
+      "blockReason": "Block Reason",
+      "completedAt": "Completed On"
+    },
+    "status": {
+      "Pending": "Pending",
+      "Completed": "Completed",
+      "Blocked": "Blocked"
+    }
+  },
+  "stats": {
+    "title": "HR Statistics",
+    "noEntitySelected": "Please select an entity.",
+    "kpi": {
+      "activeEmployees": "Active Employees",
+      "permanentEmployees": "Permanent",
+      "contractors": "Contractors"
+    },
+    "headcountTrend": "Headcount (last 12 months)",
+    "turnoverTrend": "Turnover (last 12 months)",
+    "salaryOverview": "Salary Overview",
+    "salaryDistribution": "Salary Distribution",
+    "salaryMin": "Minimum",
+    "salaryMax": "Maximum",
+    "salaryAvg": "Average",
+    "salaryMedian": "Median",
+    "chartHires": "New Hires",
+    "chartTerminations": "Terminations",
+    "chartEmployees": "Employees"
+  },
+  "toast": {
+    "employeeCreated": "Employee created",
+    "employeeUpdated": "Employee updated",
+    "employeeTerminated": "Employee terminated",
+    "employeeCreateError": "Failed to create employee",
+    "employeeUpdateError": "Failed to update employee",
+    "employeeTerminateError": "Failed to terminate employee",
+    "salaryUpdated": "Salary updated",
+    "salaryUpdateError": "Failed to update salary",
+    "contractCreated": "Contract created",
+    "contractCreateError": "Failed to create contract",
+    "departmentCreated": "Department created",
+    "departmentCreateError": "Failed to create department",
+    "leaveTypeCreated": "Leave type created",
+    "leaveTypeCreateError": "Failed to create leave type",
+    "leaveSubmitted": "Leave request submitted",
+    "leaveSubmitError": "Failed to submit leave request",
+    "leaveApproved": "Leave request approved",
+    "leaveApproveError": "Failed to approve leave request",
+    "leaveRejected": "Leave request rejected",
+    "leaveRejectError": "Failed to reject leave request",
+    "workTimeLogged": "Work time logged",
+    "workTimeLogError": "Failed to log work time",
+    "travelReportCreated": "Travel expense report created",
+    "travelReportCreateError": "Failed to create report",
+    "travelItemAdded": "Receipt added",
+    "travelItemAddError": "Failed to add receipt",
+    "travelSubmitted": "Report submitted",
+    "travelSubmitError": "Failed to submit report",
+    "travelApproved": "Report approved",
+    "travelApproveError": "Failed to approve report",
+    "reviewCreated": "Review created",
+    "reviewCreateError": "Failed to create review",
+    "feedbackSubmitted": "Feedback submitted",
+    "feedbackSubmitError": "Failed to submit feedback",
+    "reviewCompleted": "Review completed",
+    "reviewCompleteError": "Failed to complete review",
+    "documentDeleted": "Document deleted",
+    "documentDeleteError": "Failed to delete document",
+    "documentUploaded": "Document uploaded",
+    "documentUploadError": "Failed to upload document",
+    "deletionScheduled": "Deletion scheduled",
+    "deletionScheduleError": "Failed to schedule deletion"
+  }
+}
