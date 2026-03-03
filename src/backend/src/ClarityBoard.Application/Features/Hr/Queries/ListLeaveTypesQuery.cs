@@ -1,5 +1,6 @@
 using ClarityBoard.Application.Common.Attributes;
 using ClarityBoard.Application.Common.Interfaces;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,15 @@ public record LeaveTypeDto
     public int? MaxDaysPerYear { get; init; }
     public string Color { get; init; } = string.Empty;
     public bool IsActive { get; init; }
+}
+
+// Fix 5: add minimal validator
+public class ListLeaveTypesQueryValidator : AbstractValidator<ListLeaveTypesQuery>
+{
+    public ListLeaveTypesQueryValidator()
+    {
+        RuleFor(x => x.EntityId).NotEmpty();
+    }
 }
 
 public class ListLeaveTypesQueryHandler : IRequestHandler<ListLeaveTypesQuery, List<LeaveTypeDto>>

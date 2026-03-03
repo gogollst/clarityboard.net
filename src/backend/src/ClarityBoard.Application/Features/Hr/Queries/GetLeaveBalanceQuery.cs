@@ -1,5 +1,6 @@
 using ClarityBoard.Application.Common.Attributes;
 using ClarityBoard.Application.Common.Interfaces;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,15 @@ public record LeaveBalanceDto
     public decimal PendingDays { get; init; }
     public decimal CarryOverDays { get; init; }
     public decimal RemainingDays { get; init; }
+}
+
+// Fix 5: add minimal validator
+public class GetLeaveBalanceQueryValidator : AbstractValidator<GetLeaveBalanceQuery>
+{
+    public GetLeaveBalanceQueryValidator()
+    {
+        RuleFor(x => x.EmployeeId).NotEmpty();
+    }
 }
 
 public class GetLeaveBalanceQueryHandler : IRequestHandler<GetLeaveBalanceQuery, List<LeaveBalanceDto>>

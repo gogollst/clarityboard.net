@@ -55,6 +55,10 @@ public class LogWorkTimeCommandHandler : IRequestHandler<LogWorkTimeCommand, Gui
             .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken)
             ?? throw new NotFoundException("Employee", request.EmployeeId);
 
+        // TODO (Fix 4): verify that _currentUser owns this employee record (or has hr.manage permission)
+        // once ICurrentUser exposes an EmployeeId / HrEmployeeId property.
+        _ = employee; // suppress unused-variable warning until ownership check is added
+
         if (request.StartTime.HasValue && request.EndTime.HasValue
             && request.EndTime.Value <= request.StartTime.Value)
         {
@@ -80,6 +84,15 @@ public class LogWorkTimeCommandHandler : IRequestHandler<LogWorkTimeCommand, Gui
             throw new InvalidOperationException("TotalMinutes cannot be negative.");
 
         var entryType = Enum.Parse<EntryType>(request.EntryType, ignoreCase: true);
+
+        // Fix 7: prevent duplicate work time entries for the same employee/date/type
+        var exists = await _db.WorkTimeEntries
+            .AnyAsync(e => e.EmployeeId == request.EmployeeId
+                        && e.Date == request.Date
+                        && e.EntryType == entryType, cancellationToken);
+        if (exists)
+            throw new InvalidOperationException(
+                $"A {entryType} entry for {request.Date:yyyy-MM-dd} already exists for this employee.");
 
         var entry = WorkTimeEntry.Create(
             employeeId:   request.EmployeeId,

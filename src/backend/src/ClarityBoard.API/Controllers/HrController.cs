@@ -218,6 +218,7 @@ public class HrController : ControllerBase
     [HttpGet("leave-requests")]
     [ProducesResponseType(typeof(PagedResult<LeaveRequestDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<LeaveRequestDto>>> ListLeaveRequests(
+        [FromQuery] Guid? entityId,    // Fix 9: optional entity scope
         [FromQuery] Guid? employeeId,
         [FromQuery] string? status,
         [FromQuery] int? year,
@@ -227,6 +228,7 @@ public class HrController : ControllerBase
     {
         var result = await _mediator.Send(new ListLeaveRequestsQuery
         {
+            EntityId   = entityId,
             EmployeeId = employeeId,
             Status     = status,
             Year       = year,

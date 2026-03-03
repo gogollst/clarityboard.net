@@ -57,10 +57,12 @@ public class RejectLeaveRequestCommandHandler : IRequestHandler<RejectLeaveReque
                                        && b.LeaveTypeId == leaveRequest.LeaveTypeId
                                        && b.Year == year, cancellationToken);
 
-            if (balance is not null)
-            {
-                balance.RejectPending(leaveRequest.WorkingDays);
-            }
+            // Fix 6: throw instead of silently skipping when balance record is missing
+            if (balance is null)
+                throw new InvalidOperationException(
+                    $"No leave balance record found for employee {leaveRequest.EmployeeId}, " +
+                    $"leave type {leaveRequest.LeaveTypeId}, year {year}.");
+            balance.RejectPending(leaveRequest.WorkingDays);
         }
 
         await _db.SaveChangesAsync(cancellationToken);

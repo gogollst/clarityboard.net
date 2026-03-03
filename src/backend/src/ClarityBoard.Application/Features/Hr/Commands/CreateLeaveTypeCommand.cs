@@ -3,6 +3,7 @@ using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Domain.Entities.Hr;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.Application.Features.Hr.Commands;
 
@@ -42,6 +43,12 @@ public class CreateLeaveTypeCommandHandler : IRequestHandler<CreateLeaveTypeComm
 
     public async Task<Guid> Handle(CreateLeaveTypeCommand request, CancellationToken cancellationToken)
     {
+        // Fix 8: prevent duplicate leave type codes within the same entity
+        var codeExists = await _db.LeaveTypes
+            .AnyAsync(t => t.EntityId == request.EntityId && t.Code == request.Code, cancellationToken);
+        if (codeExists)
+            throw new InvalidOperationException($"A leave type with code '{request.Code}' already exists.");
+
         var leaveType = LeaveType.Create(
             entityId:              request.EntityId,
             name:                  request.Name,

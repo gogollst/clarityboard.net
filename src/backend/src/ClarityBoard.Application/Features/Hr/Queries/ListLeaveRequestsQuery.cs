@@ -11,6 +11,7 @@ namespace ClarityBoard.Application.Features.Hr.Queries;
 [RequirePermission("hr.view")]
 public record ListLeaveRequestsQuery : IRequest<PagedResult<LeaveRequestDto>>
 {
+    public Guid? EntityId { get; init; }  // Fix 9: scope results to a single entity
     public Guid? EmployeeId { get; init; }
     public string? Status { get; init; }
     public int? Year { get; init; }
@@ -56,6 +57,15 @@ public class ListLeaveRequestsQueryHandler : IRequestHandler<ListLeaveRequestsQu
     public async Task<PagedResult<LeaveRequestDto>> Handle(ListLeaveRequestsQuery request, CancellationToken cancellationToken)
     {
         var query = _db.LeaveRequests.AsQueryable();
+
+        // Fix 9: filter by EntityId via Employee join to prevent cross-entity data exposure
+        if (request.EntityId.HasValue)
+        {
+            var entityEmployeeIds = _db.Employees
+                .Where(e => e.EntityId == request.EntityId.Value)
+                .Select(e => e.Id);
+            query = query.Where(r => entityEmployeeIds.Contains(r.EmployeeId));
+        }
 
         if (request.EmployeeId.HasValue)
             query = query.Where(r => r.EmployeeId == request.EmployeeId.Value);

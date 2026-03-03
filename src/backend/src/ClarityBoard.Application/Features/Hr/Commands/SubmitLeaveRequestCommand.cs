@@ -30,6 +30,15 @@ public class SubmitLeaveRequestCommandValidator : AbstractValidator<SubmitLeaveR
         RuleFor(x => x.EndDate).GreaterThanOrEqualTo(x => x.StartDate)
             .WithMessage("EndDate must be greater than or equal to StartDate.");
         RuleFor(x => x.Notes).MaximumLength(1000).When(x => x.Notes != null);
+        // Fix 2: half-day requests must be a single day
+        RuleFor(x => x.EndDate)
+            .Equal(x => x.StartDate)
+            .When(x => x.HalfDay)
+            .WithMessage("End date must equal start date for half-day requests.");
+        // Fix 3: leave requests must stay within a single calendar year
+        RuleFor(x => x.EndDate.Year)
+            .Equal(x => x.StartDate.Year)
+            .WithMessage("Leave requests cannot span multiple calendar years. Please submit separate requests.");
     }
 }
 
@@ -50,13 +59,14 @@ public class SubmitLeaveRequestCommandHandler : IRequestHandler<SubmitLeaveReque
             .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken)
             ?? throw new NotFoundException("Employee", request.EmployeeId);
 
+        // TODO (Fix 4): verify that _currentUser owns this employee record (or has hr.manage permission)
+        // once ICurrentUser exposes an EmployeeId / HrEmployeeId property.
+
         var leaveType = await _db.LeaveTypes
             .FirstOrDefaultAsync(lt => lt.Id == request.LeaveTypeId, cancellationToken)
             ?? throw new NotFoundException("LeaveType", request.LeaveTypeId);
 
-        // Load public holidays for employee's entity in the date range year(s)
-        var startYear = request.StartDate.Year;
-        var endYear   = request.EndDate.Year;
+        // Load public holidays for employee's entity in the date range
         var holidays  = await _db.PublicHolidays
             .Where(h => h.EntityId == employee.EntityId
                      && h.Date >= request.StartDate
@@ -71,6 +81,13 @@ public class SubmitLeaveRequestCommandHandler : IRequestHandler<SubmitLeaveReque
         if (request.HalfDay)
         {
             workingDays = 0.5m;
+            // Fix 2: ensure the selected date is actually a working day
+            if (request.StartDate.DayOfWeek == DayOfWeek.Saturday
+             || request.StartDate.DayOfWeek == DayOfWeek.Sunday
+             || holidaySet.Contains(request.StartDate))
+            {
+                throw new InvalidOperationException("The selected date is not a working day.");
+            }
         }
         else
         {
