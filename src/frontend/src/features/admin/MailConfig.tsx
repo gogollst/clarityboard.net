@@ -254,6 +254,7 @@ export function Component() {
               <Label htmlFor="username">Username *</Label>
               <Input
                 id="username"
+                autoComplete="username"
                 placeholder="your-smtp-username"
                 {...register('username')}
               />
@@ -379,6 +380,13 @@ export function Component() {
               </div>
             </dl>
 
+            {/* Password missing warning */}
+            {!testConfig?.password && (
+              <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                Enter your SMTP password in the form to enable sending a test email.
+              </div>
+            )}
+
             {/* Recipient */}
             <div className="space-y-1.5">
               <Label htmlFor="testRecipient">Send to</Label>
@@ -412,7 +420,7 @@ export function Component() {
             </Button>
             <Button
               onClick={handleSendTest}
-              disabled={sendTest.isPending || !recipientEmail}
+              disabled={sendTest.isPending || !recipientEmail || !testConfig?.password}
             >
               {sendTest.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
