@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.Application.Features.Hr.Commands;
 
-[RequirePermission("hr.manage")]
+[RequirePermission("hr.document.upload")]
 public record DeleteDocumentCommand : IRequest
 {
     public required Guid EmployeeId { get; init; }
@@ -17,11 +17,19 @@ public class DeleteDocumentCommandHandler : IRequestHandler<DeleteDocumentComman
 {
     private readonly IAppDbContext _db;
     private readonly ICurrentUser _currentUser;
+    private readonly IHrDocumentService _documentService;
+    private readonly IEncryptionService _encryption;
 
-    public DeleteDocumentCommandHandler(IAppDbContext db, ICurrentUser currentUser)
+    public DeleteDocumentCommandHandler(
+        IAppDbContext db,
+        ICurrentUser currentUser,
+        IHrDocumentService documentService,
+        IEncryptionService encryption)
     {
-        _db          = db;
-        _currentUser = currentUser;
+        _db              = db;
+        _currentUser     = currentUser;
+        _documentService = documentService;
+        _encryption      = encryption;
     }
 
     public async Task Handle(DeleteDocumentCommand request, CancellationToken cancellationToken)
@@ -38,8 +46,12 @@ public class DeleteDocumentCommandHandler : IRequestHandler<DeleteDocumentComman
                 cancellationToken)
             ?? throw new NotFoundException("EmployeeDocument", request.DocumentId);
 
-        // Soft-delete: schedule deletion for now (immediate marker)
-        document.ScheduleDeletion(DateTime.UtcNow);
+        // Decrypt the storage path and delete the file from MinIO
+        var storagePath = _encryption.Decrypt(document.StoragePath);
+        await _documentService.DeleteDocumentAsync(storagePath, cancellationToken);
+
+        // Hard-delete the document entity from the database
+        _db.EmployeeDocuments.Remove(document);
         await _db.SaveChangesAsync(cancellationToken);
     }
 }

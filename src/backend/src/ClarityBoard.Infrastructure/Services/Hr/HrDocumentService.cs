@@ -51,7 +51,8 @@ public class HrDocumentService : IHrDocumentService
         var getArgs = new GetObjectArgs()
             .WithBucket(BucketName)
             .WithObject(storagePath)
-            .WithCallbackStream(stream => stream.CopyTo(memoryStream));
+            .WithCallbackStream(async (stream, cancellationToken) =>
+                await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false));
 
         await _minio.GetObjectAsync(getArgs, ct);
 

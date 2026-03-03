@@ -631,7 +631,7 @@ public class HrController : ControllerBase
         var userAgent = Request.Headers.UserAgent.ToString();
 
         var result = await _mediator.Send(
-            new GetDocumentDownloadQuery(docId, ipAddress, userAgent), ct);
+            new GetDocumentDownloadQuery(id, docId, ipAddress, userAgent), ct);
 
         return File(result.Stream, result.MimeType, result.FileName);
     }

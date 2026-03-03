@@ -42,15 +42,12 @@ public class ListDeletionRequestsQueryHandler : IRequestHandler<ListDeletionRequ
     public async Task<PagedResult<DeletionRequestDto>> Handle(
         ListDeletionRequestsQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.DeletionRequests.AsQueryable();
-
         // Scope to entity — only deletion requests for employees in the current entity
-        var entityEmployeeIds = await _db.Employees
-            .Where(e => e.EntityId == _currentUser.EntityId)
-            .Select(e => e.Id)
-            .ToListAsync(cancellationToken);
-
-        query = query.Where(r => entityEmployeeIds.Contains(r.EmployeeId));
+        // Use a correlated subquery to avoid materializing all employee IDs into memory
+        var query = _db.DeletionRequests
+            .Where(r => _db.Employees
+                .Any(e => e.Id == r.EmployeeId && e.EntityId == _currentUser.EntityId))
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.Status)
             && Enum.TryParse<DeletionRequestStatus>(request.Status, ignoreCase: true, out var statusEnum))

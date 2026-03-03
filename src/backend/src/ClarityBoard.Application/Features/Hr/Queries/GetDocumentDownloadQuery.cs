@@ -7,7 +7,11 @@ using Microsoft.EntityFrameworkCore;
 namespace ClarityBoard.Application.Features.Hr.Queries;
 
 [RequirePermission("hr.view")]
-public record GetDocumentDownloadQuery(Guid DocumentId, string? IpAddress, string? UserAgent)
+public record GetDocumentDownloadQuery(
+    Guid EmployeeId,
+    Guid DocumentId,
+    string? IpAddress,
+    string? UserAgent)
     : IRequest<DocumentDownloadResult>;
 
 public record DocumentDownloadResult(Stream Stream, string FileName, string MimeType);
@@ -40,6 +44,10 @@ public class GetDocumentDownloadQueryHandler : IRequestHandler<GetDocumentDownlo
         var document = await _db.EmployeeDocuments
             .FirstOrDefaultAsync(d => d.Id == request.DocumentId, cancellationToken)
             ?? throw new NotFoundException("EmployeeDocument", request.DocumentId);
+
+        // Verify the document belongs to the requested employee
+        if (document.EmployeeId != request.EmployeeId)
+            throw new NotFoundException("EmployeeDocument", request.DocumentId);
 
         // Verify employee belongs to current user's entity
         var employee = await _db.Employees

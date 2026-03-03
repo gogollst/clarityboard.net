@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useEmployeeDocuments, useDeleteDocument, useEmployee } from '@/hooks/useHr';
+import { api } from '@/lib/api';
 import PageHeader from '@/components/shared/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -106,6 +107,19 @@ export function Component() {
     });
   };
 
+  async function downloadDocument(docId: string, fileName: string) {
+    const response = await api.get(
+      `/hr/employees/${employeeId}/documents/${docId}/download`,
+      { responseType: 'blob' }
+    );
+    const url = URL.createObjectURL(response.data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const employeeName = employee
     ? `${employee.firstName} ${employee.lastName}`
     : 'Mitarbeiter';
@@ -189,15 +203,14 @@ export function Component() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <a
-                          href={`/api/hr/employees/${employeeId}/documents/${doc.id}/download`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Herunterladen"
+                          onClick={() => downloadDocument(doc.id, doc.fileName)}
                         >
-                          <Button variant="ghost" size="icon" title="Herunterladen">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </a>
+                          <Download className="h-4 w-4" />
+                        </Button>
                         {!doc.deletionScheduledAt && (
                           <Button
                             variant="ghost"
