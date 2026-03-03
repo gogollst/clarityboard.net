@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useKpiDashboard, useKpiDefinitions, useKpiHistory } from '@/hooks/useKpis';
 import { useProfitAndLoss, useBalanceSheet } from '@/hooks/useAccounting';
@@ -33,6 +34,7 @@ function computeDates(range: DateRange) {
 // ---------------------------------------------------------------------------
 
 export function Component() {
+  const { t } = useTranslation('cashflow');
   const { selectedEntityId, selectedEntity } = useEntity();
   const [dateRange, setDateRange] = useState<DateRange>('12m');
 
@@ -185,8 +187,8 @@ export function Component() {
   if (!selectedEntityId) {
     return (
       <EmptyState
-        title="No Entity Selected"
-        description="Select a legal entity to view financial data."
+        title={t('financial.noEntitySelected')}
+        description={t('financial.noEntityDescription')}
       />
     );
   }
@@ -197,17 +199,17 @@ export function Component() {
 
   const pnlRows = pnl
     ? [
-        { label: 'Revenue', value: pnl.revenue },
-        { label: 'COGS', value: -pnl.cogs },
-        { label: 'Gross Profit', value: pnl.grossProfit, bold: true },
+        { label: t('financial.pnl.revenue'), value: pnl.revenue },
+        { label: t('financial.pnl.cogs'), value: -pnl.cogs },
+        { label: t('financial.pnl.grossProfit'), value: pnl.grossProfit, bold: true },
         ...pnl.operatingExpenses.map((c) => ({
           label: c.name,
           value: -c.amount,
         })),
-        { label: 'EBIT', value: pnl.ebit, bold: true },
-        { label: 'Interest', value: -pnl.interest },
-        { label: 'Taxes', value: -pnl.taxes },
-        { label: 'Net Income', value: pnl.netIncome, bold: true },
+        { label: t('financial.pnl.ebit'), value: pnl.ebit, bold: true },
+        { label: t('financial.pnl.interest'), value: -pnl.interest },
+        { label: t('financial.pnl.taxes'), value: -pnl.taxes },
+        { label: t('financial.pnl.netIncome'), value: pnl.netIncome, bold: true },
       ]
     : [];
 
@@ -219,7 +221,7 @@ export function Component() {
     <div className="space-y-6">
       {/* Header with date range selector */}
       <PageHeader
-        title="Financial Overview"
+        title={t('financial.title')}
         description={selectedEntity?.name ?? undefined}
         actions={
           <div className="flex gap-1 rounded-lg bg-muted p-1">
@@ -230,7 +232,7 @@ export function Component() {
                 size="sm"
                 onClick={() => setDateRange(range)}
               >
-                {range === '3m' ? '3 Months' : range === '6m' ? '6 Months' : '12 Months'}
+                {t(`financial.dateRange.${range}`)}
               </Button>
             ))}
           </div>
@@ -242,7 +244,7 @@ export function Component() {
         {/* P&L Summary */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Profit & Loss</CardTitle>
+            <CardTitle className="text-base">{t('financial.pnlCard')}</CardTitle>
           </CardHeader>
           <CardContent>
             {pnl ? (
@@ -269,7 +271,7 @@ export function Component() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No P&L data available for the selected period.
+                {t('financial.noPnlData')}
               </p>
             )}
           </CardContent>
@@ -278,13 +280,13 @@ export function Component() {
         {/* Balance Sheet Summary */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Balance Sheet</CardTitle>
+            <CardTitle className="text-base">{t('financial.balanceSheetCard')}</CardTitle>
           </CardHeader>
           <CardContent>
             {balanceSheet ? (
               <div className="space-y-1">
                 <div className="flex items-center justify-between py-1.5 text-sm font-semibold">
-                  <span className="text-muted-foreground">Total Assets</span>
+                  <span className="text-muted-foreground">{t('financial.balanceSheet.totalAssets')}</span>
                   <span>{formatCurrency(balanceSheet.totalAssets)}</span>
                 </div>
                 {balanceSheet.assets.map((section) => (
@@ -299,7 +301,7 @@ export function Component() {
 
                 <div className="flex items-center justify-between border-t border-border py-1.5 text-sm font-semibold">
                   <span className="text-muted-foreground">
-                    Total Liabilities
+                    {t('financial.balanceSheet.totalLiabilities')}
                   </span>
                   <span>{formatCurrency(balanceSheet.totalLiabilities)}</span>
                 </div>
@@ -314,13 +316,13 @@ export function Component() {
                 ))}
 
                 <div className="flex items-center justify-between border-t border-border py-1.5 text-sm font-semibold">
-                  <span className="text-muted-foreground">Equity</span>
+                  <span className="text-muted-foreground">{t('financial.balanceSheet.equity')}</span>
                   <span>{formatCurrency(balanceSheet.equity)}</span>
                 </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No balance sheet data available.
+                {t('financial.noBalanceSheetData')}
               </p>
             )}
           </CardContent>
@@ -335,7 +337,7 @@ export function Component() {
         {/* Margin trend */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Margin Trends</CardTitle>
+            <CardTitle className="text-base">{t('financial.marginTrendsCard')}</CardTitle>
           </CardHeader>
           <CardContent>
             {marginTrendData.length > 0 ? (
@@ -348,7 +350,7 @@ export function Component() {
               />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                No historical margin data available.
+                {t('financial.noMarginData')}
               </p>
             )}
           </CardContent>
@@ -357,7 +359,7 @@ export function Component() {
         {/* Revenue vs Costs */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Revenue vs Costs</CardTitle>
+            <CardTitle className="text-base">{t('financial.revenueVsCostsCard')}</CardTitle>
           </CardHeader>
           <CardContent>
             {revenueVsCostsData.length > 0 ? (
@@ -370,7 +372,7 @@ export function Component() {
               />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                No revenue data available.
+                {t('financial.noRevenueData')}
               </p>
             )}
           </CardContent>

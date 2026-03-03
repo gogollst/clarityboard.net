@@ -1,1 +1,49 @@
-{}
+{
+  "title": "Szenarien",
+  "list": {
+    "newScenario": "Neues Szenario",
+    "emptyTitle": "Keine Szenarien",
+    "emptyDescription": "Erstellen Sie Ihr erstes Szenario für Was-wäre-wenn-Analysen.",
+    "createdOn": "Erstellt am"
+  },
+  "types": {
+    "best_case": "Best Case",
+    "worst_case": "Worst Case",
+    "custom": "Benutzerdefiniert",
+    "stress_test": "Stresstest"
+  },
+  "create": {
+    "title": "Szenario erstellen",
+    "description": "Parameter definieren und Was-wäre-wenn-Analyse durchführen",
+    "detailsCard": "Szenario-Details",
+    "nameLabel": "Name",
+    "namePlaceholder": "z. B. Q3-Umsatzsteigerung",
+    "nameRequired": "Name ist erforderlich",
+    "typeLabel": "Typ",
+    "parametersCard": "Parameteranpassungen",
+    "addParameter": "Parameter hinzufügen",
+    "kpiLabel": "KPI",
+    "kpiPlaceholder": "KPI auswählen",
+    "adjustmentTypeLabel": "Anpassungstyp",
+    "adjustmentValueLabel": "Wert",
+    "adjustmentPercentage": "Prozentsatz",
+    "adjustmentAbsolute": "Absolut",
+    "createButton": "Szenario erstellen"
+  },
+  "detail": {
+    "notFound": "Szenario nicht gefunden.",
+    "runButton": "Szenario ausführen",
+    "parametersCard": "Parameter",
+    "noParameters": "Keine Parameter konfiguriert.",
+    "kpiColumn": "KPI",
+    "adjustmentTypeColumn": "Anpassungstyp",
+    "valueColumn": "Wert",
+    "resultsCard": "Ergebnisvergleich",
+    "kpiNameColumn": "KPI-Name",
+    "baselineColumn": "Ausgangswert",
+    "projectedColumn": "Prognosewert",
+    "deltaColumn": "Delta",
+    "deltaPctColumn": "Delta %",
+    "running": "Szenario wird ausgeführt..."
+  }
+}

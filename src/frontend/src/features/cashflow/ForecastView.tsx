@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useCashFlowForecast } from '@/hooks/useCashFlow';
 import PageHeader from '@/components/shared/PageHeader';
@@ -15,6 +16,7 @@ import AreaChart from '@/components/charts/AreaChart';
 import { formatCurrency } from '@/lib/format';
 
 export function Component() {
+  const { t } = useTranslation('cashflow');
   const { selectedEntityId } = useEntity();
   const { data: forecast, isLoading } =
     useCashFlowForecast(selectedEntityId);
@@ -22,23 +24,30 @@ export function Component() {
   const chartData =
     forecast?.weeks.map((w) => ({
       week: w.weekStart,
-      Inflow: w.inflow,
-      Outflow: w.outflow,
-      Net: w.netFlow,
-      Cumulative: w.cumulativeBalance,
+      [t('forecast.inflow')]: w.inflow,
+      [t('forecast.outflow')]: w.outflow,
+      [t('forecast.net')]: w.netFlow,
+      [t('forecast.cumulative')]: w.cumulativeBalance,
     })) ?? [];
+
+  const chartCategories = [
+    t('forecast.inflow'),
+    t('forecast.outflow'),
+    t('forecast.net'),
+    t('forecast.cumulative'),
+  ];
 
   return (
     <div>
       <PageHeader
-        title="13-Week Cash Flow Forecast"
-        description="Weekly cash flow projection with cumulative balance"
+        title={t('forecast.title')}
+        description={t('forecast.description')}
       />
 
       {/* Area Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Weekly Forecast</CardTitle>
+          <CardTitle>{t('forecast.weeklyForecastCard')}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -46,7 +55,7 @@ export function Component() {
           ) : (
             <AreaChart
               data={chartData}
-              categories={['Inflow', 'Outflow', 'Net', 'Cumulative']}
+              categories={chartCategories}
               index="week"
               colors={['#10b981', '#ef4444', '#3b82f6', '#8b5cf6']}
               valueFormatter={(v) => formatCurrency(v)}
@@ -58,7 +67,7 @@ export function Component() {
       {/* Week-by-Week Table */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Week-by-Week Breakdown</CardTitle>
+          <CardTitle>{t('forecast.breakdownCard')}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -68,11 +77,11 @@ export function Component() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Week Start</TableHead>
-                    <TableHead className="text-right">Inflow</TableHead>
-                    <TableHead className="text-right">Outflow</TableHead>
-                    <TableHead className="text-right">Net</TableHead>
-                    <TableHead className="text-right">Cumulative</TableHead>
+                    <TableHead>{t('forecast.weekStart')}</TableHead>
+                    <TableHead className="text-right">{t('forecast.inflow')}</TableHead>
+                    <TableHead className="text-right">{t('forecast.outflow')}</TableHead>
+                    <TableHead className="text-right">{t('forecast.net')}</TableHead>
+                    <TableHead className="text-right">{t('forecast.cumulative')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -107,7 +116,7 @@ export function Component() {
                   {/* Totals Row */}
                   {forecast && (
                     <TableRow className="border-t-2 font-bold">
-                      <TableCell>Total</TableCell>
+                      <TableCell>{t('forecast.total')}</TableCell>
                       <TableCell className="text-right">
                         {formatCurrency(forecast.totalInflow)}
                       </TableCell>
@@ -144,7 +153,7 @@ export function Component() {
                         colSpan={5}
                         className="text-center text-muted-foreground"
                       >
-                        No forecast data available.
+                        {t('forecast.noData')}
                       </TableCell>
                     </TableRow>
                   )}

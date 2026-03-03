@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useScenarios } from '@/hooks/useScenarios';
 import PageHeader from '@/components/shared/PageHeader';
@@ -18,13 +19,6 @@ const TYPE_COLORS: Record<ScenarioType, string> = {
   stress_test: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
 };
 
-const TYPE_LABELS: Record<ScenarioType, string> = {
-  best_case: 'Best Case',
-  worst_case: 'Worst Case',
-  custom: 'Custom',
-  stress_test: 'Stress Test',
-};
-
 const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'info'> = {
   draft: 'default',
   running: 'warning',
@@ -32,6 +26,7 @@ const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'de
 };
 
 export function Component() {
+  const { t, i18n } = useTranslation('scenarios');
   const { selectedEntityId } = useEntity();
   const { data: scenarios, isLoading } = useScenarios(selectedEntityId);
   const navigate = useNavigate();
@@ -39,12 +34,12 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Scenarios"
+        title={t('title')}
         actions={
           <Link to="/scenarios/new">
             <Button>
               <Plus className="mr-1 h-4 w-4" />
-              New Scenario
+              {t('list.newScenario')}
             </Button>
           </Link>
         }
@@ -65,10 +60,10 @@ export function Component() {
       ) : !scenarios || scenarios.length === 0 ? (
         <EmptyState
           icon={FlaskConical}
-          title="No Scenarios"
-          description="Create your first scenario to explore what-if analyses."
+          title={t('list.emptyTitle')}
+          description={t('list.emptyDescription')}
           action={{
-            label: 'New Scenario',
+            label: t('list.newScenario'),
             onClick: () => navigate('/scenarios/new'),
           }}
         />
@@ -93,11 +88,11 @@ export function Component() {
                     variant="secondary"
                     className={TYPE_COLORS[scenario.type]}
                   >
-                    {TYPE_LABELS[scenario.type]}
+                    {t(`types.${scenario.type}`)}
                   </Badge>
                   <p className="mt-3 text-xs text-muted-foreground">
-                    Created{' '}
-                    {new Date(scenario.createdAt).toLocaleDateString('de-DE')}
+                    {t('list.createdOn')}{' '}
+                    {new Date(scenario.createdAt).toLocaleDateString(i18n.language)}
                   </p>
                 </CardContent>
               </Card>

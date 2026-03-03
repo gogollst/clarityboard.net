@@ -1,1 +1,49 @@
-{}
+{
+  "title": "Сценарии",
+  "list": {
+    "newScenario": "Новый сценарий",
+    "emptyTitle": "Нет сценариев",
+    "emptyDescription": "Создайте первый сценарий для анализа «что если».",
+    "createdOn": "Создано"
+  },
+  "types": {
+    "best_case": "Оптимистичный",
+    "worst_case": "Пессимистичный",
+    "custom": "Произвольный",
+    "stress_test": "Стресс-тест"
+  },
+  "create": {
+    "title": "Создать сценарий",
+    "description": "Задайте параметры и выполните анализ «что если»",
+    "detailsCard": "Параметры сценария",
+    "nameLabel": "Название",
+    "namePlaceholder": "например, Рост выручки в Q3",
+    "nameRequired": "Название обязательно",
+    "typeLabel": "Тип",
+    "parametersCard": "Корректировки параметров",
+    "addParameter": "Добавить параметр",
+    "kpiLabel": "КПЭ",
+    "kpiPlaceholder": "Выберите КПЭ",
+    "adjustmentTypeLabel": "Тип",
+    "adjustmentValueLabel": "Значение",
+    "adjustmentPercentage": "Процент",
+    "adjustmentAbsolute": "Абсолютное",
+    "createButton": "Создать сценарий"
+  },
+  "detail": {
+    "notFound": "Сценарий не найден.",
+    "runButton": "Запустить сценарий",
+    "parametersCard": "Параметры",
+    "noParameters": "Параметры не настроены.",
+    "kpiColumn": "КПЭ",
+    "adjustmentTypeColumn": "Тип корректировки",
+    "valueColumn": "Значение",
+    "resultsCard": "Сравнение результатов",
+    "kpiNameColumn": "Название КПЭ",
+    "baselineColumn": "Базовое значение",
+    "projectedColumn": "Прогнозное значение",
+    "deltaColumn": "Отклонение",
+    "deltaPctColumn": "Отклонение %",
+    "running": "Сценарий выполняется..."
+  }
+}

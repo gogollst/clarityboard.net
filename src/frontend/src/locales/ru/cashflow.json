@@ -1,1 +1,89 @@
-{}
+{
+  "title": "Денежный поток",
+  "forecast": {
+    "title": "13-недельный прогноз денежного потока",
+    "description": "Еженедельный прогноз движения денежных средств с нарастающим итогом",
+    "weeklyForecastCard": "Еженедельный прогноз",
+    "breakdownCard": "Разбивка по неделям",
+    "weekStart": "Начало недели",
+    "inflow": "Поступления",
+    "outflow": "Выбытия",
+    "net": "Нетто",
+    "cumulative": "Нарастающий итог",
+    "total": "Итого",
+    "noData": "Данные прогноза недоступны."
+  },
+  "overview": {
+    "operatingCF": "Операционный ДП",
+    "investingCF": "Инвестиционный ДП",
+    "financingCF": "Финансовый ДП",
+    "netCF": "Чистый ДП",
+    "waterfallCard": "Водопад денежного потока",
+    "waterfallBarOperating": "Операционная",
+    "waterfallBarInvesting": "Инвестиционная",
+    "waterfallBarFinancing": "Финансовая",
+    "waterfallBarNet": "Нетто",
+    "agingCard": "Анализ дебиторской задолженности",
+    "agingRange": "Период",
+    "agingAmount": "Сумма",
+    "agingCount": "Количество",
+    "noAgingData": "Данные о дебиторской задолженности недоступны."
+  },
+  "workingCapital": {
+    "dso": "DSO",
+    "dio": "DIO",
+    "dpo": "DPO",
+    "ccc": "CCC"
+  },
+  "entry": {
+    "dialogTitle": "Создать запись движения денежных средств",
+    "description": "Описание",
+    "descriptionPlaceholder": "Описание платежа",
+    "amount": "Сумма",
+    "date": "Дата",
+    "category": "Категория",
+    "certainty": "Достоверность",
+    "categoryOperating": "Операционная",
+    "categoryInvesting": "Инвестиционная",
+    "categoryFinancing": "Финансовая",
+    "certaintyConfirmed": "Подтверждено",
+    "certaintyExpected": "Ожидается",
+    "certaintyPlanned": "Запланировано"
+  },
+  "actions": {
+    "forecast": "Прогноз",
+    "manualEntry": "Ручная запись"
+  },
+  "financial": {
+    "title": "Финансовый обзор",
+    "dateRange": {
+      "3m": "3 месяца",
+      "6m": "6 месяцев",
+      "12m": "12 месяцев"
+    },
+    "pnlCard": "Прибыли и убытки",
+    "balanceSheetCard": "Бухгалтерский баланс",
+    "noPnlData": "Данные отчёта о прибылях и убытках за выбранный период недоступны.",
+    "noBalanceSheetData": "Данные бухгалтерского баланса недоступны.",
+    "pnl": {
+      "revenue": "Выручка",
+      "cogs": "Себестоимость",
+      "grossProfit": "Валовая прибыль",
+      "ebit": "EBIT",
+      "interest": "Проценты",
+      "taxes": "Налоги",
+      "netIncome": "Чистая прибыль"
+    },
+    "balanceSheet": {
+      "totalAssets": "Итого активы",
+      "totalLiabilities": "Итого обязательства",
+      "equity": "Собственный капитал"
+    },
+    "marginTrendsCard": "Динамика маржи",
+    "noMarginData": "Исторические данные по марже недоступны.",
+    "revenueVsCostsCard": "Выручка и затраты",
+    "noRevenueData": "Данные о выручке недоступны.",
+    "noEntitySelected": "Организация не выбрана",
+    "noEntityDescription": "Выберите юридическое лицо для просмотра финансовых данных."
+  }
+}

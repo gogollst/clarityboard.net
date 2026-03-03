@@ -1,1 +1,89 @@
-{}
+{
+  "title": "Cash Flow",
+  "forecast": {
+    "title": "13-Week Cash Flow Forecast",
+    "description": "Weekly cash flow projection with cumulative balance",
+    "weeklyForecastCard": "Weekly Forecast",
+    "breakdownCard": "Week-by-Week Breakdown",
+    "weekStart": "Week Start",
+    "inflow": "Inflow",
+    "outflow": "Outflow",
+    "net": "Net",
+    "cumulative": "Cumulative",
+    "total": "Total",
+    "noData": "No forecast data available."
+  },
+  "overview": {
+    "operatingCF": "Operating CF",
+    "investingCF": "Investing CF",
+    "financingCF": "Financing CF",
+    "netCF": "Net CF",
+    "waterfallCard": "Cash Flow Waterfall",
+    "waterfallBarOperating": "Operating",
+    "waterfallBarInvesting": "Investing",
+    "waterfallBarFinancing": "Financing",
+    "waterfallBarNet": "Net",
+    "agingCard": "Aging Buckets",
+    "agingRange": "Range",
+    "agingAmount": "Amount",
+    "agingCount": "Count",
+    "noAgingData": "No aging data available."
+  },
+  "workingCapital": {
+    "dso": "DSO",
+    "dio": "DIO",
+    "dpo": "DPO",
+    "ccc": "CCC"
+  },
+  "entry": {
+    "dialogTitle": "Create Cash Flow Entry",
+    "description": "Description",
+    "descriptionPlaceholder": "Payment description",
+    "amount": "Amount",
+    "date": "Date",
+    "category": "Category",
+    "certainty": "Certainty",
+    "categoryOperating": "Operating",
+    "categoryInvesting": "Investing",
+    "categoryFinancing": "Financing",
+    "certaintyConfirmed": "Confirmed",
+    "certaintyExpected": "Expected",
+    "certaintyPlanned": "Planned"
+  },
+  "actions": {
+    "forecast": "Forecast",
+    "manualEntry": "Manual Entry"
+  },
+  "financial": {
+    "title": "Financial Overview",
+    "dateRange": {
+      "3m": "3 Months",
+      "6m": "6 Months",
+      "12m": "12 Months"
+    },
+    "pnlCard": "Profit & Loss",
+    "balanceSheetCard": "Balance Sheet",
+    "noPnlData": "No P&L data available for the selected period.",
+    "noBalanceSheetData": "No balance sheet data available.",
+    "pnl": {
+      "revenue": "Revenue",
+      "cogs": "COGS",
+      "grossProfit": "Gross Profit",
+      "ebit": "EBIT",
+      "interest": "Interest",
+      "taxes": "Taxes",
+      "netIncome": "Net Income"
+    },
+    "balanceSheet": {
+      "totalAssets": "Total Assets",
+      "totalLiabilities": "Total Liabilities",
+      "equity": "Equity"
+    },
+    "marginTrendsCard": "Margin Trends",
+    "noMarginData": "No historical margin data available.",
+    "revenueVsCostsCard": "Revenue vs Costs",
+    "noRevenueData": "No revenue data available.",
+    "noEntitySelected": "No Entity Selected",
+    "noEntityDescription": "Select a legal entity to view financial data."
+  }
+}

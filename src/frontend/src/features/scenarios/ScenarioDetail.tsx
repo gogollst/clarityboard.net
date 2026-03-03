@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useScenario, useRunScenario } from '@/hooks/useScenarios';
 import { useKpiDefinitions } from '@/hooks/useKpis';
 import type { ScenarioType } from '@/types/scenario';
@@ -27,13 +28,6 @@ const TYPE_COLORS: Record<ScenarioType, string> = {
   stress_test: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
 };
 
-const TYPE_LABELS: Record<ScenarioType, string> = {
-  best_case: 'Best Case',
-  worst_case: 'Worst Case',
-  custom: 'Custom',
-  stress_test: 'Stress Test',
-};
-
 const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'info'> = {
   draft: 'default',
   running: 'warning',
@@ -41,6 +35,7 @@ const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'de
 };
 
 export function Component() {
+  const { t } = useTranslation('scenarios');
   const { id } = useParams<{ id: string }>();
   const { data: scenario, isLoading } = useScenario(id ?? null);
   const { data: kpiDefs } = useKpiDefinitions();
@@ -65,7 +60,7 @@ export function Component() {
   if (!scenario) {
     return (
       <div className="py-12 text-center text-muted-foreground">
-        Scenario not found.
+        {t('detail.notFound')}
       </div>
     );
   }
@@ -80,7 +75,7 @@ export function Component() {
               variant="secondary"
               className={TYPE_COLORS[scenario.type]}
             >
-              {TYPE_LABELS[scenario.type]}
+              {t(`types.${scenario.type}`)}
             </Badge>
             <StatusBadge
               status={scenario.status}
@@ -93,7 +88,7 @@ export function Component() {
                 ) : (
                   <Play className="mr-1 h-4 w-4" />
                 )}
-                Run Scenario
+                {t('detail.runButton')}
               </Button>
             )}
           </div>
@@ -103,20 +98,20 @@ export function Component() {
       {/* Parameters */}
       <Card>
         <CardHeader>
-          <CardTitle>Parameters</CardTitle>
+          <CardTitle>{t('detail.parametersCard')}</CardTitle>
         </CardHeader>
         <CardContent>
           {scenario.parameters.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No parameters configured.
+              {t('detail.noParameters')}
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>KPI</TableHead>
-                  <TableHead>Adjustment Type</TableHead>
-                  <TableHead className="text-right">Value</TableHead>
+                  <TableHead>{t('detail.kpiColumn')}</TableHead>
+                  <TableHead>{t('detail.adjustmentTypeColumn')}</TableHead>
+                  <TableHead className="text-right">{t('detail.valueColumn')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -145,17 +140,17 @@ export function Component() {
       {scenario.status === 'completed' && scenario.results && (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Results Comparison</CardTitle>
+            <CardTitle>{t('detail.resultsCard')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>KPI Name</TableHead>
-                  <TableHead className="text-right">Baseline</TableHead>
-                  <TableHead className="text-right">Projected</TableHead>
-                  <TableHead className="text-right">Delta</TableHead>
-                  <TableHead className="text-right">Delta %</TableHead>
+                  <TableHead>{t('detail.kpiNameColumn')}</TableHead>
+                  <TableHead className="text-right">{t('detail.baselineColumn')}</TableHead>
+                  <TableHead className="text-right">{t('detail.projectedColumn')}</TableHead>
+                  <TableHead className="text-right">{t('detail.deltaColumn')}</TableHead>
+                  <TableHead className="text-right">{t('detail.deltaPctColumn')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -229,7 +224,7 @@ export function Component() {
           <CardContent className="flex items-center justify-center py-12">
             <Loader2 className="mr-2 h-5 w-5 animate-spin text-muted-foreground" />
             <span className="text-muted-foreground">
-              Scenario is running...
+              {t('detail.running')}
             </span>
           </CardContent>
         </Card>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import {
   useCashFlowOverview,
@@ -39,6 +40,7 @@ import { formatCurrency, formatDays } from '@/lib/format';
 import { Plus, ChevronRight, Loader2 } from 'lucide-react';
 
 export function Component() {
+  const { t } = useTranslation('cashflow');
   const { selectedEntityId } = useEntity();
   const { data: overview, isLoading: overviewLoading } =
     useCashFlowOverview(selectedEntityId);
@@ -82,45 +84,45 @@ export function Component() {
   };
 
   const summaryCards = [
-    { label: 'Operating CF', value: overview?.operatingCashFlow },
-    { label: 'Investing CF', value: overview?.investingCashFlow },
-    { label: 'Financing CF', value: overview?.financingCashFlow },
-    { label: 'Net CF', value: overview?.netCashFlow },
+    { label: t('overview.operatingCF'), value: overview?.operatingCashFlow },
+    { label: t('overview.investingCF'), value: overview?.investingCashFlow },
+    { label: t('overview.financingCF'), value: overview?.financingCashFlow },
+    { label: t('overview.netCF'), value: overview?.netCashFlow },
   ];
 
   const waterfallData = overview
     ? [
-        { name: 'Operating', value: overview.operatingCashFlow },
-        { name: 'Investing', value: overview.investingCashFlow },
-        { name: 'Financing', value: overview.financingCashFlow },
-        { name: 'Net', value: overview.netCashFlow },
+        { name: t('overview.waterfallBarOperating'), value: overview.operatingCashFlow },
+        { name: t('overview.waterfallBarInvesting'), value: overview.investingCashFlow },
+        { name: t('overview.waterfallBarFinancing'), value: overview.financingCashFlow },
+        { name: t('overview.waterfallBarNet'), value: overview.netCashFlow },
       ]
     : [];
 
   const wcMetrics = workingCapital
     ? [
-        { label: 'DSO', value: formatDays(workingCapital.dso) },
-        { label: 'DIO', value: formatDays(workingCapital.dio) },
-        { label: 'DPO', value: formatDays(workingCapital.dpo) },
-        { label: 'CCC', value: formatDays(workingCapital.ccc) },
+        { label: t('workingCapital.dso'), value: formatDays(workingCapital.dso) },
+        { label: t('workingCapital.dio'), value: formatDays(workingCapital.dio) },
+        { label: t('workingCapital.dpo'), value: formatDays(workingCapital.dpo) },
+        { label: t('workingCapital.ccc'), value: formatDays(workingCapital.ccc) },
       ]
     : [];
 
   return (
     <div>
       <PageHeader
-        title="Cash Flow"
+        title={t('title')}
         actions={
           <div className="flex items-center gap-2">
             <Link to="/cashflow/forecast">
               <Button variant="outline">
-                Forecast
+                {t('actions.forecast')}
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="mr-1 h-4 w-4" />
-              Manual Entry
+              {t('actions.manualEntry')}
             </Button>
           </div>
         }
@@ -151,7 +153,7 @@ export function Component() {
       {/* Cash Flow Waterfall */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Cash Flow Waterfall</CardTitle>
+          <CardTitle>{t('overview.waterfallCard')}</CardTitle>
         </CardHeader>
         <CardContent>
           {overviewLoading ? (
@@ -196,7 +198,7 @@ export function Component() {
       {/* Aging Buckets */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Aging Buckets</CardTitle>
+          <CardTitle>{t('overview.agingCard')}</CardTitle>
         </CardHeader>
         <CardContent>
           {wcLoading ? (
@@ -205,9 +207,9 @@ export function Component() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Range</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Count</TableHead>
+                  <TableHead>{t('overview.agingRange')}</TableHead>
+                  <TableHead className="text-right">{t('overview.agingAmount')}</TableHead>
+                  <TableHead className="text-right">{t('overview.agingCount')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -229,7 +231,7 @@ export function Component() {
                       colSpan={3}
                       className="text-center text-muted-foreground"
                     >
-                      No aging data available.
+                      {t('overview.noAgingData')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -243,11 +245,11 @@ export function Component() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Cash Flow Entry</DialogTitle>
+            <DialogTitle>{t('entry.dialogTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Description</Label>
+              <Label>{t('entry.description')}</Label>
               <Input
                 value={entryForm.description}
                 onChange={(e) =>
@@ -256,11 +258,11 @@ export function Component() {
                     description: e.target.value,
                   }))
                 }
-                placeholder="Payment description"
+                placeholder={t('entry.descriptionPlaceholder')}
               />
             </div>
             <div>
-              <Label>Amount</Label>
+              <Label>{t('entry.amount')}</Label>
               <Input
                 type="number"
                 value={entryForm.amount}
@@ -271,7 +273,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Date</Label>
+              <Label>{t('entry.date')}</Label>
               <Input
                 type="date"
                 value={entryForm.entryDate}
@@ -281,7 +283,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Category</Label>
+              <Label>{t('entry.category')}</Label>
               <Select
                 value={entryForm.category}
                 onValueChange={(v) =>
@@ -292,14 +294,14 @@ export function Component() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="operating">Operating</SelectItem>
-                  <SelectItem value="investing">Investing</SelectItem>
-                  <SelectItem value="financing">Financing</SelectItem>
+                  <SelectItem value="operating">{t('entry.categoryOperating')}</SelectItem>
+                  <SelectItem value="investing">{t('entry.categoryInvesting')}</SelectItem>
+                  <SelectItem value="financing">{t('entry.categoryFinancing')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Certainty</Label>
+              <Label>{t('entry.certainty')}</Label>
               <Select
                 value={entryForm.certainty}
                 onValueChange={(v) =>
@@ -310,9 +312,9 @@ export function Component() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="expected">Expected</SelectItem>
-                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="confirmed">{t('entry.certaintyConfirmed')}</SelectItem>
+                  <SelectItem value="expected">{t('entry.certaintyExpected')}</SelectItem>
+                  <SelectItem value="planned">{t('entry.certaintyPlanned')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -322,7 +324,7 @@ export function Component() {
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
             >
-              Cancel
+              {t('common:buttons.cancel')}
             </Button>
             <Button
               onClick={handleCreateEntry}
@@ -331,7 +333,7 @@ export function Component() {
               {createEntry.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Create
+              {t('common:buttons.create')}
             </Button>
           </DialogFooter>
         </DialogContent>

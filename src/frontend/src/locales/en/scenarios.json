@@ -1,1 +1,49 @@
-{}
+{
+  "title": "Scenarios",
+  "list": {
+    "newScenario": "New Scenario",
+    "emptyTitle": "No Scenarios",
+    "emptyDescription": "Create your first scenario to explore what-if analyses.",
+    "createdOn": "Created"
+  },
+  "types": {
+    "best_case": "Best Case",
+    "worst_case": "Worst Case",
+    "custom": "Custom",
+    "stress_test": "Stress Test"
+  },
+  "create": {
+    "title": "Create Scenario",
+    "description": "Define parameters and run what-if analysis",
+    "detailsCard": "Scenario Details",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. Q3 Revenue Increase",
+    "nameRequired": "Name is required",
+    "typeLabel": "Type",
+    "parametersCard": "Parameter Adjustments",
+    "addParameter": "Add Parameter",
+    "kpiLabel": "KPI",
+    "kpiPlaceholder": "Select KPI",
+    "adjustmentTypeLabel": "Type",
+    "adjustmentValueLabel": "Value",
+    "adjustmentPercentage": "Percentage",
+    "adjustmentAbsolute": "Absolute",
+    "createButton": "Create Scenario"
+  },
+  "detail": {
+    "notFound": "Scenario not found.",
+    "runButton": "Run Scenario",
+    "parametersCard": "Parameters",
+    "noParameters": "No parameters configured.",
+    "kpiColumn": "KPI",
+    "adjustmentTypeColumn": "Adjustment Type",
+    "valueColumn": "Value",
+    "resultsCard": "Results Comparison",
+    "kpiNameColumn": "KPI Name",
+    "baselineColumn": "Baseline",
+    "projectedColumn": "Projected",
+    "deltaColumn": "Delta",
+    "deltaPctColumn": "Delta %",
+    "running": "Scenario is running..."
+  }
+}

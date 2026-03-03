@@ -1,1 +1,89 @@
-{}
+{
+  "title": "Cash Flow",
+  "forecast": {
+    "title": "13-Wochen-Cashflow-Prognose",
+    "description": "Wöchentliche Cashflow-Projektion mit kumulativem Saldo",
+    "weeklyForecastCard": "Wöchentliche Prognose",
+    "breakdownCard": "Wochenweise Aufschlüsselung",
+    "weekStart": "Wochenbeginn",
+    "inflow": "Einzahlungen",
+    "outflow": "Auszahlungen",
+    "net": "Netto",
+    "cumulative": "Kumulativ",
+    "total": "Gesamt",
+    "noData": "Keine Prognosedaten verfügbar."
+  },
+  "overview": {
+    "operatingCF": "Operativer CF",
+    "investingCF": "Investitions-CF",
+    "financingCF": "Finanzierungs-CF",
+    "netCF": "Netto-CF",
+    "waterfallCard": "Cashflow-Wasserfall",
+    "waterfallBarOperating": "Operativ",
+    "waterfallBarInvesting": "Investition",
+    "waterfallBarFinancing": "Finanzierung",
+    "waterfallBarNet": "Netto",
+    "agingCard": "Fälligkeitsanalyse",
+    "agingRange": "Zeitraum",
+    "agingAmount": "Betrag",
+    "agingCount": "Anzahl",
+    "noAgingData": "Keine Fälligkeitsdaten verfügbar."
+  },
+  "workingCapital": {
+    "dso": "DSO",
+    "dio": "DIO",
+    "dpo": "DPO",
+    "ccc": "CCC"
+  },
+  "entry": {
+    "dialogTitle": "Cashflow-Buchung erstellen",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Zahlungsbeschreibung",
+    "amount": "Betrag",
+    "date": "Datum",
+    "category": "Kategorie",
+    "certainty": "Gewissheit",
+    "categoryOperating": "Operativ",
+    "categoryInvesting": "Investition",
+    "categoryFinancing": "Finanzierung",
+    "certaintyConfirmed": "Bestätigt",
+    "certaintyExpected": "Erwartet",
+    "certaintyPlanned": "Geplant"
+  },
+  "actions": {
+    "forecast": "Prognose",
+    "manualEntry": "Manuelle Buchung"
+  },
+  "financial": {
+    "title": "Finanzübersicht",
+    "dateRange": {
+      "3m": "3 Monate",
+      "6m": "6 Monate",
+      "12m": "12 Monate"
+    },
+    "pnlCard": "Gewinn & Verlust",
+    "balanceSheetCard": "Bilanz",
+    "noPnlData": "Keine GuV-Daten für den gewählten Zeitraum verfügbar.",
+    "noBalanceSheetData": "Keine Bilanzdaten verfügbar.",
+    "pnl": {
+      "revenue": "Umsatz",
+      "cogs": "COGS",
+      "grossProfit": "Bruttogewinn",
+      "ebit": "EBIT",
+      "interest": "Zinsen",
+      "taxes": "Steuern",
+      "netIncome": "Jahresüberschuss"
+    },
+    "balanceSheet": {
+      "totalAssets": "Gesamtvermögen",
+      "totalLiabilities": "Gesamtverbindlichkeiten",
+      "equity": "Eigenkapital"
+    },
+    "marginTrendsCard": "Margenentwicklung",
+    "noMarginData": "Keine historischen Margendaten verfügbar.",
+    "revenueVsCostsCard": "Umsatz vs. Kosten",
+    "noRevenueData": "Keine Umsatzdaten verfügbar.",
+    "noEntitySelected": "Keine Einheit ausgewählt",
+    "noEntityDescription": "Wählen Sie eine Gesellschaft aus, um Finanzdaten anzuzeigen."
+  }
+}
