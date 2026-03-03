@@ -79,6 +79,17 @@ public static class DefaultRoles
         new("admin.audit.view", "admin", "audit_view"),
         new("admin.settings.manage", "admin", "settings_manage"),
         new("admin.mail.manage", "admin", "mail_manage"),
+
+        // HR
+        new("hr.view", "hr", "view"),
+        new("hr.manage", "hr", "manage"),
+        new("hr.manager", "hr", "manager"),
+        new("hr.salary.view", "hr", "salary_view"),
+        new("hr.salary.manage", "hr", "salary_manage"),
+        new("hr.document.upload", "hr", "document_upload"),
+        new("hr.export", "hr", "export"),
+        new("hr.self", "hr", "self"),
+        new("hr.admin", "hr", "admin"),
     ];
 
     public static readonly RoleSeed[] AllRoles = [
@@ -120,6 +131,8 @@ public static class DefaultRoles
             "budget.view",
             "documents.view", "documents.upload",
             "entity.view",
+            "hr.view", "hr.manage", "hr.salary.view", "hr.salary.manage",
+            "hr.document.upload", "hr.export", "hr.admin",
         ]),
     ];
 }

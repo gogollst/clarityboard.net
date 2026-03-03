@@ -42,6 +42,7 @@ builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 // Real-time notifications (SignalR bridge for Infrastructure consumers)
 builder.Services.AddScoped<IAlertNotificationService, AlertNotificationService>();
 builder.Services.AddScoped<IKpiNotificationService, KpiNotificationService>();
+builder.Services.AddScoped<IHrHubNotifier, HrHubNotifier>();
 
 // Controllers + API Explorer
 builder.Services.AddControllers();
@@ -199,6 +200,7 @@ app.MapControllers();
 // SignalR Hubs
 app.MapHub<KpiHub>("/hubs/kpi");
 app.MapHub<AlertHub>("/hubs/alerts");
+app.MapHub<HrHub>("/hubs/hr");
 
 // Health checks
 app.MapHealthChecks("/health");
