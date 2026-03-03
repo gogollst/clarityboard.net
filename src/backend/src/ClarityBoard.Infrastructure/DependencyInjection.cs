@@ -12,6 +12,7 @@ using ClarityBoard.Infrastructure.Services.Datev;
 using ClarityBoard.Infrastructure.Services.Storage;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Minio;
 using Polly;
 using Polly.Extensions.Http;
@@ -38,6 +39,7 @@ public static class DependencyInjection
                 npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "public");
                 npgsql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             });
+            options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
         });
 
         // Register IAppDbContext
