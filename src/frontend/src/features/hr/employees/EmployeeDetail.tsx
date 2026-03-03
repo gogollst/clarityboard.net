@@ -142,24 +142,24 @@ function TerminationDialog({ open, onClose, employeeId }: TerminationDialogProps
   const [reason, setReason] = useState('');
   const terminateEmployee = useTerminateEmployee();
 
+  const handleClose = () => {
+    setTerminationDate('');
+    setReason('');
+    onClose();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!terminationDate || !reason) return;
 
     terminateEmployee.mutate(
       { id: employeeId, terminationDate, reason },
-      {
-        onSuccess: () => {
-          setTerminationDate('');
-          setReason('');
-          onClose();
-        },
-      },
+      { onSuccess: handleClose },
     );
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Mitarbeiter kündigen</DialogTitle>
@@ -186,7 +186,7 @@ function TerminationDialog({ open, onClose, employeeId }: TerminationDialogProps
             />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleClose}>
               Abbrechen
             </Button>
             <Button
