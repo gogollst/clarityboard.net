@@ -134,5 +134,11 @@ public static class DefaultRoles
             "hr.view", "hr.manage", "hr.salary.view", "hr.salary.manage",
             "hr.document.upload", "hr.export", "hr.admin",
         ]),
+
+        new("HR Manager", "Line managers - approve leave and travel for their direct reports", [
+            "hr.self",
+            "hr.view",
+            "hr.manager",
+        ]),
     ];
 }

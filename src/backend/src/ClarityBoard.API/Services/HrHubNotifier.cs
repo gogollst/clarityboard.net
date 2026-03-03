@@ -14,14 +14,14 @@ public class HrHubNotifier : IHrHubNotifier
     public HrHubNotifier(IHubContext<HrHub> hub) => _hub = hub;
 
     public Task NotifySalaryUpdatedAsync(Guid entityId, Guid employeeId, CancellationToken ct)
-        => _hub.Clients.Group($"hr-{entityId}").SendAsync("SalaryUpdated", new { EmployeeId = employeeId }, ct);
+        => _hub.Clients.Group($"hr:{entityId}").SendAsync("SalaryUpdated", new { EmployeeId = employeeId }, ct);
 
     public Task NotifyLeaveRequestUpdatedAsync(Guid entityId, Guid requestId, string status, CancellationToken ct)
-        => _hub.Clients.Group($"hr-{entityId}").SendAsync("LeaveRequestUpdated", new { RequestId = requestId, Status = status }, ct);
+        => _hub.Clients.Group($"hr:{entityId}").SendAsync("LeaveRequestUpdated", new { RequestId = requestId, Status = status }, ct);
 
     public Task NotifyEmployeeStatusChangedAsync(Guid entityId, Guid employeeId, string newStatus, CancellationToken ct)
-        => _hub.Clients.Group($"hr-{entityId}").SendAsync("EmployeeStatusChanged", new { EmployeeId = employeeId, Status = newStatus }, ct);
+        => _hub.Clients.Group($"hr:{entityId}").SendAsync("EmployeeStatusChanged", new { EmployeeId = employeeId, Status = newStatus }, ct);
 
     public Task NotifyTravelExpenseUpdatedAsync(Guid entityId, Guid reportId, string status, CancellationToken ct)
-        => _hub.Clients.Group($"hr-{entityId}").SendAsync("TravelExpenseUpdated", new { ReportId = reportId, Status = status }, ct);
+        => _hub.Clients.Group($"hr:{entityId}").SendAsync("TravelExpenseUpdated", new { ReportId = reportId, Status = status }, ct);
 }

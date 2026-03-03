@@ -3,7 +3,7 @@ namespace ClarityBoard.Application.Common.Interfaces;
 public interface IDataAccessLogger
 {
     Task LogAsync(
-        Guid accessedEmployeeId,
+        Guid subjectId,
         Guid accessedByUserId,
         string accessType,
         string resourceType,
