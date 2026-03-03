@@ -233,6 +233,7 @@ export function Component() {
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 placeholder={config ? '••••••••' : 'Enter SMTP password'}
                 {...register('password')}
               />
