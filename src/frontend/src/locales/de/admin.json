@@ -1,1 +1,366 @@
-{}
+{
+  "users": {
+    "title": "Benutzerverwaltung",
+    "addUser": "Benutzer hinzufügen",
+    "searchPlaceholder": "Benutzer suchen...",
+    "noUsers": "Keine Benutzer gefunden.",
+    "columns": {
+      "name": "Name",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "entities": "Entitäten",
+      "twoFa": "2FA",
+      "status": "Status",
+      "lastLogin": "Letzte Anmeldung",
+      "actions": "Aktionen"
+    },
+    "noRole": "Keine Rolle",
+    "noEntities": "Keine",
+    "neverLoggedIn": "Nie",
+    "tooltips": {
+      "edit": "Bearbeiten",
+      "resendInvitation": "Einladung erneut senden",
+      "resetPassword": "Passwort zurücksetzen",
+      "deactivate": "Deaktivieren",
+      "reactivate": "Reaktivieren"
+    },
+    "dialogs": {
+      "addUser": {
+        "title": "Benutzer hinzufügen",
+        "firstName": "Vorname",
+        "firstNamePlaceholder": "Vorname",
+        "lastName": "Nachname",
+        "lastNamePlaceholder": "Nachname",
+        "email": "E-Mail",
+        "role": "Rolle",
+        "roleSelectPlaceholder": "Rolle auswählen",
+        "entities": "Entitäten",
+        "noEntities": "Keine Entitäten verfügbar.",
+        "createUser": "Benutzer erstellen",
+        "errorFallback": "Benutzer konnte nicht erstellt werden"
+      },
+      "editUser": {
+        "title": "Benutzer bearbeiten",
+        "email": "E-Mail",
+        "roles": "Rollen",
+        "noRoles": "Keine Rollen zugewiesen.",
+        "rolePlaceholder": "Rolle",
+        "entityPlaceholder": "Entität",
+        "saveChanges": "Änderungen speichern",
+        "errorFallback": "Benutzer konnte nicht aktualisiert werden"
+      },
+      "confirmDeactivate": {
+        "title": "Deaktivierung bestätigen",
+        "message": "Möchten Sie diesen Benutzer wirklich deaktivieren? Er kann sich danach nicht mehr anmelden.",
+        "confirm": "Deaktivieren"
+      }
+    },
+    "validation": {
+      "required": "Pflichtfeld"
+    },
+    "toast": {
+      "created": "Benutzer erstellt. Eine Einladungs-E-Mail wurde gesendet.",
+      "createFailed": "Benutzer konnte nicht erstellt werden",
+      "updated": "Benutzer aktualisiert",
+      "updateFailed": "Benutzer konnte nicht aktualisiert werden",
+      "deactivated": "Benutzer deaktiviert",
+      "deactivateFailed": "Benutzer konnte nicht deaktiviert werden",
+      "reactivated": "Benutzer reaktiviert",
+      "reactivateFailed": "Benutzer konnte nicht reaktiviert werden",
+      "passwordReset": "E-Mail zum Zurücksetzen des Passworts gesendet.",
+      "passwordResetFailed": "Passwort konnte nicht zurückgesetzt werden",
+      "invitationResent": "Einladung erneut gesendet.",
+      "invitationResendFailed": "Einladung konnte nicht erneut gesendet werden",
+      "roleAssigned": "Rolle zugewiesen",
+      "roleAssignFailed": "Rolle konnte nicht zugewiesen werden",
+      "roleRemoved": "Rolle entfernt",
+      "roleRemoveFailed": "Rolle konnte nicht entfernt werden"
+    }
+  },
+  "entities": {
+    "title": "Entitätskonfiguration",
+    "description": "Rechtliche Entitäten anzeigen und verwalten",
+    "addEntity": "Entität hinzufügen",
+    "noEntities": {
+      "heading": "Keine Entitäten",
+      "description": "Es wurden noch keine rechtlichen Entitäten konfiguriert. Erstellen Sie eine, um zu beginnen.",
+      "createFirst": "Erste Entität erstellen"
+    },
+    "dialogs": {
+      "create": {
+        "title": "Rechtliche Entität erstellen",
+        "createButton": "Entität erstellen"
+      },
+      "edit": {
+        "title": "Rechtliche Entität bearbeiten",
+        "saveButton": "Änderungen speichern"
+      }
+    },
+    "form": {
+      "sections": {
+        "companyInfo": "Unternehmensinformationen",
+        "address": "Adresse",
+        "taxRegistration": "Steuern & Registrierung",
+        "accounting": "Buchhaltung",
+        "datev": "DATEV-Integration",
+        "hierarchy": "Hierarchie"
+      },
+      "fields": {
+        "companyName": "Unternehmensname *",
+        "companyNamePlaceholder": "Muster GmbH",
+        "legalForm": "Rechtsform *",
+        "legalFormPlaceholder": "Rechtsform auswählen",
+        "managingDirector": "Geschäftsführer",
+        "managingDirectorPlaceholder": "Keine",
+        "street": "Straße *",
+        "streetPlaceholder": "Musterstraße 1",
+        "postalCode": "Postleitzahl *",
+        "postalCodePlaceholder": "10115",
+        "city": "Stadt *",
+        "cityPlaceholder": "Berlin",
+        "country": "Land",
+        "taxId": "Steuernummer",
+        "taxIdPlaceholder": "27/123/45678",
+        "vatId": "USt-IdNr.",
+        "vatIdPlaceholder": "DE123456789",
+        "registrationNumber": "Handelsregisternummer",
+        "registrationNumberPlaceholder": "HRB 12345 B",
+        "chartOfAccounts": "Kontenrahmen *",
+        "currency": "Währung",
+        "currencyPlaceholder": "EUR",
+        "fiscalYearStart": "Geschäftsjahresbeginn",
+        "datevClientNumber": "Mandantennr.",
+        "datevClientNumberPlaceholder": "12345",
+        "datevConsultantNumber": "Beraternr.",
+        "datevConsultantNumberPlaceholder": "67890",
+        "parentEntity": "Übergeordnete Entität",
+        "parentEntityPlaceholder": "Keine (oberste Entität)"
+      }
+    },
+    "card": {
+      "legalForm": "Rechtsform",
+      "managingDirector": "Geschäftsführer",
+      "currency": "Währung",
+      "chartOfAccounts": "Kontenrahmen",
+      "taxId": "Steuernummer",
+      "vatId": "USt-IdNr.",
+      "registration": "Handelsregister",
+      "fiscalYearStart": "Geschäftsjahresbeginn",
+      "datevClientNr": "DATEV Mandantennr.",
+      "datevConsultantNr": "DATEV Beraternr.",
+      "parentEntity": "Übergeordnete Entität",
+      "edit": "Bearbeiten",
+      "deactivate": "Deaktivieren",
+      "reactivate": "Reaktivieren"
+    },
+    "months": {
+      "1": "Januar",
+      "2": "Februar",
+      "3": "März",
+      "4": "April",
+      "5": "Mai",
+      "6": "Juni",
+      "7": "Juli",
+      "8": "August",
+      "9": "September",
+      "10": "Oktober",
+      "11": "November",
+      "12": "Dezember"
+    }
+  },
+  "webhooks": {
+    "title": "Webhook-Konfiguration",
+    "addSource": "Quelle hinzufügen",
+    "noSources": "Keine Webhook-Quellen konfiguriert.",
+    "mappingRules": "Zuordnungsregeln",
+    "addRule": "Regel hinzufügen",
+    "noRules": "Keine Zuordnungsregeln konfiguriert.",
+    "deadLetterQueue": {
+      "title": "Dead Letter Queue",
+      "noEvents": "Keine fehlgeschlagenen Ereignisse.",
+      "columns": {
+        "source": "Quelle",
+        "eventType": "Ereignistyp",
+        "error": "Fehler",
+        "created": "Erstellt",
+        "retries": "Versuche",
+        "actions": "Aktionen"
+      },
+      "retry": "Wiederholen"
+    },
+    "columns": {
+      "name": "Name",
+      "eventType": "Ereignistyp",
+      "debitField": "Soll-Feld",
+      "creditField": "Haben-Feld",
+      "amountField": "Betragsfeld",
+      "active": "Aktiv",
+      "actions": "Aktionen"
+    },
+    "dialogs": {
+      "addSource": {
+        "title": "Webhook-Quelle hinzufügen",
+        "sourceName": "Quellenname",
+        "sourceNamePlaceholder": "z.B. Stripe Payments",
+        "sourceType": "Quellentyp",
+        "sourceTypePlaceholder": "z.B. stripe, shopify, custom",
+        "create": "Erstellen"
+      },
+      "addRule": {
+        "title": "Zuordnungsregel hinzufügen",
+        "createButton": "Regel erstellen"
+      },
+      "editRule": {
+        "title": "Zuordnungsregel bearbeiten",
+        "saveButton": "Änderungen speichern"
+      },
+      "ruleForm": {
+        "ruleName": "Regelname",
+        "ruleNamePlaceholder": "z.B. Zahlung eingegangen",
+        "eventType": "Ereignistyp",
+        "eventTypePlaceholder": "z.B. payment_intent.succeeded",
+        "debitAccountField": "Soll-Kontofeld",
+        "debitAccountFieldPlaceholder": "z.B. data.metadata.debit_account",
+        "creditAccountField": "Haben-Kontofeld",
+        "creditAccountFieldPlaceholder": "z.B. data.metadata.credit_account",
+        "amountField": "Betragsfeld",
+        "amountFieldPlaceholder": "z.B. data.amount",
+        "descriptionField": "Beschreibungsfeld",
+        "descriptionFieldPlaceholder": "z.B. data.description"
+      }
+    },
+    "pagination": {
+      "previous": "Zurück",
+      "next": "Weiter",
+      "page": "Seite {{page}}"
+    }
+  },
+  "audit": {
+    "title": "Audit-Protokoll",
+    "exportCsv": "CSV exportieren",
+    "filters": {
+      "searchByUser": "Benutzer suchen...",
+      "actionType": "Aktionstyp",
+      "allActions": "Alle Aktionen",
+      "from": "Von",
+      "to": "Bis"
+    },
+    "columns": {
+      "timestamp": "Zeitstempel",
+      "user": "Benutzer",
+      "action": "Aktion",
+      "entityType": "Entitätstyp",
+      "entityId": "Entitäts-ID",
+      "ipAddress": "IP-Adresse",
+      "details": "Details"
+    },
+    "noEntries": "Keine Audit-Protokoll-Einträge gefunden.",
+    "toast": {
+      "exported": "Audit-Protokoll exportiert",
+      "exportFailed": "Audit-Protokoll konnte nicht exportiert werden"
+    }
+  },
+  "mail": {
+    "title": "E-Mail-Konfiguration",
+    "description": "Konfigurieren Sie den SMTP-Server für den E-Mail-Versand (Einladungen, Passwortzurücksetzungen, Benachrichtigungen).",
+    "currentConfig": {
+      "title": "Aktuelle Konfiguration",
+      "lastUpdated": "Zuletzt aktualisiert: {{date}}",
+      "fields": {
+        "host": "Host",
+        "username": "Benutzername",
+        "from": "Absender",
+        "sslTls": "SSL/TLS"
+      }
+    },
+    "form": {
+      "updateTitle": "SMTP-Einstellungen aktualisieren",
+      "createTitle": "SMTP-Server konfigurieren",
+      "updateDescription": "Aktualisieren Sie Ihre SMTP-Konfiguration. Sie müssen das Passwort erneut eingeben, um zu speichern.",
+      "createDescription": "Geben Sie Ihre SMTP-Server-Details ein, um den E-Mail-Versand zu aktivieren.",
+      "fields": {
+        "smtpHost": "SMTP-Host *",
+        "smtpHostPlaceholder": "smtp.beispiel.de",
+        "port": "Port *",
+        "portPlaceholder": "587",
+        "username": "Benutzername *",
+        "usernamePlaceholder": "ihr-smtp-benutzername",
+        "password": "Passwort *",
+        "passwordPlaceholder": "SMTP-Passwort eingeben",
+        "passwordExistingPlaceholder": "••••••••",
+        "passwordHint": "Passwort ist zum Speichern erforderlich — es wird verschlüsselt gespeichert und nie wieder angezeigt.",
+        "fromEmail": "Absender-E-Mail *",
+        "fromEmailPlaceholder": "noreply@beispiel.de",
+        "fromName": "Absendername *",
+        "fromNamePlaceholder": "ClarityBoard",
+        "enableSsl": "SSL/TLS aktivieren",
+        "enableSslHint": "Empfohlen für die meisten SMTP-Anbieter (Port 465 oder STARTTLS auf 587)."
+      },
+      "saveConfig": "Konfiguration speichern",
+      "saveChanges": "Änderungen speichern",
+      "test": "Testen",
+      "validation": {
+        "hostRequired": "Host ist erforderlich",
+        "hostTooLong": "Host darf maximal 500 Zeichen lang sein",
+        "portRange": "Port muss zwischen 1 und 65535 liegen",
+        "usernameRequired": "Benutzername ist erforderlich",
+        "usernameTooLong": "Benutzername darf maximal 500 Zeichen lang sein",
+        "passwordRequired": "Passwort ist erforderlich",
+        "fromEmailInvalid": "Muss eine gültige E-Mail-Adresse sein",
+        "fromEmailTooLong": "Absender-E-Mail darf maximal 256 Zeichen lang sein",
+        "fromNameRequired": "Absendername ist erforderlich",
+        "fromNameTooLong": "Absendername darf maximal 256 Zeichen lang sein"
+      }
+    },
+    "testDialog": {
+      "title": "Test-E-Mail senden",
+      "description": "Überprüfen Sie Ihre SMTP-Konfiguration, indem Sie eine Test-E-Mail mit den aktuellen Formulardaten senden.",
+      "fields": {
+        "host": "Host",
+        "username": "Benutzername",
+        "from": "Absender",
+        "sslTls": "SSL/TLS"
+      },
+      "passwordMissingWarning": "Geben Sie Ihr SMTP-Passwort im Formular ein, um eine Test-E-Mail zu senden.",
+      "sendTo": "Senden an",
+      "sendToPlaceholder": "admin@beispiel.de",
+      "resultSuccess": "Test-E-Mail erfolgreich gesendet!",
+      "resultFailed": "Fehlgeschlagen: {{error}}",
+      "sendButton": "Test-E-Mail senden",
+      "close": "Schließen",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert"
+    },
+    "toast": {
+      "saved": "E-Mail-Konfiguration gespeichert",
+      "saveFailed": "E-Mail-Konfiguration konnte nicht gespeichert werden"
+    }
+  },
+  "auth": {
+    "title": "Authentifizierungseinstellungen",
+    "description": "Token-Lebensdauern für Sitzungen und \"Angemeldet bleiben\" konfigurieren",
+    "tokenLifetimes": {
+      "title": "Token-Lebensdauern",
+      "description": "Steuert, wie lange Benutzer angemeldet bleiben, bevor sie sich erneut authentifizieren müssen.",
+      "sessionToken": {
+        "label": "Sitzungstoken-Lebensdauer (Stunden)",
+        "hint": "Standard-Anmeldung ohne \"Angemeldet bleiben\". Bereich: 1–168 Std. (7 Tage)."
+      },
+      "rememberMeToken": {
+        "label": "\"Angemeldet bleiben\"-Token-Lebensdauer (Tage)",
+        "hint": "Token-Lebensdauer, wenn \"Angemeldet bleiben\" aktiviert ist. Bereich: 1–365 Tage."
+      }
+    },
+    "saveSettings": "Einstellungen speichern",
+    "validation": {
+      "minHour": "Mindestens 1 Stunde",
+      "maxHours": "Maximal 168 Stunden (7 Tage)",
+      "minDay": "Mindestens 1 Tag",
+      "maxDays": "Maximal 365 Tage"
+    },
+    "toast": {
+      "saved": "Authentifizierungskonfiguration gespeichert",
+      "saveFailed": "Authentifizierungskonfiguration konnte nicht gespeichert werden"
+    }
+  }
+}

@@ -1,1 +1,366 @@
-{}
+{
+  "users": {
+    "title": "User Management",
+    "addUser": "Add User",
+    "searchPlaceholder": "Search users...",
+    "noUsers": "No users found.",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "entities": "Entities",
+      "twoFa": "2FA",
+      "status": "Status",
+      "lastLogin": "Last Login",
+      "actions": "Actions"
+    },
+    "noRole": "No role",
+    "noEntities": "None",
+    "neverLoggedIn": "Never",
+    "tooltips": {
+      "edit": "Edit",
+      "resendInvitation": "Resend Invitation",
+      "resetPassword": "Reset Password",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate"
+    },
+    "dialogs": {
+      "addUser": {
+        "title": "Add User",
+        "firstName": "First Name",
+        "firstNamePlaceholder": "First name",
+        "lastName": "Last Name",
+        "lastNamePlaceholder": "Last name",
+        "email": "Email",
+        "role": "Role",
+        "roleSelectPlaceholder": "Select a role",
+        "entities": "Entities",
+        "noEntities": "No entities available.",
+        "createUser": "Create User",
+        "errorFallback": "Failed to create user"
+      },
+      "editUser": {
+        "title": "Edit User",
+        "email": "Email",
+        "roles": "Roles",
+        "noRoles": "No roles assigned.",
+        "rolePlaceholder": "Role",
+        "entityPlaceholder": "Entity",
+        "saveChanges": "Save Changes",
+        "errorFallback": "Failed to update user"
+      },
+      "confirmDeactivate": {
+        "title": "Confirm Deactivation",
+        "message": "Are you sure you want to deactivate this user? They will no longer be able to sign in.",
+        "confirm": "Deactivate"
+      }
+    },
+    "validation": {
+      "required": "Required"
+    },
+    "toast": {
+      "created": "User created. An invitation email has been sent.",
+      "createFailed": "Failed to create user",
+      "updated": "User updated",
+      "updateFailed": "Failed to update user",
+      "deactivated": "User deactivated",
+      "deactivateFailed": "Failed to deactivate user",
+      "reactivated": "User reactivated",
+      "reactivateFailed": "Failed to reactivate user",
+      "passwordReset": "Password reset email sent.",
+      "passwordResetFailed": "Failed to reset password",
+      "invitationResent": "Invitation resent.",
+      "invitationResendFailed": "Failed to resend invitation",
+      "roleAssigned": "Role assigned",
+      "roleAssignFailed": "Failed to assign role",
+      "roleRemoved": "Role removed",
+      "roleRemoveFailed": "Failed to remove role"
+    }
+  },
+  "entities": {
+    "title": "Entity Configuration",
+    "description": "View and manage legal entities",
+    "addEntity": "Add Entity",
+    "noEntities": {
+      "heading": "No Entities",
+      "description": "No legal entities have been configured yet. Create one to get started.",
+      "createFirst": "Create First Entity"
+    },
+    "dialogs": {
+      "create": {
+        "title": "Create Legal Entity",
+        "createButton": "Create Entity"
+      },
+      "edit": {
+        "title": "Edit Legal Entity",
+        "saveButton": "Save Changes"
+      }
+    },
+    "form": {
+      "sections": {
+        "companyInfo": "Company Information",
+        "address": "Address",
+        "taxRegistration": "Tax & Registration",
+        "accounting": "Accounting",
+        "datev": "DATEV Integration",
+        "hierarchy": "Hierarchy"
+      },
+      "fields": {
+        "companyName": "Company Name *",
+        "companyNamePlaceholder": "Acme GmbH",
+        "legalForm": "Legal Form *",
+        "legalFormPlaceholder": "Select legal form",
+        "managingDirector": "Managing Director",
+        "managingDirectorPlaceholder": "None",
+        "street": "Street *",
+        "streetPlaceholder": "Main Street 1",
+        "postalCode": "Postal Code *",
+        "postalCodePlaceholder": "10115",
+        "city": "City *",
+        "cityPlaceholder": "Berlin",
+        "country": "Country",
+        "taxId": "Tax ID (Steuernummer)",
+        "taxIdPlaceholder": "27/123/45678",
+        "vatId": "VAT ID (USt-IdNr.)",
+        "vatIdPlaceholder": "DE123456789",
+        "registrationNumber": "Registration Number (Handelsregister)",
+        "registrationNumberPlaceholder": "HRB 12345 B",
+        "chartOfAccounts": "Chart of Accounts *",
+        "currency": "Currency",
+        "currencyPlaceholder": "EUR",
+        "fiscalYearStart": "Fiscal Year Start",
+        "datevClientNumber": "Client Number (Mandantennr.)",
+        "datevClientNumberPlaceholder": "12345",
+        "datevConsultantNumber": "Consultant Number (Beraternr.)",
+        "datevConsultantNumberPlaceholder": "67890",
+        "parentEntity": "Parent Entity",
+        "parentEntityPlaceholder": "None (top-level entity)"
+      }
+    },
+    "card": {
+      "legalForm": "Legal Form",
+      "managingDirector": "Managing Director",
+      "currency": "Currency",
+      "chartOfAccounts": "Chart of Accounts",
+      "taxId": "Tax ID",
+      "vatId": "VAT ID",
+      "registration": "Registration",
+      "fiscalYearStart": "Fiscal Year Start",
+      "datevClientNr": "DATEV Client Nr.",
+      "datevConsultantNr": "DATEV Consultant Nr.",
+      "parentEntity": "Parent Entity",
+      "edit": "Edit",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate"
+    },
+    "months": {
+      "1": "January",
+      "2": "February",
+      "3": "March",
+      "4": "April",
+      "5": "May",
+      "6": "June",
+      "7": "July",
+      "8": "August",
+      "9": "September",
+      "10": "October",
+      "11": "November",
+      "12": "December"
+    }
+  },
+  "webhooks": {
+    "title": "Webhook Configuration",
+    "addSource": "Add Source",
+    "noSources": "No webhook sources configured.",
+    "mappingRules": "Mapping Rules",
+    "addRule": "Add Rule",
+    "noRules": "No mapping rules configured.",
+    "deadLetterQueue": {
+      "title": "Dead Letter Queue",
+      "noEvents": "No dead letter events.",
+      "columns": {
+        "source": "Source",
+        "eventType": "Event Type",
+        "error": "Error",
+        "created": "Created",
+        "retries": "Retries",
+        "actions": "Actions"
+      },
+      "retry": "Retry"
+    },
+    "columns": {
+      "name": "Name",
+      "eventType": "Event Type",
+      "debitField": "Debit Field",
+      "creditField": "Credit Field",
+      "amountField": "Amount Field",
+      "active": "Active",
+      "actions": "Actions"
+    },
+    "dialogs": {
+      "addSource": {
+        "title": "Add Webhook Source",
+        "sourceName": "Source Name",
+        "sourceNamePlaceholder": "e.g. Stripe Payments",
+        "sourceType": "Source Type",
+        "sourceTypePlaceholder": "e.g. stripe, shopify, custom",
+        "create": "Create"
+      },
+      "addRule": {
+        "title": "Add Mapping Rule",
+        "createButton": "Create Rule"
+      },
+      "editRule": {
+        "title": "Edit Mapping Rule",
+        "saveButton": "Save Changes"
+      },
+      "ruleForm": {
+        "ruleName": "Rule Name",
+        "ruleNamePlaceholder": "e.g. Payment Received",
+        "eventType": "Event Type",
+        "eventTypePlaceholder": "e.g. payment_intent.succeeded",
+        "debitAccountField": "Debit Account Field",
+        "debitAccountFieldPlaceholder": "e.g. data.metadata.debit_account",
+        "creditAccountField": "Credit Account Field",
+        "creditAccountFieldPlaceholder": "e.g. data.metadata.credit_account",
+        "amountField": "Amount Field",
+        "amountFieldPlaceholder": "e.g. data.amount",
+        "descriptionField": "Description Field",
+        "descriptionFieldPlaceholder": "e.g. data.description"
+      }
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{page}}"
+    }
+  },
+  "audit": {
+    "title": "Audit Log",
+    "exportCsv": "Export CSV",
+    "filters": {
+      "searchByUser": "Search by user...",
+      "actionType": "Action type",
+      "allActions": "All Actions",
+      "from": "From",
+      "to": "To"
+    },
+    "columns": {
+      "timestamp": "Timestamp",
+      "user": "User",
+      "action": "Action",
+      "entityType": "Entity Type",
+      "entityId": "Entity ID",
+      "ipAddress": "IP Address",
+      "details": "Details"
+    },
+    "noEntries": "No audit log entries found.",
+    "toast": {
+      "exported": "Audit log exported",
+      "exportFailed": "Failed to export audit logs"
+    }
+  },
+  "mail": {
+    "title": "Mail Configuration",
+    "description": "Configure the SMTP server for sending emails (invitations, password resets, notifications).",
+    "currentConfig": {
+      "title": "Current Configuration",
+      "lastUpdated": "Last updated: {{date}}",
+      "fields": {
+        "host": "Host",
+        "username": "Username",
+        "from": "From",
+        "sslTls": "SSL/TLS"
+      }
+    },
+    "form": {
+      "updateTitle": "Update SMTP Settings",
+      "createTitle": "Configure SMTP Server",
+      "updateDescription": "Update your SMTP configuration. You must re-enter the password to save.",
+      "createDescription": "Enter your SMTP server details to enable email sending.",
+      "fields": {
+        "smtpHost": "SMTP Host *",
+        "smtpHostPlaceholder": "smtp.example.com",
+        "port": "Port *",
+        "portPlaceholder": "587",
+        "username": "Username *",
+        "usernamePlaceholder": "your-smtp-username",
+        "password": "Password *",
+        "passwordPlaceholder": "Enter SMTP password",
+        "passwordExistingPlaceholder": "••••••••",
+        "passwordHint": "Password is required to save — it is stored encrypted and never shown again.",
+        "fromEmail": "From Email *",
+        "fromEmailPlaceholder": "noreply@example.com",
+        "fromName": "From Name *",
+        "fromNamePlaceholder": "ClarityBoard",
+        "enableSsl": "Enable SSL/TLS",
+        "enableSslHint": "Recommended for most SMTP providers (port 465 or STARTTLS on 587)."
+      },
+      "saveConfig": "Save Configuration",
+      "saveChanges": "Save Changes",
+      "test": "Test",
+      "validation": {
+        "hostRequired": "Host is required",
+        "hostTooLong": "Host must be at most 500 characters",
+        "portRange": "Port must be between 1 and 65535",
+        "usernameRequired": "Username is required",
+        "usernameTooLong": "Username must be at most 500 characters",
+        "passwordRequired": "Password is required",
+        "fromEmailInvalid": "Must be a valid email address",
+        "fromEmailTooLong": "From email must be at most 256 characters",
+        "fromNameRequired": "From name is required",
+        "fromNameTooLong": "From name must be at most 256 characters"
+      }
+    },
+    "testDialog": {
+      "title": "Send Test Email",
+      "description": "Verify your SMTP configuration by sending a test email using the current form values.",
+      "fields": {
+        "host": "Host",
+        "username": "Username",
+        "from": "From",
+        "sslTls": "SSL/TLS"
+      },
+      "passwordMissingWarning": "Enter your SMTP password in the form to enable sending a test email.",
+      "sendTo": "Send to",
+      "sendToPlaceholder": "admin@example.com",
+      "resultSuccess": "Test email sent successfully!",
+      "resultFailed": "Failed: {{error}}",
+      "sendButton": "Send Test Email",
+      "close": "Close",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "toast": {
+      "saved": "Mail configuration saved",
+      "saveFailed": "Failed to save mail configuration"
+    }
+  },
+  "auth": {
+    "title": "Authentication Settings",
+    "description": "Configure token lifetimes for sessions and \"Remember me\"",
+    "tokenLifetimes": {
+      "title": "Token Lifetimes",
+      "description": "Controls how long users stay logged in before needing to re-authenticate.",
+      "sessionToken": {
+        "label": "Session token lifetime (hours)",
+        "hint": "Standard login without \"Remember me\". Range: 1–168 h (7 days)."
+      },
+      "rememberMeToken": {
+        "label": "\"Remember me\" token lifetime (days)",
+        "hint": "Token lifetime when \"Remember me\" is checked. Range: 1–365 days."
+      }
+    },
+    "saveSettings": "Save settings",
+    "validation": {
+      "minHour": "Minimum 1 hour",
+      "maxHours": "Maximum 168 hours (7 days)",
+      "minDay": "Minimum 1 day",
+      "maxDays": "Maximum 365 days"
+    },
+    "toast": {
+      "saved": "Auth configuration saved",
+      "saveFailed": "Failed to save auth configuration"
+    }
+  }
+}

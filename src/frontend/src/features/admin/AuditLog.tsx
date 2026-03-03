@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuditLogs, useExportAuditLogs } from '@/hooks/useAdmin';
 import type { AuditLogParams } from '@/types/admin';
 import PageHeader from '@/components/shared/PageHeader';
@@ -27,6 +28,7 @@ const ACTION_TYPES = [
 ];
 
 export function Component() {
+  const { t, i18n } = useTranslation('admin');
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const [userSearch, setUserSearch] = useState('');
@@ -61,11 +63,11 @@ export function Component() {
   const columns = [
     {
       key: 'timestamp',
-      header: 'Timestamp',
+      header: t('audit.columns.timestamp'),
       render: (item: Record<string, unknown>) => {
         const ts = item.timestamp as string;
         return ts
-          ? new Date(ts).toLocaleString('de-DE', {
+          ? new Date(ts).toLocaleString(i18n.language, {
               dateStyle: 'short',
               timeStyle: 'medium',
             })
@@ -74,25 +76,25 @@ export function Component() {
     },
     {
       key: 'userName',
-      header: 'User',
+      header: t('audit.columns.user'),
       render: (item: Record<string, unknown>) => (
         <span className="font-medium">{String(item.userName ?? '')}</span>
       ),
     },
     {
       key: 'action',
-      header: 'Action',
+      header: t('audit.columns.action'),
       render: (item: Record<string, unknown>) => (
         <span className="capitalize">{String(item.action ?? '')}</span>
       ),
     },
     {
       key: 'entityType',
-      header: 'Entity Type',
+      header: t('audit.columns.entityType'),
     },
     {
       key: 'entityId',
-      header: 'Entity ID',
+      header: t('audit.columns.entityId'),
       render: (item: Record<string, unknown>) => (
         <span className="font-mono text-xs">
           {String(item.entityId ?? '-')}
@@ -101,7 +103,7 @@ export function Component() {
     },
     {
       key: 'ipAddress',
-      header: 'IP Address',
+      header: t('audit.columns.ipAddress'),
       render: (item: Record<string, unknown>) => (
         <span className="font-mono text-xs">
           {String(item.ipAddress ?? '')}
@@ -110,7 +112,7 @@ export function Component() {
     },
     {
       key: 'details',
-      header: 'Details',
+      header: t('audit.columns.details'),
       render: (item: Record<string, unknown>) => (
         <span className="max-w-[200px] truncate text-xs text-muted-foreground">
           {String(item.details ?? '')}
@@ -122,7 +124,7 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Audit Log"
+        title={t('audit.title')}
         actions={
           <Button
             variant="outline"
@@ -134,7 +136,7 @@ export function Component() {
             ) : (
               <Download className="mr-1 h-4 w-4" />
             )}
-            Export CSV
+            {t('audit.exportCsv')}
           </Button>
         }
       />
@@ -144,7 +146,7 @@ export function Component() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by user..."
+            placeholder={t('audit.filters.searchByUser')}
             value={userSearch}
             onChange={(e) => {
               setUserSearch(e.target.value);
@@ -162,13 +164,13 @@ export function Component() {
             }}
           >
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Action type" />
+              <SelectValue placeholder={t('audit.filters.actionType')} />
             </SelectTrigger>
             <SelectContent>
               {ACTION_TYPES.map((type) => (
                 <SelectItem key={type} value={type}>
                   <span className="capitalize">
-                    {type === 'all' ? 'All Actions' : type}
+                    {type === 'all' ? t('audit.filters.allActions') : type}
                   </span>
                 </SelectItem>
               ))}
@@ -176,7 +178,7 @@ export function Component() {
           </Select>
         </div>
         <div>
-          <Label className="text-xs">From</Label>
+          <Label className="text-xs">{t('audit.filters.from')}</Label>
           <Input
             type="date"
             value={startDate}
@@ -188,7 +190,7 @@ export function Component() {
           />
         </div>
         <div>
-          <Label className="text-xs">To</Label>
+          <Label className="text-xs">{t('audit.filters.to')}</Label>
           <Input
             type="date"
             value={endDate}
@@ -206,7 +208,7 @@ export function Component() {
         columns={columns}
         data={items as unknown as Record<string, unknown>[]}
         isLoading={isLoading}
-        emptyMessage="No audit log entries found."
+        emptyMessage={t('audit.noEntries')}
         pagination={{
           page,
           pageSize,

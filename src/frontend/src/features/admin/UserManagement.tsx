@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import {
   useUsers,
@@ -62,6 +63,7 @@ function useDebounced<T>(value: T, delay: number): T {
 }
 
 export function Component() {
+  const { t, i18n } = useTranslation('admin');
   const { entities } = useEntity();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -117,9 +119,9 @@ export function Component() {
 
   const validateForm = (): boolean => {
     const errors: Partial<FormState> = {};
-    if (!form.firstName.trim()) errors.firstName = 'Required';
-    if (!form.lastName.trim()) errors.lastName = 'Required';
-    if (!form.email.trim()) errors.email = 'Required';
+    if (!form.firstName.trim()) errors.firstName = t('users.validation.required');
+    if (!form.lastName.trim()) errors.lastName = t('users.validation.required');
+    if (!form.email.trim()) errors.email = t('users.validation.required');
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -143,7 +145,7 @@ export function Component() {
         onError: (err: unknown) => {
           const msg =
             (err as { response?: { data?: { message?: string } } })?.response?.data
-              ?.message ?? 'Failed to create user';
+              ?.message ?? t('users.dialogs.addUser.errorFallback');
           setDialogError(msg);
         },
       },
@@ -153,8 +155,8 @@ export function Component() {
   const handleUpdate = () => {
     if (!editingUser) return;
     const errors: Partial<FormState> = {};
-    if (!form.firstName.trim()) errors.firstName = 'Required';
-    if (!form.lastName.trim()) errors.lastName = 'Required';
+    if (!form.firstName.trim()) errors.firstName = t('users.validation.required');
+    if (!form.lastName.trim()) errors.lastName = t('users.validation.required');
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
     setDialogError(null);
@@ -173,7 +175,7 @@ export function Component() {
         onError: (err: unknown) => {
           const msg =
             (err as { response?: { data?: { message?: string } } })?.response?.data
-              ?.message ?? 'Failed to update user';
+              ?.message ?? t('users.dialogs.editUser.errorFallback');
           setDialogError(msg);
         },
       },
@@ -241,7 +243,7 @@ export function Component() {
   const columns = [
     {
       key: 'name',
-      header: 'Name',
+      header: t('users.columns.name'),
       render: (item: Record<string, unknown>) => (
         <span className="font-medium">
           {String(item.firstName ?? '')} {String(item.lastName ?? '')}
@@ -250,11 +252,11 @@ export function Component() {
     },
     {
       key: 'email',
-      header: 'Email',
+      header: t('users.columns.email'),
     },
     {
       key: 'roles',
-      header: 'Role',
+      header: t('users.columns.role'),
       render: (item: Record<string, unknown>) => {
         const userRoles = item.roles as AdminUser['roles'] | undefined;
         const roleNames = [...new Set(userRoles?.map((r) => r.roleName) ?? [])];
@@ -266,7 +268,7 @@ export function Component() {
               </Badge>
             ))}
             {roleNames.length === 0 && (
-              <span className="text-sm text-muted-foreground">No role</span>
+              <span className="text-sm text-muted-foreground">{t('users.noRole')}</span>
             )}
           </div>
         );
@@ -274,20 +276,20 @@ export function Component() {
     },
     {
       key: 'entities',
-      header: 'Entities',
+      header: t('users.columns.entities'),
       render: (item: Record<string, unknown>) => {
         const userRoles = item.roles as AdminUser['roles'] | undefined;
         const entityNames = [...new Set(userRoles?.map((r) => r.entityName) ?? [])];
         return (
           <span className="text-sm text-muted-foreground">
-            {entityNames.length > 0 ? entityNames.join(', ') : 'None'}
+            {entityNames.length > 0 ? entityNames.join(', ') : t('users.noEntities')}
           </span>
         );
       },
     },
     {
       key: 'twoFactorEnabled',
-      header: '2FA',
+      header: t('users.columns.twoFa'),
       render: (item: Record<string, unknown>) => (
         <StatusBadge
           status={item.twoFactorEnabled ? 'Enabled' : 'Disabled'}
@@ -297,7 +299,7 @@ export function Component() {
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('users.columns.status'),
       render: (item: Record<string, unknown>) => (
         <StatusBadge
           status={String(item.status ?? 'Active')}
@@ -307,15 +309,15 @@ export function Component() {
     },
     {
       key: 'lastLoginAt',
-      header: 'Last Login',
+      header: t('users.columns.lastLogin'),
       render: (item: Record<string, unknown>) => {
         const date = item.lastLoginAt as string | undefined;
-        return date ? new Date(date).toLocaleDateString('de-DE') : 'Never';
+        return date ? new Date(date).toLocaleDateString(i18n.language) : t('users.neverLoggedIn');
       },
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: t('users.columns.actions'),
       render: (item: Record<string, unknown>) => {
         const user = item as unknown as AdminUser;
         return (
@@ -323,7 +325,7 @@ export function Component() {
             <Button
               variant="ghost"
               size="sm"
-              title="Edit"
+              title={t('users.tooltips.edit')}
               onClick={(e) => {
                 e.stopPropagation();
                 openEdit(user);
@@ -335,7 +337,7 @@ export function Component() {
               <Button
                 variant="ghost"
                 size="sm"
-                title="Resend Invitation"
+                title={t('users.tooltips.resendInvitation')}
                 onClick={(e) => {
                   e.stopPropagation();
                   resendInvitation.mutate(user.id);
@@ -347,7 +349,7 @@ export function Component() {
               <Button
                 variant="ghost"
                 size="sm"
-                title="Reset Password"
+                title={t('users.tooltips.resetPassword')}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleResetPassword(user.id);
@@ -360,7 +362,7 @@ export function Component() {
               <Button
                 variant="ghost"
                 size="sm"
-                title="Deactivate"
+                title={t('users.tooltips.deactivate')}
                 onClick={(e) => {
                   e.stopPropagation();
                   setConfirmDeactivate(user.id);
@@ -372,7 +374,7 @@ export function Component() {
               <Button
                 variant="ghost"
                 size="sm"
-                title="Reactivate"
+                title={t('users.tooltips.reactivate')}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleReactivate(user.id);
@@ -390,11 +392,11 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="User Management"
+        title={t('users.title')}
         actions={
           <Button onClick={() => { resetForm(); setIsAddOpen(true); }}>
             <Plus className="mr-1 h-4 w-4" />
-            Add User
+            {t('users.addUser')}
           </Button>
         }
       />
@@ -405,7 +407,7 @@ export function Component() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
-            placeholder="Search users..."
+            placeholder={t('users.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -416,7 +418,7 @@ export function Component() {
         columns={columns}
         data={users as unknown as Record<string, unknown>[]}
         isLoading={isLoading}
-        emptyMessage="No users found."
+        emptyMessage={t('users.noUsers')}
         pagination={
           totalCount > pageSize
             ? { page, pageSize, total: totalCount, onPageChange: setPage }
@@ -428,18 +430,18 @@ export function Component() {
       <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) resetForm(); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add User</DialogTitle>
+            <DialogTitle>{t('users.dialogs.addUser.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>First Name</Label>
+                <Label>{t('users.dialogs.addUser.firstName')}</Label>
                 <Input
                   value={form.firstName}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, firstName: e.target.value }))
                   }
-                  placeholder="First name"
+                  placeholder={t('users.dialogs.addUser.firstNamePlaceholder')}
                   aria-invalid={!!formErrors.firstName}
                 />
                 {formErrors.firstName && (
@@ -447,13 +449,13 @@ export function Component() {
                 )}
               </div>
               <div>
-                <Label>Last Name</Label>
+                <Label>{t('users.dialogs.addUser.lastName')}</Label>
                 <Input
                   value={form.lastName}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, lastName: e.target.value }))
                   }
-                  placeholder="Last name"
+                  placeholder={t('users.dialogs.addUser.lastNamePlaceholder')}
                   aria-invalid={!!formErrors.lastName}
                 />
                 {formErrors.lastName && (
@@ -462,7 +464,7 @@ export function Component() {
               </div>
             </div>
             <div>
-              <Label>Email</Label>
+              <Label>{t('users.dialogs.addUser.email')}</Label>
               <Input
                 type="email"
                 value={form.email}
@@ -477,13 +479,13 @@ export function Component() {
               )}
             </div>
             <div>
-              <Label>Role</Label>
+              <Label>{t('users.dialogs.addUser.role')}</Label>
               <Select
                 value={form.roleId}
                 onValueChange={(v) => setForm((f) => ({ ...f, roleId: v }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
+                  <SelectValue placeholder={t('users.dialogs.addUser.roleSelectPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {(roles ?? []).map((role) => (
@@ -495,7 +497,7 @@ export function Component() {
               </Select>
             </div>
             <div>
-              <Label>Entities</Label>
+              <Label>{t('users.dialogs.addUser.entities')}</Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {entities.map((entity) => (
                   <Badge
@@ -508,7 +510,7 @@ export function Component() {
                   </Badge>
                 ))}
                 {entities.length === 0 && (
-                  <span className="text-sm text-muted-foreground">No entities available.</span>
+                  <span className="text-sm text-muted-foreground">{t('users.dialogs.addUser.noEntities')}</span>
                 )}
               </div>
             </div>
@@ -520,13 +522,13 @@ export function Component() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button onClick={handleCreate} disabled={createUser.isPending}>
               {createUser.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Create User
+              {t('users.dialogs.addUser.createUser')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -536,12 +538,12 @@ export function Component() {
       <Dialog open={isEditOpen} onOpenChange={(open) => { setIsEditOpen(open); if (!open) { setEditingUser(null); resetForm(); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>{t('users.dialogs.editUser.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>First Name</Label>
+                <Label>{t('users.dialogs.addUser.firstName')}</Label>
                 <Input
                   value={form.firstName}
                   onChange={(e) =>
@@ -554,7 +556,7 @@ export function Component() {
                 )}
               </div>
               <div>
-                <Label>Last Name</Label>
+                <Label>{t('users.dialogs.addUser.lastName')}</Label>
                 <Input
                   value={form.lastName}
                   onChange={(e) =>
@@ -568,16 +570,16 @@ export function Component() {
               </div>
             </div>
             <div>
-              <Label>Email</Label>
+              <Label>{t('users.dialogs.editUser.email')}</Label>
               <Input type="email" value={form.email} disabled />
             </div>
 
             {/* Role management */}
             <div>
-              <Label>Roles</Label>
+              <Label>{t('users.dialogs.editUser.roles')}</Label>
               <div className="mt-2 space-y-2">
                 {(editingUser?.roles ?? []).length === 0 && (
-                  <p className="text-sm text-muted-foreground">No roles assigned.</p>
+                  <p className="text-sm text-muted-foreground">{t('users.dialogs.editUser.noRoles')}</p>
                 )}
                 {(editingUser?.roles ?? []).map((r) => (
                   <div key={`${r.roleId}-${r.entityId}`} className="flex items-center justify-between rounded-md border border-border px-3 py-1.5">
@@ -599,7 +601,7 @@ export function Component() {
                 <div className="flex gap-2 pt-1">
                   <Select value={newRoleId} onValueChange={setNewRoleId}>
                     <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Role" />
+                      <SelectValue placeholder={t('users.dialogs.editUser.rolePlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {(roles ?? []).map((role) => (
@@ -611,7 +613,7 @@ export function Component() {
                   </Select>
                   <Select value={newEntityId} onValueChange={setNewEntityId}>
                     <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Entity" />
+                      <SelectValue placeholder={t('users.dialogs.editUser.entityPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {entities.map((entity) => (
@@ -645,13 +647,13 @@ export function Component() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditOpen(false)}>
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button onClick={handleUpdate} disabled={updateUser.isPending}>
               {updateUser.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Save Changes
+              {t('users.dialogs.editUser.saveChanges')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -664,15 +666,14 @@ export function Component() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deactivation</DialogTitle>
+            <DialogTitle>{t('users.dialogs.confirmDeactivate.title')}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Are you sure you want to deactivate this user? They will no longer
-            be able to sign in.
+            {t('users.dialogs.confirmDeactivate.message')}
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDeactivate(null)}>
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button
               variant="destructive"
@@ -682,7 +683,7 @@ export function Component() {
               {deactivateUser.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Deactivate
+              {t('users.dialogs.confirmDeactivate.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

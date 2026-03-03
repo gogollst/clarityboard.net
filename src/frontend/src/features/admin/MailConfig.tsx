@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import {
   Mail,
   Server,
@@ -37,19 +38,29 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-const schema = z.object({
-  host: z.string().min(1, 'Host is required').max(500, 'Host must be at most 500 characters'),
-  port: z.number().int().min(1, 'Port must be between 1 and 65535').max(65535, 'Port must be between 1 and 65535'),
-  username: z.string().min(1, 'Username is required').max(500, 'Username must be at most 500 characters'),
-  password: z.string().min(1, 'Password is required'),
-  fromEmail: z.string().email('Must be a valid email address').max(256, 'From email must be at most 256 characters'),
-  fromName: z.string().min(1, 'From name is required').max(256, 'From name must be at most 256 characters'),
-  enableSsl: z.boolean(),
-});
-
-type FormValues = z.infer<typeof schema>;
+type FormValues = {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  fromEmail: string;
+  fromName: string;
+  enableSsl: boolean;
+};
 
 export function Component() {
+  const { t, i18n } = useTranslation('admin');
+
+  const schema = useMemo(() => z.object({
+    host: z.string().min(1, t('mail.form.validation.hostRequired')).max(500, t('mail.form.validation.hostTooLong')),
+    port: z.number().int().min(1, t('mail.form.validation.portRange')).max(65535, t('mail.form.validation.portRange')),
+    username: z.string().min(1, t('mail.form.validation.usernameRequired')).max(500, t('mail.form.validation.usernameTooLong')),
+    password: z.string().min(1, t('mail.form.validation.passwordRequired')),
+    fromEmail: z.string().email(t('mail.form.validation.fromEmailInvalid')).max(256, t('mail.form.validation.fromEmailTooLong')),
+    fromName: z.string().min(1, t('mail.form.validation.fromNameRequired')).max(256, t('mail.form.validation.fromNameTooLong')),
+    enableSsl: z.boolean(),
+  }), [t]);
+
   const { data: config, isLoading } = useMailConfig();
   const upsert = useUpsertMailConfig();
   const sendTest = useSendTestEmail();
@@ -140,10 +151,10 @@ export function Component() {
       <div>
         <h1 className="text-xl font-semibold flex items-center gap-2">
           <Mail className="h-5 w-5 text-primary" />
-          Mail Configuration
+          {t('mail.title')}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Configure the SMTP server for sending emails (invitations, password resets, notifications).
+          {t('mail.description')}
         </p>
       </div>
 
@@ -154,7 +165,7 @@ export function Component() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <Server className="h-4 w-4 text-muted-foreground" />
-                Current Configuration
+                {t('mail.currentConfig.title')}
               </CardTitle>
               <Badge
                 className={
@@ -166,41 +177,41 @@ export function Component() {
                 {config.isActive ? (
                   <>
                     <CheckCircle className="mr-1 h-3 w-3" />
-                    Active
+                    {t('common:status.active', { ns: 'common' })}
                   </>
                 ) : (
                   <>
                     <AlertCircle className="mr-1 h-3 w-3" />
-                    Inactive
+                    {t('common:status.inactive', { ns: 'common' })}
                   </>
                 )}
               </Badge>
             </div>
             <CardDescription className="text-xs">
-              Last updated: {new Date(config.updatedAt).toLocaleString('de-DE')}
+              {t('mail.currentConfig.lastUpdated', { date: new Date(config.updatedAt).toLocaleString(i18n.language) })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">Host</dt>
+                <dt className="text-muted-foreground text-xs uppercase tracking-wide">{t('mail.currentConfig.fields.host')}</dt>
                 <dd className="font-mono mt-0.5">{config.host}:{config.port}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">Username</dt>
+                <dt className="text-muted-foreground text-xs uppercase tracking-wide">{t('mail.currentConfig.fields.username')}</dt>
                 <dd className="font-mono mt-0.5">{config.username}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">From</dt>
+                <dt className="text-muted-foreground text-xs uppercase tracking-wide">{t('mail.currentConfig.fields.from')}</dt>
                 <dd className="mt-0.5">
                   {config.fromName} &lt;{config.fromEmail}&gt;
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground text-xs uppercase tracking-wide">SSL/TLS</dt>
+                <dt className="text-muted-foreground text-xs uppercase tracking-wide">{t('mail.currentConfig.fields.sslTls')}</dt>
                 <dd className="mt-0.5 flex items-center gap-1">
                   <Shield className="h-3 w-3 text-muted-foreground" />
-                  {config.enableSsl ? 'Enabled' : 'Disabled'}
+                  {config.enableSsl ? t('mail.testDialog.enabled') : t('mail.testDialog.disabled')}
                 </dd>
               </div>
             </dl>
@@ -212,12 +223,10 @@ export function Component() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            {config ? 'Update SMTP Settings' : 'Configure SMTP Server'}
+            {config ? t('mail.form.updateTitle') : t('mail.form.createTitle')}
           </CardTitle>
           <CardDescription>
-            {config
-              ? 'Update your SMTP configuration. You must re-enter the password to save.'
-              : 'Enter your SMTP server details to enable email sending.'}
+            {config ? t('mail.form.updateDescription') : t('mail.form.createDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -225,10 +234,10 @@ export function Component() {
             {/* Host + Port */}
             <div className="grid grid-cols-3 gap-4">
               <div className="col-span-2 space-y-1.5">
-                <Label htmlFor="host">SMTP Host *</Label>
+                <Label htmlFor="host">{t('mail.form.fields.smtpHost')}</Label>
                 <Input
                   id="host"
-                  placeholder="smtp.example.com"
+                  placeholder={t('mail.form.fields.smtpHostPlaceholder')}
                   {...register('host')}
                 />
                 {errors.host && (
@@ -236,11 +245,11 @@ export function Component() {
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="port">Port *</Label>
+                <Label htmlFor="port">{t('mail.form.fields.port')}</Label>
                 <Input
                   id="port"
                   type="number"
-                  placeholder="587"
+                  placeholder={t('mail.form.fields.portPlaceholder')}
                   {...register('port', { valueAsNumber: true })}
                 />
                 {errors.port && (
@@ -251,11 +260,11 @@ export function Component() {
 
             {/* Username */}
             <div className="space-y-1.5">
-              <Label htmlFor="username">Username *</Label>
+              <Label htmlFor="username">{t('mail.form.fields.username')}</Label>
               <Input
                 id="username"
                 autoComplete="username"
-                placeholder="your-smtp-username"
+                placeholder={t('mail.form.fields.usernamePlaceholder')}
                 {...register('username')}
               />
               {errors.username && (
@@ -265,29 +274,29 @@ export function Component() {
 
             {/* Password */}
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">{t('mail.form.fields.password')}</Label>
               <Input
                 id="password"
                 type="password"
                 autoComplete="current-password"
-                placeholder={config ? '••••••••' : 'Enter SMTP password'}
+                placeholder={config ? t('mail.form.fields.passwordExistingPlaceholder') : t('mail.form.fields.passwordPlaceholder')}
                 {...register('password')}
               />
               {errors.password && (
                 <p className="text-destructive text-xs">{errors.password.message}</p>
               )}
               <p className="text-muted-foreground text-xs">
-                Password is required to save — it is stored encrypted and never shown again.
+                {t('mail.form.fields.passwordHint')}
               </p>
             </div>
 
             {/* From Email */}
             <div className="space-y-1.5">
-              <Label htmlFor="fromEmail">From Email *</Label>
+              <Label htmlFor="fromEmail">{t('mail.form.fields.fromEmail')}</Label>
               <Input
                 id="fromEmail"
                 type="email"
-                placeholder="noreply@example.com"
+                placeholder={t('mail.form.fields.fromEmailPlaceholder')}
                 {...register('fromEmail')}
               />
               {errors.fromEmail && (
@@ -297,10 +306,10 @@ export function Component() {
 
             {/* From Name */}
             <div className="space-y-1.5">
-              <Label htmlFor="fromName">From Name *</Label>
+              <Label htmlFor="fromName">{t('mail.form.fields.fromName')}</Label>
               <Input
                 id="fromName"
-                placeholder="ClarityBoard"
+                placeholder={t('mail.form.fields.fromNamePlaceholder')}
                 {...register('fromName')}
               />
               {errors.fromName && (
@@ -317,10 +326,10 @@ export function Component() {
               />
               <div>
                 <Label htmlFor="enableSsl" className="cursor-pointer">
-                  Enable SSL/TLS
+                  {t('mail.form.fields.enableSsl')}
                 </Label>
                 <p className="text-muted-foreground text-xs">
-                  Recommended for most SMTP providers (port 465 or STARTTLS on 587).
+                  {t('mail.form.fields.enableSslHint')}
                 </p>
               </div>
             </div>
@@ -333,11 +342,11 @@ export function Component() {
                 ) : (
                   <Save className="mr-2 h-4 w-4" />
                 )}
-                {config ? 'Save Changes' : 'Save Configuration'}
+                {config ? t('mail.form.saveChanges') : t('mail.form.saveConfig')}
               </Button>
               <Button type="button" variant="outline" onClick={handleOpenTest}>
                 <FlaskConical className="mr-2 h-4 w-4" />
-                Test
+                {t('mail.form.test')}
               </Button>
             </div>
           </form>
@@ -354,49 +363,49 @@ export function Component() {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Send Test Email</DialogTitle>
+            <DialogTitle>{t('mail.testDialog.title')}</DialogTitle>
             <DialogDescription>
-              Verify your SMTP configuration by sending a test email using the current form values.
+              {t('mail.testDialog.description')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             {/* Config summary */}
             <dl className="rounded-md bg-muted/50 p-3 text-sm space-y-1.5">
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Host</dt>
+                <dt className="text-muted-foreground">{t('mail.testDialog.fields.host')}</dt>
                 <dd className="font-mono text-xs">{testConfig?.host}:{testConfig?.port}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Username</dt>
+                <dt className="text-muted-foreground">{t('mail.testDialog.fields.username')}</dt>
                 <dd className="font-mono text-xs">{testConfig?.username}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">From</dt>
+                <dt className="text-muted-foreground">{t('mail.testDialog.fields.from')}</dt>
                 <dd className="text-xs">{testConfig?.fromName} &lt;{testConfig?.fromEmail}&gt;</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">SSL/TLS</dt>
-                <dd className="text-xs">{testConfig?.enableSsl ? 'Enabled' : 'Disabled'}</dd>
+                <dt className="text-muted-foreground">{t('mail.testDialog.fields.sslTls')}</dt>
+                <dd className="text-xs">{testConfig?.enableSsl ? t('mail.testDialog.enabled') : t('mail.testDialog.disabled')}</dd>
               </div>
             </dl>
 
             {/* Password missing warning */}
             {!testConfig?.password && (
               <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                Enter your SMTP password in the form to enable sending a test email.
+                {t('mail.testDialog.passwordMissingWarning')}
               </div>
             )}
 
             {/* Recipient */}
             <div className="space-y-1.5">
-              <Label htmlFor="testRecipient">Send to</Label>
+              <Label htmlFor="testRecipient">{t('mail.testDialog.sendTo')}</Label>
               <Input
                 id="testRecipient"
                 type="email"
                 autoComplete="email"
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
-                placeholder="admin@example.com"
+                placeholder={t('mail.testDialog.sendToPlaceholder')}
               />
             </div>
 
@@ -409,14 +418,14 @@ export function Component() {
                   : 'bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-300',
               )}>
                 {testResult.success
-                  ? 'Test email sent successfully!'
-                  : `Failed: ${testResult.errorMessage}`}
+                  ? t('mail.testDialog.resultSuccess')
+                  : t('mail.testDialog.resultFailed', { error: testResult.errorMessage })}
               </div>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsTestOpen(false)}>
-              Close
+              {t('mail.testDialog.close')}
             </Button>
             <Button
               onClick={handleSendTest}
@@ -425,7 +434,7 @@ export function Component() {
               {sendTest.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Send Test Email
+              {t('mail.testDialog.sendButton')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
+import i18n from '@/i18n';
 import { queryKeys } from '@/lib/queryKeys';
 import type { PaginatedResponse } from '@/types/api';
 import type {
@@ -14,6 +15,8 @@ import type {
   UpsertMailConfigRequest,
   SendTestEmailRequest,
   SendTestEmailResult,
+  AuthConfig,
+  UpsertAuthConfigRequest,
 } from '@/types/admin';
 
 // ---------------------------------------------------------------------------
@@ -51,11 +54,11 @@ export function useCreateUser() {
       return data;
     },
     onSuccess: () => {
-      toast.success('User created. An invitation email has been sent.');
+      toast.success(i18n.t('admin:users.toast.created'));
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
     onError: () => {
-      toast.error('Failed to create user');
+      toast.error(i18n.t('admin:users.toast.createFailed'));
     },
   });
 }
@@ -68,11 +71,11 @@ export function useUpdateUser() {
       await api.put(`/admin/users/${request.id}`, request);
     },
     onSuccess: () => {
-      toast.success('User updated');
+      toast.success(i18n.t('admin:users.toast.updated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
     onError: () => {
-      toast.error('Failed to update user');
+      toast.error(i18n.t('admin:users.toast.updateFailed'));
     },
   });
 }
@@ -85,11 +88,11 @@ export function useDeactivateUser() {
       await api.post(`/admin/users/${userId}/deactivate`);
     },
     onSuccess: () => {
-      toast.success('User deactivated');
+      toast.success(i18n.t('admin:users.toast.deactivated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
     onError: () => {
-      toast.error('Failed to deactivate user');
+      toast.error(i18n.t('admin:users.toast.deactivateFailed'));
     },
   });
 }
@@ -126,11 +129,11 @@ export function useAssignRole() {
       await api.post(`/admin/users/${userId}/roles`, { roleId, entityId });
     },
     onSuccess: () => {
-      toast.success('Role assigned');
+      toast.success(i18n.t('admin:users.toast.roleAssigned'));
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
     onError: () => {
-      toast.error('Failed to assign role');
+      toast.error(i18n.t('admin:users.toast.roleAssignFailed'));
     },
   });
 }
@@ -151,11 +154,11 @@ export function useRemoveRole() {
       await api.delete(`/admin/users/${userId}/roles`, { params: { roleId, entityId } });
     },
     onSuccess: () => {
-      toast.success('Role removed');
+      toast.success(i18n.t('admin:users.toast.roleRemoved'));
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
     onError: () => {
-      toast.error('Failed to remove role');
+      toast.error(i18n.t('admin:users.toast.roleRemoveFailed'));
     },
   });
 }
@@ -168,11 +171,11 @@ export function useReactivateUser() {
       await api.post(`/admin/users/${userId}/reactivate`);
     },
     onSuccess: () => {
-      toast.success('User reactivated');
+      toast.success(i18n.t('admin:users.toast.reactivated'));
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
     onError: () => {
-      toast.error('Failed to reactivate user');
+      toast.error(i18n.t('admin:users.toast.reactivateFailed'));
     },
   });
 }
@@ -187,10 +190,10 @@ export function useResetPassword() {
       await api.post(`/admin/users/${userId}/reset-password`);
     },
     onSuccess: () => {
-      toast.success('Password reset email sent.');
+      toast.success(i18n.t('admin:users.toast.passwordReset'));
     },
     onError: () => {
-      toast.error('Failed to reset password');
+      toast.error(i18n.t('admin:users.toast.passwordResetFailed'));
     },
   });
 }
@@ -203,11 +206,11 @@ export function useResendInvitation() {
       await api.post(`/admin/users/${userId}/resend-invitation`);
     },
     onSuccess: () => {
-      toast.success('Invitation resent.');
+      toast.success(i18n.t('admin:users.toast.invitationResent'));
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
     onError: () => {
-      toast.error('Failed to resend invitation');
+      toast.error(i18n.t('admin:users.toast.invitationResendFailed'));
     },
   });
 }
@@ -249,10 +252,10 @@ export function useExportAuditLogs() {
       anchor.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
       anchor.click();
       window.URL.revokeObjectURL(url);
-      toast.success('Audit log exported');
+      toast.success(i18n.t('admin:audit.toast.exported'));
     },
     onError: () => {
-      toast.error('Failed to export audit logs');
+      toast.error(i18n.t('admin:audit.toast.exportFailed'));
     },
   });
 }
@@ -279,11 +282,11 @@ export function useUpsertMailConfig() {
       await api.put('/admin/mail/config', request);
     },
     onSuccess: () => {
-      toast.success('Mail configuration saved');
+      toast.success(i18n.t('admin:mail.toast.saved'));
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.mailConfig() });
     },
     onError: () => {
-      toast.error('Failed to save mail configuration');
+      toast.error(i18n.t('admin:mail.toast.saveFailed'));
     },
   });
 }
@@ -300,6 +303,37 @@ export function useSendTestEmail() {
         request,
       );
       return data;
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Auth Config
+// ---------------------------------------------------------------------------
+
+export function useAuthConfig() {
+  return useQuery({
+    queryKey: queryKeys.admin.authConfig(),
+    queryFn: async () => {
+      const { data } = await api.get<AuthConfig>('/admin/auth-config');
+      return data;
+    },
+  });
+}
+
+export function useUpsertAuthConfig() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: UpsertAuthConfigRequest) => {
+      await api.put('/admin/auth-config', request);
+    },
+    onSuccess: () => {
+      toast.success(i18n.t('admin:auth.toast.saved'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.authConfig() });
+    },
+    onError: () => {
+      toast.error(i18n.t('admin:auth.toast.saveFailed'));
     },
   });
 }

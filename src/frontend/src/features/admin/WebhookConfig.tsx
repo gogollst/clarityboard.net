@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import {
   useWebhookConfigs,
@@ -42,6 +43,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Loader2, Trash2, Edit, RefreshCw, ChevronRight, ChevronDown } from 'lucide-react';
 
 export function Component() {
+  const { t, i18n } = useTranslation('admin');
   const { selectedEntityId } = useEntity();
   const { data: configs, isLoading: configsLoading } =
     useWebhookConfigs(selectedEntityId);
@@ -197,11 +199,11 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Webhook Configuration"
+        title={t('webhooks.title')}
         actions={
           <Button onClick={() => setIsAddSourceOpen(true)}>
             <Plus className="mr-1 h-4 w-4" />
-            Add Source
+            {t('webhooks.addSource')}
           </Button>
         }
       />
@@ -216,7 +218,7 @@ export function Component() {
       ) : !configs || configs.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            No webhook sources configured.
+            {t('webhooks.noSources')}
           </CardContent>
         </Card>
       ) : (
@@ -249,7 +251,7 @@ export function Component() {
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">
-                          {config.isActive ? 'Active' : 'Inactive'}
+                          {config.isActive ? t('common:status.active', { ns: 'common' }) : t('common:status.inactive', { ns: 'common' })}
                         </span>
                         <Switch
                           checked={config.isActive}
@@ -263,32 +265,32 @@ export function Component() {
                 {isExpanded && (
                   <CardContent>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-medium">Mapping Rules</h4>
+                      <h4 className="text-sm font-medium">{t('webhooks.mappingRules')}</h4>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => openAddRule(config.id)}
                       >
                         <Plus className="mr-1 h-3 w-3" />
-                        Add Rule
+                        {t('webhooks.addRule')}
                       </Button>
                     </div>
 
                     {config.mappingRules.length === 0 ? (
                       <p className="text-sm text-muted-foreground">
-                        No mapping rules configured.
+                        {t('webhooks.noRules')}
                       </p>
                     ) : (
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Event Type</TableHead>
-                            <TableHead>Debit Field</TableHead>
-                            <TableHead>Credit Field</TableHead>
-                            <TableHead>Amount Field</TableHead>
-                            <TableHead>Active</TableHead>
-                            <TableHead>Actions</TableHead>
+                            <TableHead>{t('webhooks.columns.name')}</TableHead>
+                            <TableHead>{t('webhooks.columns.eventType')}</TableHead>
+                            <TableHead>{t('webhooks.columns.debitField')}</TableHead>
+                            <TableHead>{t('webhooks.columns.creditField')}</TableHead>
+                            <TableHead>{t('webhooks.columns.amountField')}</TableHead>
+                            <TableHead>{t('webhooks.columns.active')}</TableHead>
+                            <TableHead>{t('webhooks.columns.actions')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -351,26 +353,26 @@ export function Component() {
       <Separator className="my-8" />
       <Card>
         <CardHeader>
-          <CardTitle>Dead Letter Queue</CardTitle>
+          <CardTitle>{t('webhooks.deadLetterQueue.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           {dlLoading ? (
             <Skeleton className="h-40 w-full" />
           ) : deadLetterItems.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No dead letter events.
+              {t('webhooks.deadLetterQueue.noEvents')}
             </p>
           ) : (
             <>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Event Type</TableHead>
-                    <TableHead>Error</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Retries</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{t('webhooks.deadLetterQueue.columns.source')}</TableHead>
+                    <TableHead>{t('webhooks.deadLetterQueue.columns.eventType')}</TableHead>
+                    <TableHead>{t('webhooks.deadLetterQueue.columns.error')}</TableHead>
+                    <TableHead>{t('webhooks.deadLetterQueue.columns.created')}</TableHead>
+                    <TableHead>{t('webhooks.deadLetterQueue.columns.retries')}</TableHead>
+                    <TableHead>{t('webhooks.deadLetterQueue.columns.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -382,7 +384,7 @@ export function Component() {
                         {event.error}
                       </TableCell>
                       <TableCell>
-                        {new Date(event.createdAt).toLocaleDateString('de-DE')}
+                        {new Date(event.createdAt).toLocaleDateString(i18n.language)}
                       </TableCell>
                       <TableCell>{event.retryCount}</TableCell>
                       <TableCell>
@@ -393,7 +395,7 @@ export function Component() {
                           disabled={retryDeadLetter.isPending}
                         >
                           <RefreshCw className="mr-1 h-3 w-3" />
-                          Retry
+                          {t('webhooks.deadLetterQueue.retry')}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -410,10 +412,10 @@ export function Component() {
                     disabled={dlPage <= 1}
                     onClick={() => setDlPage((p) => p - 1)}
                   >
-                    Previous
+                    {t('webhooks.pagination.previous')}
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    Page {dlPage}
+                    {t('webhooks.pagination.page', { page: dlPage })}
                   </span>
                   <Button
                     variant="outline"
@@ -421,7 +423,7 @@ export function Component() {
                     disabled={dlPage * dlPageSize >= deadLetterTotal}
                     onClick={() => setDlPage((p) => p + 1)}
                   >
-                    Next
+                    {t('webhooks.pagination.next')}
                   </Button>
                 </div>
               )}
@@ -434,21 +436,21 @@ export function Component() {
       <Dialog open={isAddSourceOpen} onOpenChange={setIsAddSourceOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Webhook Source</DialogTitle>
+            <DialogTitle>{t('webhooks.dialogs.addSource.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Source Name</Label>
+              <Label>{t('webhooks.dialogs.addSource.sourceName')}</Label>
               <Input
                 value={sourceForm.name}
                 onChange={(e) =>
                   setSourceForm((f) => ({ ...f, name: e.target.value }))
                 }
-                placeholder="e.g. Stripe Payments"
+                placeholder={t('webhooks.dialogs.addSource.sourceNamePlaceholder')}
               />
             </div>
             <div>
-              <Label>Source Type</Label>
+              <Label>{t('webhooks.dialogs.addSource.sourceType')}</Label>
               <Input
                 value={sourceForm.sourceType}
                 onChange={(e) =>
@@ -457,7 +459,7 @@ export function Component() {
                     sourceType: e.target.value,
                   }))
                 }
-                placeholder="e.g. stripe, shopify, custom"
+                placeholder={t('webhooks.dialogs.addSource.sourceTypePlaceholder')}
               />
             </div>
           </div>
@@ -466,7 +468,7 @@ export function Component() {
               variant="outline"
               onClick={() => setIsAddSourceOpen(false)}
             >
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button
               onClick={handleCreateSource}
@@ -475,7 +477,7 @@ export function Component() {
               {createConfig.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Create
+              {t('webhooks.dialogs.addSource.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -485,31 +487,31 @@ export function Component() {
       <Dialog open={isAddRuleOpen} onOpenChange={setIsAddRuleOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Mapping Rule</DialogTitle>
+            <DialogTitle>{t('webhooks.dialogs.addRule.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Rule Name</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.ruleName')}</Label>
               <Input
                 value={ruleForm.name}
                 onChange={(e) =>
                   setRuleForm((f) => ({ ...f, name: e.target.value }))
                 }
-                placeholder="e.g. Payment Received"
+                placeholder={t('webhooks.dialogs.ruleForm.ruleNamePlaceholder')}
               />
             </div>
             <div>
-              <Label>Event Type</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.eventType')}</Label>
               <Input
                 value={ruleForm.eventType}
                 onChange={(e) =>
                   setRuleForm((f) => ({ ...f, eventType: e.target.value }))
                 }
-                placeholder="e.g. payment_intent.succeeded"
+                placeholder={t('webhooks.dialogs.ruleForm.eventTypePlaceholder')}
               />
             </div>
             <div>
-              <Label>Debit Account Field</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.debitAccountField')}</Label>
               <Input
                 value={ruleForm.debitAccountField}
                 onChange={(e) =>
@@ -518,11 +520,11 @@ export function Component() {
                     debitAccountField: e.target.value,
                   }))
                 }
-                placeholder="e.g. data.metadata.debit_account"
+                placeholder={t('webhooks.dialogs.ruleForm.debitAccountFieldPlaceholder')}
               />
             </div>
             <div>
-              <Label>Credit Account Field</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.creditAccountField')}</Label>
               <Input
                 value={ruleForm.creditAccountField}
                 onChange={(e) =>
@@ -531,11 +533,11 @@ export function Component() {
                     creditAccountField: e.target.value,
                   }))
                 }
-                placeholder="e.g. data.metadata.credit_account"
+                placeholder={t('webhooks.dialogs.ruleForm.creditAccountFieldPlaceholder')}
               />
             </div>
             <div>
-              <Label>Amount Field</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.amountField')}</Label>
               <Input
                 value={ruleForm.amountField}
                 onChange={(e) =>
@@ -544,11 +546,11 @@ export function Component() {
                     amountField: e.target.value,
                   }))
                 }
-                placeholder="e.g. data.amount"
+                placeholder={t('webhooks.dialogs.ruleForm.amountFieldPlaceholder')}
               />
             </div>
             <div>
-              <Label>Description Field</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.descriptionField')}</Label>
               <Input
                 value={ruleForm.descriptionField}
                 onChange={(e) =>
@@ -557,7 +559,7 @@ export function Component() {
                     descriptionField: e.target.value,
                   }))
                 }
-                placeholder="e.g. data.description"
+                placeholder={t('webhooks.dialogs.ruleForm.descriptionFieldPlaceholder')}
               />
             </div>
           </div>
@@ -566,7 +568,7 @@ export function Component() {
               variant="outline"
               onClick={() => setIsAddRuleOpen(false)}
             >
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button
               onClick={handleCreateRule}
@@ -575,7 +577,7 @@ export function Component() {
               {createRule.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Create Rule
+              {t('webhooks.dialogs.addRule.createButton')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -585,11 +587,11 @@ export function Component() {
       <Dialog open={isEditRuleOpen} onOpenChange={setIsEditRuleOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Mapping Rule</DialogTitle>
+            <DialogTitle>{t('webhooks.dialogs.editRule.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Rule Name</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.ruleName')}</Label>
               <Input
                 value={ruleForm.name}
                 onChange={(e) =>
@@ -598,7 +600,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Event Type</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.eventType')}</Label>
               <Input
                 value={ruleForm.eventType}
                 onChange={(e) =>
@@ -607,7 +609,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Debit Account Field</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.debitAccountField')}</Label>
               <Input
                 value={ruleForm.debitAccountField}
                 onChange={(e) =>
@@ -619,7 +621,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Credit Account Field</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.creditAccountField')}</Label>
               <Input
                 value={ruleForm.creditAccountField}
                 onChange={(e) =>
@@ -631,7 +633,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Amount Field</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.amountField')}</Label>
               <Input
                 value={ruleForm.amountField}
                 onChange={(e) =>
@@ -643,7 +645,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Description Field</Label>
+              <Label>{t('webhooks.dialogs.ruleForm.descriptionField')}</Label>
               <Input
                 value={ruleForm.descriptionField}
                 onChange={(e) =>
@@ -660,7 +662,7 @@ export function Component() {
               variant="outline"
               onClick={() => setIsEditRuleOpen(false)}
             >
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button
               onClick={handleUpdateRule}
@@ -669,7 +671,7 @@ export function Component() {
               {updateRule.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Save Changes
+              {t('webhooks.dialogs.editRule.saveButton')}
             </Button>
           </DialogFooter>
         </DialogContent>

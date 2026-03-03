@@ -1,1 +1,366 @@
-{}
+{
+  "users": {
+    "title": "Управление пользователями",
+    "addUser": "Добавить пользователя",
+    "searchPlaceholder": "Поиск пользователей...",
+    "noUsers": "Пользователи не найдены.",
+    "columns": {
+      "name": "Имя",
+      "email": "E-mail",
+      "role": "Роль",
+      "entities": "Организации",
+      "twoFa": "2FA",
+      "status": "Статус",
+      "lastLogin": "Последний вход",
+      "actions": "Действия"
+    },
+    "noRole": "Нет роли",
+    "noEntities": "Нет",
+    "neverLoggedIn": "Никогда",
+    "tooltips": {
+      "edit": "Редактировать",
+      "resendInvitation": "Повторить приглашение",
+      "resetPassword": "Сбросить пароль",
+      "deactivate": "Деактивировать",
+      "reactivate": "Реактивировать"
+    },
+    "dialogs": {
+      "addUser": {
+        "title": "Добавить пользователя",
+        "firstName": "Имя",
+        "firstNamePlaceholder": "Имя",
+        "lastName": "Фамилия",
+        "lastNamePlaceholder": "Фамилия",
+        "email": "E-mail",
+        "role": "Роль",
+        "roleSelectPlaceholder": "Выберите роль",
+        "entities": "Организации",
+        "noEntities": "Нет доступных организаций.",
+        "createUser": "Создать пользователя",
+        "errorFallback": "Не удалось создать пользователя"
+      },
+      "editUser": {
+        "title": "Редактировать пользователя",
+        "email": "E-mail",
+        "roles": "Роли",
+        "noRoles": "Роли не назначены.",
+        "rolePlaceholder": "Роль",
+        "entityPlaceholder": "Организация",
+        "saveChanges": "Сохранить изменения",
+        "errorFallback": "Не удалось обновить пользователя"
+      },
+      "confirmDeactivate": {
+        "title": "Подтверждение деактивации",
+        "message": "Вы уверены, что хотите деактивировать этого пользователя? Он больше не сможет войти в систему.",
+        "confirm": "Деактивировать"
+      }
+    },
+    "validation": {
+      "required": "Обязательное поле"
+    },
+    "toast": {
+      "created": "Пользователь создан. Приглашение отправлено на e-mail.",
+      "createFailed": "Не удалось создать пользователя",
+      "updated": "Пользователь обновлён",
+      "updateFailed": "Не удалось обновить пользователя",
+      "deactivated": "Пользователь деактивирован",
+      "deactivateFailed": "Не удалось деактивировать пользователя",
+      "reactivated": "Пользователь реактивирован",
+      "reactivateFailed": "Не удалось реактивировать пользователя",
+      "passwordReset": "Письмо для сброса пароля отправлено.",
+      "passwordResetFailed": "Не удалось сбросить пароль",
+      "invitationResent": "Приглашение повторно отправлено.",
+      "invitationResendFailed": "Не удалось повторно отправить приглашение",
+      "roleAssigned": "Роль назначена",
+      "roleAssignFailed": "Не удалось назначить роль",
+      "roleRemoved": "Роль удалена",
+      "roleRemoveFailed": "Не удалось удалить роль"
+    }
+  },
+  "entities": {
+    "title": "Настройка организаций",
+    "description": "Просмотр и управление юридическими лицами",
+    "addEntity": "Добавить организацию",
+    "noEntities": {
+      "heading": "Нет организаций",
+      "description": "Юридические лица ещё не настроены. Создайте первое, чтобы начать.",
+      "createFirst": "Создать первое юридическое лицо"
+    },
+    "dialogs": {
+      "create": {
+        "title": "Создать юридическое лицо",
+        "createButton": "Создать организацию"
+      },
+      "edit": {
+        "title": "Редактировать юридическое лицо",
+        "saveButton": "Сохранить изменения"
+      }
+    },
+    "form": {
+      "sections": {
+        "companyInfo": "Информация о компании",
+        "address": "Адрес",
+        "taxRegistration": "Налоги и регистрация",
+        "accounting": "Бухгалтерский учёт",
+        "datev": "Интеграция DATEV",
+        "hierarchy": "Иерархия"
+      },
+      "fields": {
+        "companyName": "Название компании *",
+        "companyNamePlaceholder": "ООО «Пример»",
+        "legalForm": "Организационно-правовая форма *",
+        "legalFormPlaceholder": "Выберите правовую форму",
+        "managingDirector": "Генеральный директор",
+        "managingDirectorPlaceholder": "Не указан",
+        "street": "Улица *",
+        "streetPlaceholder": "ул. Примерная, 1",
+        "postalCode": "Почтовый индекс *",
+        "postalCodePlaceholder": "10115",
+        "city": "Город *",
+        "cityPlaceholder": "Берлин",
+        "country": "Страна",
+        "taxId": "Налоговый номер (Steuernummer)",
+        "taxIdPlaceholder": "27/123/45678",
+        "vatId": "Номер плательщика НДС (USt-IdNr.)",
+        "vatIdPlaceholder": "DE123456789",
+        "registrationNumber": "Регистрационный номер (Handelsregister)",
+        "registrationNumberPlaceholder": "HRB 12345 B",
+        "chartOfAccounts": "План счетов *",
+        "currency": "Валюта",
+        "currencyPlaceholder": "EUR",
+        "fiscalYearStart": "Начало финансового года",
+        "datevClientNumber": "Номер клиента (Mandantennr.)",
+        "datevClientNumberPlaceholder": "12345",
+        "datevConsultantNumber": "Номер консультанта (Beraternr.)",
+        "datevConsultantNumberPlaceholder": "67890",
+        "parentEntity": "Вышестоящая организация",
+        "parentEntityPlaceholder": "Нет (верхний уровень)"
+      }
+    },
+    "card": {
+      "legalForm": "Правовая форма",
+      "managingDirector": "Генеральный директор",
+      "currency": "Валюта",
+      "chartOfAccounts": "План счетов",
+      "taxId": "Налоговый номер",
+      "vatId": "Номер плательщика НДС",
+      "registration": "Регистрация",
+      "fiscalYearStart": "Начало финансового года",
+      "datevClientNr": "Номер клиента DATEV",
+      "datevConsultantNr": "Номер консультанта DATEV",
+      "parentEntity": "Вышестоящая организация",
+      "edit": "Редактировать",
+      "deactivate": "Деактивировать",
+      "reactivate": "Реактивировать"
+    },
+    "months": {
+      "1": "Январь",
+      "2": "Февраль",
+      "3": "Март",
+      "4": "Апрель",
+      "5": "Май",
+      "6": "Июнь",
+      "7": "Июль",
+      "8": "Август",
+      "9": "Сентябрь",
+      "10": "Октябрь",
+      "11": "Ноябрь",
+      "12": "Декабрь"
+    }
+  },
+  "webhooks": {
+    "title": "Настройка вебхуков",
+    "addSource": "Добавить источник",
+    "noSources": "Источники вебхуков не настроены.",
+    "mappingRules": "Правила сопоставления",
+    "addRule": "Добавить правило",
+    "noRules": "Правила сопоставления не настроены.",
+    "deadLetterQueue": {
+      "title": "Очередь недоставленных сообщений",
+      "noEvents": "Недоставленных событий нет.",
+      "columns": {
+        "source": "Источник",
+        "eventType": "Тип события",
+        "error": "Ошибка",
+        "created": "Создано",
+        "retries": "Повторы",
+        "actions": "Действия"
+      },
+      "retry": "Повторить"
+    },
+    "columns": {
+      "name": "Название",
+      "eventType": "Тип события",
+      "debitField": "Поле дебета",
+      "creditField": "Поле кредита",
+      "amountField": "Поле суммы",
+      "active": "Активно",
+      "actions": "Действия"
+    },
+    "dialogs": {
+      "addSource": {
+        "title": "Добавить источник вебхука",
+        "sourceName": "Название источника",
+        "sourceNamePlaceholder": "напр. Stripe Payments",
+        "sourceType": "Тип источника",
+        "sourceTypePlaceholder": "напр. stripe, shopify, custom",
+        "create": "Создать"
+      },
+      "addRule": {
+        "title": "Добавить правило сопоставления",
+        "createButton": "Создать правило"
+      },
+      "editRule": {
+        "title": "Редактировать правило сопоставления",
+        "saveButton": "Сохранить изменения"
+      },
+      "ruleForm": {
+        "ruleName": "Название правила",
+        "ruleNamePlaceholder": "напр. Получен платёж",
+        "eventType": "Тип события",
+        "eventTypePlaceholder": "напр. payment_intent.succeeded",
+        "debitAccountField": "Поле счёта дебета",
+        "debitAccountFieldPlaceholder": "напр. data.metadata.debit_account",
+        "creditAccountField": "Поле счёта кредита",
+        "creditAccountFieldPlaceholder": "напр. data.metadata.credit_account",
+        "amountField": "Поле суммы",
+        "amountFieldPlaceholder": "напр. data.amount",
+        "descriptionField": "Поле описания",
+        "descriptionFieldPlaceholder": "напр. data.description"
+      }
+    },
+    "pagination": {
+      "previous": "Назад",
+      "next": "Вперёд",
+      "page": "Страница {{page}}"
+    }
+  },
+  "audit": {
+    "title": "Журнал аудита",
+    "exportCsv": "Экспорт CSV",
+    "filters": {
+      "searchByUser": "Поиск по пользователю...",
+      "actionType": "Тип действия",
+      "allActions": "Все действия",
+      "from": "С",
+      "to": "По"
+    },
+    "columns": {
+      "timestamp": "Временная метка",
+      "user": "Пользователь",
+      "action": "Действие",
+      "entityType": "Тип объекта",
+      "entityId": "ID объекта",
+      "ipAddress": "IP-адрес",
+      "details": "Детали"
+    },
+    "noEntries": "Записи журнала аудита не найдены.",
+    "toast": {
+      "exported": "Журнал аудита экспортирован",
+      "exportFailed": "Не удалось экспортировать журнал аудита"
+    }
+  },
+  "mail": {
+    "title": "Настройка почты",
+    "description": "Настройте SMTP-сервер для отправки писем (приглашения, сброс пароля, уведомления).",
+    "currentConfig": {
+      "title": "Текущая конфигурация",
+      "lastUpdated": "Последнее обновление: {{date}}",
+      "fields": {
+        "host": "Сервер",
+        "username": "Имя пользователя",
+        "from": "Отправитель",
+        "sslTls": "SSL/TLS"
+      }
+    },
+    "form": {
+      "updateTitle": "Обновить настройки SMTP",
+      "createTitle": "Настроить SMTP-сервер",
+      "updateDescription": "Обновите конфигурацию SMTP. Для сохранения необходимо повторно ввести пароль.",
+      "createDescription": "Введите данные SMTP-сервера для активации отправки писем.",
+      "fields": {
+        "smtpHost": "SMTP-сервер *",
+        "smtpHostPlaceholder": "smtp.example.com",
+        "port": "Порт *",
+        "portPlaceholder": "587",
+        "username": "Имя пользователя *",
+        "usernamePlaceholder": "ваш-smtp-логин",
+        "password": "Пароль *",
+        "passwordPlaceholder": "Введите SMTP-пароль",
+        "passwordExistingPlaceholder": "••••••••",
+        "passwordHint": "Пароль обязателен для сохранения — хранится в зашифрованном виде и больше не отображается.",
+        "fromEmail": "E-mail отправителя *",
+        "fromEmailPlaceholder": "noreply@example.com",
+        "fromName": "Имя отправителя *",
+        "fromNamePlaceholder": "ClarityBoard",
+        "enableSsl": "Включить SSL/TLS",
+        "enableSslHint": "Рекомендуется для большинства SMTP-провайдеров (порт 465 или STARTTLS на 587)."
+      },
+      "saveConfig": "Сохранить конфигурацию",
+      "saveChanges": "Сохранить изменения",
+      "test": "Тест",
+      "validation": {
+        "hostRequired": "Сервер обязателен",
+        "hostTooLong": "Сервер не должен превышать 500 символов",
+        "portRange": "Порт должен быть от 1 до 65535",
+        "usernameRequired": "Имя пользователя обязательно",
+        "usernameTooLong": "Имя пользователя не должно превышать 500 символов",
+        "passwordRequired": "Пароль обязателен",
+        "fromEmailInvalid": "Необходимо указать действительный e-mail",
+        "fromEmailTooLong": "E-mail отправителя не должен превышать 256 символов",
+        "fromNameRequired": "Имя отправителя обязательно",
+        "fromNameTooLong": "Имя отправителя не должно превышать 256 символов"
+      }
+    },
+    "testDialog": {
+      "title": "Отправить тестовое письмо",
+      "description": "Проверьте конфигурацию SMTP, отправив тестовое письмо с использованием текущих значений формы.",
+      "fields": {
+        "host": "Сервер",
+        "username": "Имя пользователя",
+        "from": "Отправитель",
+        "sslTls": "SSL/TLS"
+      },
+      "passwordMissingWarning": "Введите пароль SMTP в форме, чтобы отправить тестовое письмо.",
+      "sendTo": "Получатель",
+      "sendToPlaceholder": "admin@example.com",
+      "resultSuccess": "Тестовое письмо успешно отправлено!",
+      "resultFailed": "Ошибка: {{error}}",
+      "sendButton": "Отправить тестовое письмо",
+      "close": "Закрыть",
+      "enabled": "Включено",
+      "disabled": "Отключено"
+    },
+    "toast": {
+      "saved": "Конфигурация почты сохранена",
+      "saveFailed": "Не удалось сохранить конфигурацию почты"
+    }
+  },
+  "auth": {
+    "title": "Настройки аутентификации",
+    "description": "Настройте время жизни токенов для сессий и функции «Запомнить меня»",
+    "tokenLifetimes": {
+      "title": "Время жизни токенов",
+      "description": "Управляет продолжительностью сессии пользователя до повторной аутентификации.",
+      "sessionToken": {
+        "label": "Время жизни токена сессии (часы)",
+        "hint": "Стандартный вход без «Запомнить меня». Диапазон: 1–168 ч (7 дней)."
+      },
+      "rememberMeToken": {
+        "label": "Время жизни токена «Запомнить меня» (дни)",
+        "hint": "Время жизни токена при включённом «Запомнить меня». Диапазон: 1–365 дней."
+      }
+    },
+    "saveSettings": "Сохранить настройки",
+    "validation": {
+      "minHour": "Минимум 1 час",
+      "maxHours": "Максимум 168 часов (7 дней)",
+      "minDay": "Минимум 1 день",
+      "maxDays": "Максимум 365 дней"
+    },
+    "toast": {
+      "saved": "Конфигурация аутентификации сохранена",
+      "saveFailed": "Не удалось сохранить конфигурацию аутентификации"
+    }
+  }
+}

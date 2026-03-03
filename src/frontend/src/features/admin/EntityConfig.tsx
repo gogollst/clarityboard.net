@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntities, useCreateEntity, useUpdateEntity, useSetEntityActive } from '@/hooks/useEntity';
 import { useUsers } from '@/hooks/useAdmin';
 import type { LegalEntity } from '@/types/entity';
@@ -83,20 +84,7 @@ const COUNTRIES = [
   { value: 'US', label: 'USA' },
 ];
 
-const MONTHS = [
-  { value: '1', label: 'January' },
-  { value: '2', label: 'February' },
-  { value: '3', label: 'March' },
-  { value: '4', label: 'April' },
-  { value: '5', label: 'May' },
-  { value: '6', label: 'June' },
-  { value: '7', label: 'July' },
-  { value: '8', label: 'August' },
-  { value: '9', label: 'September' },
-  { value: '10', label: 'October' },
-  { value: '11', label: 'November' },
-  { value: '12', label: 'December' },
-];
+const MONTH_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'] as const;
 
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -120,6 +108,7 @@ function DetailRow({ label, value }: { label: string; value: string | null | und
 }
 
 export function Component() {
+  const { t } = useTranslation('admin');
   const { data: entities, isLoading } = useEntities();
   const { data: usersData } = useUsers();
   const createEntity = useCreateEntity();
@@ -217,12 +206,12 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Entity Configuration"
-        description="View and manage legal entities"
+        title={t('entities.title')}
+        description={t('entities.description')}
         actions={
           <Button onClick={() => { resetForm(); setIsAddOpen(true); }}>
             <Plus className="mr-1 h-4 w-4" />
-            Add Entity
+            {t('entities.addEntity')}
           </Button>
         }
       />
@@ -249,13 +238,13 @@ export function Component() {
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
             <Building2 className="h-7 w-7 text-muted-foreground" />
           </div>
-          <h3 className="mt-4 text-lg font-semibold">No Entities</h3>
+          <h3 className="mt-4 text-lg font-semibold">{t('entities.noEntities.heading')}</h3>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            No legal entities have been configured yet. Create one to get started.
+            {t('entities.noEntities.description')}
           </p>
           <Button className="mt-4" onClick={() => { resetForm(); setIsAddOpen(true); }}>
             <Plus className="mr-1 h-4 w-4" />
-            Create First Entity
+            {t('entities.noEntities.createFirst')}
           </Button>
         </div>
       ) : (
@@ -277,7 +266,7 @@ export function Component() {
       <Dialog open={!!editingEntity} onOpenChange={(open) => { if (!open) { setEditingEntity(null); resetForm(); } }}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Legal Entity</DialogTitle>
+            <DialogTitle>{t('entities.dialogs.edit.title')}</DialogTitle>
           </DialogHeader>
           <EntityFormFields
             form={form}
@@ -288,11 +277,11 @@ export function Component() {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => { setEditingEntity(null); resetForm(); }}>
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button onClick={handleEdit} disabled={updateEntity.isPending || !canSubmit}>
               {updateEntity.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-              Save Changes
+              {t('entities.dialogs.edit.saveButton')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -302,7 +291,7 @@ export function Component() {
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Legal Entity</DialogTitle>
+            <DialogTitle>{t('entities.dialogs.create.title')}</DialogTitle>
           </DialogHeader>
           <EntityFormFields
             form={form}
@@ -312,11 +301,11 @@ export function Component() {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button onClick={handleCreate} disabled={createEntity.isPending || !canSubmit}>
               {createEntity.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-              Create Entity
+              {t('entities.dialogs.create.createButton')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -334,19 +323,20 @@ interface EntityFormFieldsProps {
 }
 
 function EntityFormFields({ form, updateField, entities, users, excludeEntityId }: EntityFormFieldsProps) {
+  const { t } = useTranslation('admin');
   const availableParents = entities.filter((e) => e.id !== excludeEntityId);
   return (
     <div className="space-y-6">
-      <FieldGroup label="Company Information">
+      <FieldGroup label={t('entities.form.sections.companyInfo')}>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2 sm:col-span-1">
-            <Label>Company Name *</Label>
-            <Input value={form.name} onChange={(e) => updateField('name', e.target.value)} placeholder="Muster GmbH" />
+            <Label>{t('entities.form.fields.companyName')}</Label>
+            <Input value={form.name} onChange={(e) => updateField('name', e.target.value)} placeholder={t('entities.form.fields.companyNamePlaceholder')} />
           </div>
           <div>
-            <Label>Legal Form *</Label>
+            <Label>{t('entities.form.fields.legalForm')}</Label>
             <Select value={form.legalForm} onValueChange={(v) => updateField('legalForm', v)}>
-              <SelectTrigger><SelectValue placeholder="Select legal form" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t('entities.form.fields.legalFormPlaceholder')} /></SelectTrigger>
               <SelectContent>
                 {LEGAL_FORMS.map((lf) => <SelectItem key={lf} value={lf}>{lf}</SelectItem>)}
               </SelectContent>
@@ -354,9 +344,9 @@ function EntityFormFields({ form, updateField, entities, users, excludeEntityId 
           </div>
         </div>
         <div>
-          <Label>Managing Director</Label>
+          <Label>{t('entities.form.fields.managingDirector')}</Label>
           <Select value={form.managingDirectorId} onValueChange={(v) => updateField('managingDirectorId', v)}>
-            <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t('entities.form.fields.managingDirectorPlaceholder')} /></SelectTrigger>
             <SelectContent>
               {users.map((u) => (
                 <SelectItem key={u.id} value={u.id}>{u.firstName} {u.lastName}</SelectItem>
@@ -366,22 +356,22 @@ function EntityFormFields({ form, updateField, entities, users, excludeEntityId 
         </div>
       </FieldGroup>
       <Separator />
-      <FieldGroup label="Address">
+      <FieldGroup label={t('entities.form.sections.address')}>
         <div>
-          <Label>Street *</Label>
-          <Input value={form.street} onChange={(e) => updateField('street', e.target.value)} placeholder="Musterstraße 1" />
+          <Label>{t('entities.form.fields.street')}</Label>
+          <Input value={form.street} onChange={(e) => updateField('street', e.target.value)} placeholder={t('entities.form.fields.streetPlaceholder')} />
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <Label>Postal Code *</Label>
-            <Input value={form.postalCode} onChange={(e) => updateField('postalCode', e.target.value)} placeholder="10115" />
+            <Label>{t('entities.form.fields.postalCode')}</Label>
+            <Input value={form.postalCode} onChange={(e) => updateField('postalCode', e.target.value)} placeholder={t('entities.form.fields.postalCodePlaceholder')} />
           </div>
           <div>
-            <Label>City *</Label>
-            <Input value={form.city} onChange={(e) => updateField('city', e.target.value)} placeholder="Berlin" />
+            <Label>{t('entities.form.fields.city')}</Label>
+            <Input value={form.city} onChange={(e) => updateField('city', e.target.value)} placeholder={t('entities.form.fields.cityPlaceholder')} />
           </div>
           <div>
-            <Label>Country</Label>
+            <Label>{t('entities.form.fields.country')}</Label>
             <Select value={form.country} onValueChange={(v) => updateField('country', v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -392,27 +382,27 @@ function EntityFormFields({ form, updateField, entities, users, excludeEntityId 
         </div>
       </FieldGroup>
       <Separator />
-      <FieldGroup label="Tax & Registration">
+      <FieldGroup label={t('entities.form.sections.taxRegistration')}>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Tax ID (Steuernummer)</Label>
-            <Input value={form.taxId} onChange={(e) => updateField('taxId', e.target.value)} placeholder="27/123/45678" />
+            <Label>{t('entities.form.fields.taxId')}</Label>
+            <Input value={form.taxId} onChange={(e) => updateField('taxId', e.target.value)} placeholder={t('entities.form.fields.taxIdPlaceholder')} />
           </div>
           <div>
-            <Label>VAT ID (USt-IdNr.)</Label>
-            <Input value={form.vatId} onChange={(e) => updateField('vatId', e.target.value)} placeholder="DE123456789" />
+            <Label>{t('entities.form.fields.vatId')}</Label>
+            <Input value={form.vatId} onChange={(e) => updateField('vatId', e.target.value)} placeholder={t('entities.form.fields.vatIdPlaceholder')} />
           </div>
         </div>
         <div>
-          <Label>Registration Number (Handelsregister)</Label>
-          <Input value={form.registrationNumber} onChange={(e) => updateField('registrationNumber', e.target.value)} placeholder="HRB 12345 B" />
+          <Label>{t('entities.form.fields.registrationNumber')}</Label>
+          <Input value={form.registrationNumber} onChange={(e) => updateField('registrationNumber', e.target.value)} placeholder={t('entities.form.fields.registrationNumberPlaceholder')} />
         </div>
       </FieldGroup>
       <Separator />
-      <FieldGroup label="Accounting">
+      <FieldGroup label={t('entities.form.sections.accounting')}>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <Label>Chart of Accounts *</Label>
+            <Label>{t('entities.form.fields.chartOfAccounts')}</Label>
             <Select value={form.chartOfAccounts} onValueChange={(v) => updateField('chartOfAccounts', v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -422,41 +412,43 @@ function EntityFormFields({ form, updateField, entities, users, excludeEntityId 
             </Select>
           </div>
           <div>
-            <Label>Currency</Label>
-            <Input value={form.currency} onChange={(e) => updateField('currency', e.target.value)} placeholder="EUR" />
+            <Label>{t('entities.form.fields.currency')}</Label>
+            <Input value={form.currency} onChange={(e) => updateField('currency', e.target.value)} placeholder={t('entities.form.fields.currencyPlaceholder')} />
           </div>
           <div>
-            <Label>Fiscal Year Start</Label>
+            <Label>{t('entities.form.fields.fiscalYearStart')}</Label>
             <Select value={form.fiscalYearStartMonth} onValueChange={(v) => updateField('fiscalYearStartMonth', v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {MONTHS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                {MONTH_KEYS.map((key) => (
+                  <SelectItem key={key} value={key}>{t(`entities.months.${key}`)}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
       </FieldGroup>
       <Separator />
-      <FieldGroup label="DATEV Integration">
+      <FieldGroup label={t('entities.form.sections.datev')}>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Client Number (Mandantennr.)</Label>
-            <Input value={form.datevClientNumber} onChange={(e) => updateField('datevClientNumber', e.target.value)} placeholder="12345" />
+            <Label>{t('entities.form.fields.datevClientNumber')}</Label>
+            <Input value={form.datevClientNumber} onChange={(e) => updateField('datevClientNumber', e.target.value)} placeholder={t('entities.form.fields.datevClientNumberPlaceholder')} />
           </div>
           <div>
-            <Label>Consultant Number (Beraternr.)</Label>
-            <Input value={form.datevConsultantNumber} onChange={(e) => updateField('datevConsultantNumber', e.target.value)} placeholder="67890" />
+            <Label>{t('entities.form.fields.datevConsultantNumber')}</Label>
+            <Input value={form.datevConsultantNumber} onChange={(e) => updateField('datevConsultantNumber', e.target.value)} placeholder={t('entities.form.fields.datevConsultantNumberPlaceholder')} />
           </div>
         </div>
       </FieldGroup>
       {availableParents.length > 0 && (
         <>
           <Separator />
-          <FieldGroup label="Hierarchy">
+          <FieldGroup label={t('entities.form.sections.hierarchy')}>
             <div>
-              <Label>Parent Entity</Label>
+              <Label>{t('entities.form.fields.parentEntity')}</Label>
               <Select value={form.parentEntityId} onValueChange={(v) => updateField('parentEntityId', v)}>
-                <SelectTrigger><SelectValue placeholder="None (top-level entity)" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t('entities.form.fields.parentEntityPlaceholder')} /></SelectTrigger>
                 <SelectContent>
                   {availableParents.map((e) => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
                 </SelectContent>
@@ -482,11 +474,13 @@ function EntityCard({
   onToggleActive: (entity: LegalEntity) => void;
   isTogglingActive: boolean;
 }) {
+  const { t } = useTranslation('admin');
   const parentName = entity.parentEntityId
     ? allEntities.find((e) => e.id === entity.parentEntityId)?.name ?? 'Unknown'
     : null;
 
-  const monthName = MONTHS.find((m) => m.value === String(entity.fiscalYearStartMonth))?.label;
+  const monthKey = String(entity.fiscalYearStartMonth) as typeof MONTH_KEYS[number];
+  const monthName = MONTH_KEYS.includes(monthKey) ? t(`entities.months.${monthKey}`) : undefined;
 
   return (
     <Card>
@@ -503,7 +497,7 @@ function EntityCard({
             />
             <Button size="sm" variant="outline" onClick={() => onEdit(entity)}>
               <Pencil className="h-3.5 w-3.5 mr-1" />
-              Edit
+              {t('entities.card.edit')}
             </Button>
             <Button
               size="sm"
@@ -514,9 +508,9 @@ function EntityCard({
               {isTogglingActive ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : entity.isActive ? (
-                <><PowerOff className="h-3.5 w-3.5 mr-1" />Deactivate</>
+                <><PowerOff className="h-3.5 w-3.5 mr-1" />{t('entities.card.deactivate')}</>
               ) : (
-                <><Power className="h-3.5 w-3.5 mr-1" />Reactivate</>
+                <><Power className="h-3.5 w-3.5 mr-1" />{t('entities.card.reactivate')}</>
               )}
             </Button>
           </div>
@@ -525,10 +519,10 @@ function EntityCard({
       <CardContent className="space-y-4">
         {/* Company Info */}
         <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3 lg:grid-cols-4">
-          <DetailRow label="Legal Form" value={entity.legalForm} />
-          <DetailRow label="Managing Director" value={entity.managingDirectorName} />
-          <DetailRow label="Currency" value={entity.currency} />
-          <DetailRow label="Chart of Accounts" value={entity.chartOfAccounts} />
+          <DetailRow label={t('entities.card.legalForm')} value={entity.legalForm} />
+          <DetailRow label={t('entities.card.managingDirector')} value={entity.managingDirectorName} />
+          <DetailRow label={t('entities.card.currency')} value={entity.currency} />
+          <DetailRow label={t('entities.card.chartOfAccounts')} value={entity.chartOfAccounts} />
         </div>
 
         <Separator />
@@ -544,9 +538,9 @@ function EntityCard({
           <>
             <Separator />
             <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
-              <DetailRow label="Tax ID" value={entity.taxId} />
-              <DetailRow label="VAT ID" value={entity.vatId} />
-              <DetailRow label="Registration" value={entity.registrationNumber} />
+              <DetailRow label={t('entities.card.taxId')} value={entity.taxId} />
+              <DetailRow label={t('entities.card.vatId')} value={entity.vatId} />
+              <DetailRow label={t('entities.card.registration')} value={entity.registrationNumber} />
             </div>
           </>
         )}
@@ -554,15 +548,15 @@ function EntityCard({
         {/* Accounting */}
         <Separator />
         <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-          <DetailRow label="Fiscal Year Start" value={monthName} />
+          <DetailRow label={t('entities.card.fiscalYearStart')} value={monthName} />
           {entity.datevClientNumber && (
-            <DetailRow label="DATEV Client Nr." value={entity.datevClientNumber} />
+            <DetailRow label={t('entities.card.datevClientNr')} value={entity.datevClientNumber} />
           )}
           {entity.datevConsultantNumber && (
-            <DetailRow label="DATEV Consultant Nr." value={entity.datevConsultantNumber} />
+            <DetailRow label={t('entities.card.datevConsultantNr')} value={entity.datevConsultantNumber} />
           )}
           {parentName && (
-            <DetailRow label="Parent Entity" value={parentName} />
+            <DetailRow label={t('entities.card.parentEntity')} value={parentName} />
           )}
         </div>
       </CardContent>
