@@ -579,6 +579,25 @@ export function useDeleteDocument(employeeId: string) {
   });
 }
 
+export function useUploadDocument(employeeId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const { data } = await api.post(
+        `/hr/employees/${employeeId}/documents`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Dokument hochgeladen');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.documents(employeeId) });
+    },
+    onError: () => toast.error('Fehler beim Hochladen'),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // DSGVO / Deletion Requests
 // ---------------------------------------------------------------------------

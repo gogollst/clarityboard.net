@@ -1,10 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { useEmployeeDocuments, useDeleteDocument, useEmployee } from '@/hooks/useHr';
+import { useEmployeeDocuments, useDeleteDocument, useEmployee, useUploadDocument } from '@/hooks/useHr';
 import { api } from '@/lib/api';
 import PageHeader from '@/components/shared/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -23,7 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Download, Trash2, Lock } from 'lucide-react';
+import { Download, Trash2, Lock, Upload } from 'lucide-react';
 import type { EmployeeDocument } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
@@ -96,9 +105,17 @@ export function Component() {
   const { employeeId } = useParams<{ employeeId: string }>();
   const [deleteTarget, setDeleteTarget] = useState<EmployeeDocument | null>(null);
 
+  // Upload state
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [uploadType, setUploadType] = useState('other');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { data: employee } = useEmployee(employeeId ?? '');
   const { data: documents, isLoading, isError } = useEmployeeDocuments(employeeId ?? '');
   const deleteDoc = useDeleteDocument(employeeId ?? '');
+  const uploadDocument = useUploadDocument(employeeId ?? '');
 
   const handleDelete = () => {
     if (!deleteTarget) return;
@@ -106,6 +123,22 @@ export function Component() {
       onSettled: () => setDeleteTarget(null),
     });
   };
+
+  function handleUpload() {
+    if (!uploadFile || !employeeId) return;
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    formData.append('documentType', uploadType);
+    formData.append('title', uploadTitle || uploadFile.name);
+    uploadDocument.mutate(formData, {
+      onSuccess: () => {
+        setUploadOpen(false);
+        setUploadFile(null);
+        setUploadTitle('');
+        setUploadType('other');
+      },
+    });
+  }
 
   async function downloadDocument(docId: string, fileName: string) {
     const response = await api.get(
@@ -129,6 +162,12 @@ export function Component() {
       <PageHeader
         title="Dokumente"
         description={`Dokumentenverwaltung für ${employeeName}`}
+        actions={
+          <Button onClick={() => setUploadOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Dokument hochladen
+          </Button>
+        }
       />
 
       <Card>
@@ -231,6 +270,80 @@ export function Component() {
           )}
         </CardContent>
       </Card>
+
+      {/* Upload Dialog */}
+      <Dialog open={uploadOpen} onOpenChange={(open) => { if (!open) setUploadOpen(false); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Dokument hochladen</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2">
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                setUploadFile(file);
+                if (file && !uploadTitle) setUploadTitle(file.name);
+              }}
+            />
+            <div className="flex flex-col gap-1.5">
+              <Label>Datei</Label>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Datei auswählen
+                </Button>
+                {uploadFile && (
+                  <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+                    {uploadFile.name}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="upload-type">Dokumenttyp</Label>
+              <Select value={uploadType} onValueChange={setUploadType}>
+                <SelectTrigger id="upload-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contract">Vertrag</SelectItem>
+                  <SelectItem value="certificate">Zertifikat</SelectItem>
+                  <SelectItem value="id_copy">Ausweiskopie</SelectItem>
+                  <SelectItem value="payslip">Gehaltszettel</SelectItem>
+                  <SelectItem value="other">Sonstiges</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="upload-title">Titel (optional)</Label>
+              <Input
+                id="upload-title"
+                placeholder="Dateiname wird verwendet, wenn leer"
+                value={uploadTitle}
+                onChange={(e) => setUploadTitle(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUploadOpen(false)}>
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleUpload}
+              disabled={!uploadFile || uploadDocument.isPending}
+            >
+              {uploadDocument.isPending ? 'Wird hochgeladen…' : 'Hochladen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <DeleteDialog
         document={deleteTarget}
