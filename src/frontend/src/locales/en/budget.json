@@ -1,1 +1,26 @@
-{}
+{
+  "title": "Budget",
+  "newBudget": "New Budget",
+  "noBudgets": "No Budgets",
+  "noBudgetsDescription": "No budgets found for {{year}}. Create one to get started.",
+  "planVsActual": "Plan vs Actual",
+  "noDataAvailable": "No plan vs actual data available.",
+  "columns": {
+    "account": "Account",
+    "planned": "Planned",
+    "actual": "Actual",
+    "variance": "Variance",
+    "variancePct": "Variance %",
+    "total": "Total"
+  },
+  "chart": {
+    "planned": "Planned",
+    "actual": "Actual"
+  },
+  "dialog": {
+    "createTitle": "Create Budget",
+    "budgetName": "Budget Name",
+    "budgetNamePlaceholder": "e.g. Operating Budget 2026",
+    "year": "Year"
+  }
+}

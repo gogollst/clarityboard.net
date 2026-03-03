@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useDocuments } from '@/hooks/useDocuments';
 import type { DocumentStatus } from '@/types/document';
@@ -27,6 +28,7 @@ const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'de
 };
 
 export function Component() {
+  const { t } = useTranslation('documents');
   const { selectedEntityId } = useEntity();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<DocumentStatus | 'all'>('all');
@@ -44,32 +46,32 @@ export function Component() {
   const columns = [
     {
       key: 'fileName',
-      header: 'File Name',
+      header: t('columns.fileName'),
       render: (item: Record<string, unknown>) => (
         <span className="font-medium">{String(item.fileName ?? '')}</span>
       ),
     },
     {
       key: 'vendorName',
-      header: 'Vendor',
+      header: t('columns.vendor'),
       render: (item: Record<string, unknown>) =>
         String(item.vendorName ?? '-'),
     },
     {
       key: 'invoiceNumber',
-      header: 'Invoice #',
+      header: t('columns.invoiceNumber'),
       render: (item: Record<string, unknown>) =>
         String(item.invoiceNumber ?? '-'),
     },
     {
       key: 'invoiceDate',
-      header: 'Date',
+      header: t('columns.date'),
       render: (item: Record<string, unknown>) =>
         String(item.invoiceDate ?? '-'),
     },
     {
       key: 'totalAmount',
-      header: 'Amount',
+      header: t('columns.amount'),
       render: (item: Record<string, unknown>) => {
         const amount = item.totalAmount as number | undefined;
         return amount != null ? formatCurrency(amount) : '-';
@@ -77,7 +79,7 @@ export function Component() {
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('columns.status'),
       render: (item: Record<string, unknown>) => (
         <StatusBadge
           status={String(item.status ?? '')}
@@ -87,13 +89,13 @@ export function Component() {
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: t('columns.actions'),
       render: (_item: Record<string, unknown>) => (
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" title="View">
+          <Button variant="ghost" size="sm" title={t('actions.view')}>
             <Eye className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" title="Download">
+          <Button variant="ghost" size="sm" title={t('actions.download')}>
             <Download className="h-4 w-4" />
           </Button>
         </div>
@@ -104,12 +106,12 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Documents"
+        title={t('title')}
         actions={
           <Link to="/documents/upload">
             <Button>
               <Upload className="mr-1 h-4 w-4" />
-              Upload
+              {t('upload')}
             </Button>
           </Link>
         }
@@ -125,21 +127,21 @@ export function Component() {
           }}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All statuses" />
+            <SelectValue placeholder={t('allStatuses')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="uploaded">Uploaded</SelectItem>
-            <SelectItem value="processing">Processing</SelectItem>
-            <SelectItem value="extracted">Extracted</SelectItem>
-            <SelectItem value="booked">Booked</SelectItem>
-            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="all">{t('allStatuses')}</SelectItem>
+            <SelectItem value="uploaded">{t('statuses.uploaded')}</SelectItem>
+            <SelectItem value="processing">{t('statuses.processing')}</SelectItem>
+            <SelectItem value="extracted">{t('statuses.extracted')}</SelectItem>
+            <SelectItem value="booked">{t('statuses.booked')}</SelectItem>
+            <SelectItem value="failed">{t('statuses.failed')}</SelectItem>
           </SelectContent>
         </Select>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search documents..."
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -155,7 +157,7 @@ export function Component() {
         columns={columns}
         data={(data?.items ?? []) as unknown as Record<string, unknown>[]}
         isLoading={isLoading}
-        emptyMessage="No documents found."
+        emptyMessage={t('noDocuments')}
         pagination={{
           page,
           pageSize,

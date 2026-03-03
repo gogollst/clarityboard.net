@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import {
   useAssets,
@@ -53,6 +54,7 @@ const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
 export function Component() {
+  const { t } = useTranslation('assets');
   const { selectedEntityId } = useEntity();
   const { data: assetsData, isLoading: assetsLoading } = useAssets(selectedEntityId);
   const registerAsset = useRegisterAsset();
@@ -140,46 +142,46 @@ export function Component() {
   const depreciationChartData =
     selectedAsset?.schedule.map((entry) => ({
       date: entry.date,
-      'Book Value': entry.bookValue,
+      [t('detail.bookValue')]: entry.bookValue,
     })) ?? [];
 
   const columns = [
     {
       key: 'assetNumber',
-      header: 'Asset #',
+      header: t('columns.assetNumber'),
       render: (item: Record<string, unknown>) =>
         String(item.assetNumber ?? ''),
     },
     {
       key: 'name',
-      header: 'Name',
+      header: t('columns.name'),
       render: (item: Record<string, unknown>) => (
         <span className="font-medium">{String(item.name ?? '')}</span>
       ),
     },
     {
       key: 'category',
-      header: 'Category',
+      header: t('columns.category'),
     },
     {
       key: 'acquisitionDate',
-      header: 'Acq. Date',
+      header: t('columns.acquisitionDate'),
     },
     {
       key: 'acquisitionCost',
-      header: 'Cost',
+      header: t('columns.cost'),
       render: (item: Record<string, unknown>) =>
         formatCurrency(item.acquisitionCost as number),
     },
     {
       key: 'currentBookValue',
-      header: 'Book Value',
+      header: t('columns.bookValue'),
       render: (item: Record<string, unknown>) =>
         formatCurrency(item.currentBookValue as number),
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('columns.status'),
       render: (item: Record<string, unknown>) => (
         <StatusBadge
           status={String(item.status ?? '')}
@@ -189,12 +191,12 @@ export function Component() {
     },
     {
       key: 'depreciationMethod',
-      header: 'Method',
+      header: t('columns.method'),
       render: (item: Record<string, unknown>) => {
         const method = String(item.depreciationMethod ?? '');
         return method === 'straight_line'
-          ? 'Straight Line'
-          : 'Declining Balance';
+          ? t('depreciationMethods.straight_line')
+          : t('depreciationMethods.declining_balance');
       },
     },
   ];
@@ -202,11 +204,11 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Fixed Assets"
+        title={t('title')}
         actions={
           <Button onClick={() => setIsRegisterOpen(true)}>
             <Plus className="mr-1 h-4 w-4" />
-            Register Asset
+            {t('registerAsset')}
           </Button>
         }
       />
@@ -216,14 +218,13 @@ export function Component() {
         columns={columns}
         data={assets as unknown as Record<string, unknown>[]}
         isLoading={assetsLoading}
-        emptyMessage="No assets registered."
+        emptyMessage={t('noAssets')}
       />
 
       {/* Make rows clickable - wrap table with click handler logic */}
       {!assetsLoading && assets.length > 0 && (
         <p className="mt-2 text-xs text-muted-foreground">
-          Click on an asset row above to view details. (Use the table&apos;s
-          rendered rows.)
+          {t('clickHint')}
         </p>
       )}
 
@@ -251,7 +252,7 @@ export function Component() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Anlagenspiegel (Asset Movement Report)</CardTitle>
+            <CardTitle>{t('anlagenspiegel.title')}</CardTitle>
             <Select
               value={String(spiegelYear)}
               onValueChange={(v) => setSpiegelYear(Number(v))}
@@ -277,16 +278,16 @@ export function Component() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Opening Cost</TableHead>
-                    <TableHead className="text-right">Additions</TableHead>
-                    <TableHead className="text-right">Disposals</TableHead>
-                    <TableHead className="text-right">Closing Cost</TableHead>
-                    <TableHead className="text-right">Opening Depr.</TableHead>
-                    <TableHead className="text-right">Charge</TableHead>
-                    <TableHead className="text-right">Disp. Depr.</TableHead>
-                    <TableHead className="text-right">Closing Depr.</TableHead>
-                    <TableHead className="text-right">NBV</TableHead>
+                    <TableHead>{t('anlagenspiegel.columns.category')}</TableHead>
+                    <TableHead className="text-right">{t('anlagenspiegel.columns.openingCost')}</TableHead>
+                    <TableHead className="text-right">{t('anlagenspiegel.columns.additions')}</TableHead>
+                    <TableHead className="text-right">{t('anlagenspiegel.columns.disposals')}</TableHead>
+                    <TableHead className="text-right">{t('anlagenspiegel.columns.closingCost')}</TableHead>
+                    <TableHead className="text-right">{t('anlagenspiegel.columns.openingDepr')}</TableHead>
+                    <TableHead className="text-right">{t('anlagenspiegel.columns.charge')}</TableHead>
+                    <TableHead className="text-right">{t('anlagenspiegel.columns.dispDepr')}</TableHead>
+                    <TableHead className="text-right">{t('anlagenspiegel.columns.closingDepr')}</TableHead>
+                    <TableHead className="text-right">{t('anlagenspiegel.columns.nbv')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -324,7 +325,7 @@ export function Component() {
                   ))}
                   {/* Totals Row */}
                   <TableRow className="border-t-2 font-bold">
-                    <TableCell>Total</TableCell>
+                    <TableCell>{t('anlagenspiegel.columns.total')}</TableCell>
                     <TableCell className="text-right">
                       {formatCurrency(anlagenspiegel.total.openingCost)}
                     </TableCell>
@@ -362,7 +363,7 @@ export function Component() {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              No Anlagenspiegel data available for {spiegelYear}.
+              {t('anlagenspiegel.noData', { year: spiegelYear })}
             </p>
           )}
         </CardContent>
@@ -375,7 +376,7 @@ export function Component() {
             <DialogTitle>
               {selectedAsset
                 ? `${selectedAsset.assetNumber} - ${selectedAsset.name}`
-                : 'Asset Detail'}
+                : t('detail.title')}
             </DialogTitle>
           </DialogHeader>
           {selectedAsset ? (
@@ -383,11 +384,11 @@ export function Component() {
               {/* Info Card */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Category:</span>{' '}
+                  <span className="text-muted-foreground">{t('detail.category')}</span>{' '}
                   {selectedAsset.category}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Status:</span>{' '}
+                  <span className="text-muted-foreground">{t('detail.status')}</span>{' '}
                   <StatusBadge
                     status={selectedAsset.status}
                     variantMap={STATUS_VARIANT_MAP}
@@ -395,29 +396,29 @@ export function Component() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">
-                    Acquisition Date:
+                    {t('detail.acquisitionDate')}
                   </span>{' '}
                   {selectedAsset.acquisitionDate}
                 </div>
                 <div>
                   <span className="text-muted-foreground">
-                    Acquisition Cost:
+                    {t('detail.acquisitionCost')}
                   </span>{' '}
                   {formatCurrency(selectedAsset.acquisitionCost)}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Book Value:</span>{' '}
+                  <span className="text-muted-foreground">{t('detail.bookValue')}</span>{' '}
                   {formatCurrency(selectedAsset.currentBookValue)}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Method:</span>{' '}
+                  <span className="text-muted-foreground">{t('detail.method')}</span>{' '}
                   {selectedAsset.depreciationMethod === 'straight_line'
-                    ? 'Straight Line'
-                    : 'Declining Balance'}
+                    ? t('depreciationMethods.straight_line')
+                    : t('depreciationMethods.declining_balance')}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Useful Life:</span>{' '}
-                  {selectedAsset.usefulLifeMonths} months
+                  <span className="text-muted-foreground">{t('detail.usefulLife')}</span>{' '}
+                  {selectedAsset.usefulLifeMonths} {t('detail.months')}
                 </div>
               </div>
 
@@ -425,11 +426,11 @@ export function Component() {
               {depreciationChartData.length > 0 && (
                 <div>
                   <h4 className="mb-2 text-sm font-medium">
-                    Book Value Over Time
+                    {t('detail.bookValueOverTime')}
                   </h4>
                   <LineChart
                     data={depreciationChartData}
-                    categories={['Book Value']}
+                    categories={[t('detail.bookValue')]}
                     index="date"
                     valueFormatter={(v) => formatCurrency(v)}
                     showLegend={false}
@@ -441,19 +442,19 @@ export function Component() {
               {selectedAsset.schedule.length > 0 && (
                 <div>
                   <h4 className="mb-2 text-sm font-medium">
-                    Depreciation Schedule
+                    {t('detail.depreciationSchedule')}
                   </h4>
                   <div className="max-h-60 overflow-y-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead>{t('detail.scheduleColumns.date')}</TableHead>
+                          <TableHead className="text-right">{t('detail.scheduleColumns.amount')}</TableHead>
                           <TableHead className="text-right">
-                            Accumulated
+                            {t('detail.scheduleColumns.accumulated')}
                           </TableHead>
                           <TableHead className="text-right">
-                            Book Value
+                            {t('detail.scheduleColumns.bookValue')}
                           </TableHead>
                         </TableRow>
                       </TableHeader>
@@ -490,14 +491,14 @@ export function Component() {
                 onClick={() => setIsDisposeOpen(true)}
               >
                 <Trash2 className="mr-1 h-4 w-4" />
-                Dispose Asset
+                {t('dispose.title')}
               </Button>
             )}
             <Button
               variant="outline"
               onClick={() => setIsDetailOpen(false)}
             >
-              Close
+              {t('common:buttons.close', { ns: 'common' })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -507,15 +508,14 @@ export function Component() {
       <Dialog open={isDisposeOpen} onOpenChange={setIsDisposeOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Dispose Asset</DialogTitle>
+            <DialogTitle>{t('dispose.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              This action will mark the asset as disposed and record the
-              disposal transaction.
+              {t('dispose.description')}
             </p>
             <div>
-              <Label>Disposal Date</Label>
+              <Label>{t('dispose.disposalDate')}</Label>
               <Input
                 type="date"
                 value={disposeForm.disposalDate}
@@ -528,7 +528,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Disposal Amount</Label>
+              <Label>{t('dispose.disposalAmount')}</Label>
               <Input
                 type="number"
                 value={disposeForm.disposalAmount}
@@ -547,7 +547,7 @@ export function Component() {
               variant="outline"
               onClick={() => setIsDisposeOpen(false)}
             >
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button
               variant="destructive"
@@ -557,7 +557,7 @@ export function Component() {
               {disposeAsset.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Confirm Disposal
+              {t('dispose.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -567,21 +567,21 @@ export function Component() {
       <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Register Asset</DialogTitle>
+            <DialogTitle>{t('register.title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Name</Label>
+              <Label>{t('register.name')}</Label>
               <Input
                 value={registerForm.name}
                 onChange={(e) =>
                   setRegisterForm((f) => ({ ...f, name: e.target.value }))
                 }
-                placeholder="e.g. Office Laptop"
+                placeholder={t('register.namePlaceholder')}
               />
             </div>
             <div>
-              <Label>Category</Label>
+              <Label>{t('register.category')}</Label>
               <Input
                 value={registerForm.category}
                 onChange={(e) =>
@@ -590,11 +590,11 @@ export function Component() {
                     category: e.target.value,
                   }))
                 }
-                placeholder="e.g. IT Equipment"
+                placeholder={t('register.categoryPlaceholder')}
               />
             </div>
             <div>
-              <Label>Acquisition Date</Label>
+              <Label>{t('register.acquisitionDate')}</Label>
               <Input
                 type="date"
                 value={registerForm.acquisitionDate}
@@ -607,7 +607,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Acquisition Cost</Label>
+              <Label>{t('register.acquisitionCost')}</Label>
               <Input
                 type="number"
                 value={registerForm.acquisitionCost}
@@ -621,7 +621,7 @@ export function Component() {
               />
             </div>
             <div>
-              <Label>Useful Life (months)</Label>
+              <Label>{t('register.usefulLife')}</Label>
               <Input
                 type="number"
                 value={registerForm.usefulLifeMonths}
@@ -631,11 +631,11 @@ export function Component() {
                     usefulLifeMonths: e.target.value,
                   }))
                 }
-                placeholder="e.g. 36"
+                placeholder={t('register.usefulLifePlaceholder')}
               />
             </div>
             <div>
-              <Label>Depreciation Method</Label>
+              <Label>{t('register.depreciationMethod')}</Label>
               <Select
                 value={registerForm.depreciationMethod}
                 onValueChange={(v) =>
@@ -649,9 +649,9 @@ export function Component() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="straight_line">Straight Line</SelectItem>
+                  <SelectItem value="straight_line">{t('depreciationMethods.straight_line')}</SelectItem>
                   <SelectItem value="declining_balance">
-                    Declining Balance
+                    {t('depreciationMethods.declining_balance')}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -662,7 +662,7 @@ export function Component() {
               variant="outline"
               onClick={() => setIsRegisterOpen(false)}
             >
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button
               onClick={handleRegister}
@@ -671,7 +671,7 @@ export function Component() {
               {registerAsset.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Register
+              {t('register.register')}
             </Button>
           </DialogFooter>
         </DialogContent>

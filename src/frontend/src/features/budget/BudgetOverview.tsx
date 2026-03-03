@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useBudgets, usePlanVsActual, useCreateBudget } from '@/hooks/useBudget';
 import PageHeader from '@/components/shared/PageHeader';
@@ -47,6 +48,7 @@ const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
 
 export function Component() {
+  const { t } = useTranslation('budget');
   const { selectedEntityId } = useEntity();
   const [year, setYear] = useState(currentYear);
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
@@ -82,18 +84,18 @@ export function Component() {
   const varianceChartData =
     planVsActual?.lines.map((line) => ({
       account: line.accountName,
-      Planned: line.planned,
-      Actual: line.actual,
+      [t('chart.planned')]: line.planned,
+      [t('chart.actual')]: line.actual,
     })) ?? [];
 
   return (
     <div>
       <PageHeader
-        title="Budget"
+        title={t('title')}
         actions={
           <Button onClick={() => setIsDialogOpen(true)}>
             <Plus className="mr-1 h-4 w-4" />
-            New Budget
+            {t('newBudget')}
           </Button>
         }
       />
@@ -130,10 +132,10 @@ export function Component() {
       ) : !budgets || budgets.length === 0 ? (
         <EmptyState
           icon={Wallet}
-          title="No Budgets"
-          description={`No budgets found for ${year}. Create one to get started.`}
+          title={t('noBudgets')}
+          description={t('noBudgetsDescription', { year })}
           action={{
-            label: 'New Budget',
+            label: t('newBudget'),
             onClick: () => setIsDialogOpen(true),
           }}
         />
@@ -179,7 +181,7 @@ export function Component() {
         <div className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Plan vs Actual</CardTitle>
+              <CardTitle>{t('planVsActual')}</CardTitle>
             </CardHeader>
             <CardContent>
               {pvaLoading ? (
@@ -189,7 +191,7 @@ export function Component() {
                   {/* Variance Bar Chart */}
                   <BarChart
                     data={varianceChartData}
-                    categories={['Planned', 'Actual']}
+                    categories={[t('chart.planned'), t('chart.actual')]}
                     index="account"
                     colors={['#3b82f6', '#10b981']}
                     valueFormatter={(v) => formatCurrency(v)}
@@ -200,14 +202,14 @@ export function Component() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Account</TableHead>
-                          <TableHead className="text-right">Planned</TableHead>
-                          <TableHead className="text-right">Actual</TableHead>
+                          <TableHead>{t('columns.account')}</TableHead>
+                          <TableHead className="text-right">{t('columns.planned')}</TableHead>
+                          <TableHead className="text-right">{t('columns.actual')}</TableHead>
                           <TableHead className="text-right">
-                            Variance
+                            {t('columns.variance')}
                           </TableHead>
                           <TableHead className="text-right">
-                            Variance %
+                            {t('columns.variancePct')}
                           </TableHead>
                         </TableRow>
                       </TableHeader>
@@ -251,7 +253,7 @@ export function Component() {
 
                         {/* Totals */}
                         <TableRow className="border-t-2 font-bold">
-                          <TableCell>Total</TableCell>
+                          <TableCell>{t('columns.total')}</TableCell>
                           <TableCell className="text-right">
                             {formatCurrency(planVsActual.totalPlanned)}
                           </TableCell>
@@ -291,7 +293,7 @@ export function Component() {
                 </>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No plan vs actual data available.
+                  {t('noDataAvailable')}
                 </p>
               )}
             </CardContent>
@@ -303,21 +305,21 @@ export function Component() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Budget</DialogTitle>
+            <DialogTitle>{t('dialog.createTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Budget Name</Label>
+              <Label>{t('dialog.budgetName')}</Label>
               <Input
                 value={newBudget.name}
                 onChange={(e) =>
                   setNewBudget((b) => ({ ...b, name: e.target.value }))
                 }
-                placeholder="e.g. Operating Budget 2026"
+                placeholder={t('dialog.budgetNamePlaceholder')}
               />
             </div>
             <div>
-              <Label>Year</Label>
+              <Label>{t('dialog.year')}</Label>
               <Select
                 value={String(newBudget.year)}
                 onValueChange={(v) =>
@@ -342,13 +344,13 @@ export function Component() {
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
             >
-              Cancel
+              {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button onClick={handleCreate} disabled={createBudget.isPending}>
               {createBudget.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Create
+              {t('common:buttons.create', { ns: 'common' })}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,1 +1,26 @@
-{}
+{
+  "title": "Бюджет",
+  "newBudget": "Новый бюджет",
+  "noBudgets": "Нет бюджетов",
+  "noBudgetsDescription": "Бюджеты за {{year}} год не найдены. Создайте первый бюджет.",
+  "planVsActual": "План vs. Факт",
+  "noDataAvailable": "Данные план-факт недоступны.",
+  "columns": {
+    "account": "Счёт",
+    "planned": "Плановые",
+    "actual": "Фактические",
+    "variance": "Отклонение",
+    "variancePct": "Отклонение %",
+    "total": "Итого"
+  },
+  "chart": {
+    "planned": "Плановые",
+    "actual": "Фактические"
+  },
+  "dialog": {
+    "createTitle": "Создать бюджет",
+    "budgetName": "Название бюджета",
+    "budgetNamePlaceholder": "например, Операционный бюджет 2026",
+    "year": "Год"
+  }
+}

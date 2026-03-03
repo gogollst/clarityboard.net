@@ -1,1 +1,45 @@
-{}
+{
+  "title": "Dokumente",
+  "upload": "Hochladen",
+  "allStatuses": "Alle Status",
+  "searchPlaceholder": "Dokumente suchen...",
+  "noDocuments": "Keine Dokumente gefunden.",
+  "columns": {
+    "fileName": "Dateiname",
+    "vendor": "Lieferant",
+    "invoiceNumber": "Rechnungs-Nr.",
+    "date": "Datum",
+    "amount": "Betrag",
+    "status": "Status",
+    "actions": "Aktionen"
+  },
+  "statuses": {
+    "uploaded": "Hochgeladen",
+    "processing": "In Verarbeitung",
+    "extracted": "Extrahiert",
+    "booked": "Gebucht",
+    "failed": "Fehlgeschlagen"
+  },
+  "actions": {
+    "view": "Anzeigen",
+    "download": "Herunterladen"
+  },
+  "uploadPage": {
+    "title": "Dokument hochladen",
+    "description": "Rechnungen und Belege für die KI-gestützte Verarbeitung hochladen",
+    "dropzone": {
+      "dragActive": "Datei hier ablegen",
+      "idle": "Datei hierher ziehen oder klicken zum Auswählen",
+      "hint": "PDF, JPEG, PNG oder TIFF bis 10 MB"
+    },
+    "uploading": "Wird hochgeladen...",
+    "success": "Erfolgreich hochgeladen",
+    "statusLabel": "Status:",
+    "backToArchive": "Zurück zum Archiv",
+    "uploadAnother": "Weitere Datei hochladen",
+    "rejected": {
+      "title": "Datei abgelehnt",
+      "uploadFailed": "Upload fehlgeschlagen. Bitte erneut versuchen."
+    }
+  }
+}

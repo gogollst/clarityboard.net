@@ -1,1 +1,26 @@
-{}
+{
+  "title": "Budget",
+  "newBudget": "Neues Budget",
+  "noBudgets": "Keine Budgets",
+  "noBudgetsDescription": "Für {{year}} wurden keine Budgets gefunden. Erstellen Sie eines, um zu beginnen.",
+  "planVsActual": "Plan vs. Ist",
+  "noDataAvailable": "Keine Plan-vs.-Ist-Daten verfügbar.",
+  "columns": {
+    "account": "Konto",
+    "planned": "Geplant",
+    "actual": "Ist",
+    "variance": "Abweichung",
+    "variancePct": "Abweichung %",
+    "total": "Gesamt"
+  },
+  "chart": {
+    "planned": "Geplant",
+    "actual": "Ist"
+  },
+  "dialog": {
+    "createTitle": "Budget erstellen",
+    "budgetName": "Budgetname",
+    "budgetNamePlaceholder": "z. B. Betriebsbudget 2026",
+    "year": "Jahr"
+  }
+}

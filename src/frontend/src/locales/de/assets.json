@@ -1,1 +1,76 @@
-{}
+{
+  "title": "Anlagevermögen",
+  "registerAsset": "Anlage erfassen",
+  "noAssets": "Keine Anlagen erfasst.",
+  "clickHint": "Klicken Sie auf eine Anlage oben, um Details anzuzeigen.",
+  "anlagenspiegel": {
+    "title": "Anlagenspiegel (Anlagebewegungsnachweis)",
+    "noData": "Keine Anlagenspiegel-Daten für {{year}} verfügbar.",
+    "columns": {
+      "category": "Kategorie",
+      "openingCost": "AHK Anfang",
+      "additions": "Zugänge",
+      "disposals": "Abgänge",
+      "closingCost": "AHK Ende",
+      "openingDepr": "Kum. AfA Anfang",
+      "charge": "AfA",
+      "dispDepr": "AfA Abgänge",
+      "closingDepr": "Kum. AfA Ende",
+      "nbv": "Buchwert",
+      "total": "Gesamt"
+    }
+  },
+  "columns": {
+    "assetNumber": "Anl.-Nr.",
+    "name": "Bezeichnung",
+    "category": "Kategorie",
+    "acquisitionDate": "Zugangsdatum",
+    "cost": "AHK",
+    "bookValue": "Buchwert",
+    "status": "Status",
+    "method": "Methode"
+  },
+  "depreciationMethods": {
+    "straight_line": "Lineare AfA",
+    "declining_balance": "Degressive AfA"
+  },
+  "detail": {
+    "title": "Anlagedetails",
+    "category": "Kategorie:",
+    "status": "Status:",
+    "acquisitionDate": "Zugangsdatum:",
+    "acquisitionCost": "Anschaffungskosten:",
+    "bookValue": "Buchwert:",
+    "method": "Methode:",
+    "usefulLife": "Nutzungsdauer:",
+    "months": "Monate",
+    "bookValueOverTime": "Buchwertentwicklung",
+    "depreciationSchedule": "Abschreibungsplan",
+    "scheduleColumns": {
+      "date": "Datum",
+      "amount": "Betrag",
+      "accumulated": "Kumuliert",
+      "bookValue": "Buchwert"
+    }
+  },
+  "dispose": {
+    "title": "Anlage abgehen",
+    "description": "Diese Aktion markiert die Anlage als abgegangen und erfasst den Abgangsbuchung.",
+    "disposalDate": "Abgangsdatum",
+    "disposalAmount": "Abgangserlös",
+    "confirm": "Abgang bestätigen"
+  },
+  "register": {
+    "title": "Anlage erfassen",
+    "name": "Bezeichnung",
+    "namePlaceholder": "z. B. Bürorechner",
+    "category": "Kategorie",
+    "categoryPlaceholder": "z. B. IT-Ausstattung",
+    "acquisitionDate": "Zugangsdatum",
+    "acquisitionCost": "Anschaffungskosten",
+    "usefulLife": "Nutzungsdauer (Monate)",
+    "usefulLifePlaceholder": "z. B. 36",
+    "depreciationMethod": "Abschreibungsmethode",
+    "register": "Erfassen"
+  }
+}

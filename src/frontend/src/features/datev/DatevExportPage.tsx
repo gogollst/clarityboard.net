@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useTriggerExport, useDatevExports } from '@/hooks/useDatev';
 import PageHeader from '@/components/shared/PageHeader';
@@ -24,20 +25,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Download, Loader2 } from 'lucide-react';
 
-const MONTHS = [
-  { value: '01', label: 'January' },
-  { value: '02', label: 'February' },
-  { value: '03', label: 'March' },
-  { value: '04', label: 'April' },
-  { value: '05', label: 'May' },
-  { value: '06', label: 'June' },
-  { value: '07', label: 'July' },
-  { value: '08', label: 'August' },
-  { value: '09', label: 'September' },
-  { value: '10', label: 'October' },
-  { value: '11', label: 'November' },
-  { value: '12', label: 'December' },
-];
+const MONTH_VALUES = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'] as const;
 
 const YEARS = Array.from({ length: 5 }, (_, i) => {
   const year = new Date().getFullYear() - i;
@@ -51,6 +39,7 @@ const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'de
 };
 
 export function Component() {
+  const { t, i18n } = useTranslation('datev');
   const { selectedEntityId } = useEntity();
   const { data: exports, isLoading } = useDatevExports(selectedEntityId);
   const triggerExport = useTriggerExport();
@@ -74,35 +63,35 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="DATEV Export"
-        description="Export accounting data in DATEV format"
+        title={t('title')}
+        description={t('description')}
       />
 
       {/* Export Form */}
       <Card>
         <CardHeader>
-          <CardTitle>New Export</CardTitle>
+          <CardTitle>{t('newExport')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="flex gap-2">
               <div>
-                <Label>Start Month</Label>
+                <Label>{t('startMonth')}</Label>
                 <Select value={startMonth} onValueChange={setStartMonth}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {MONTHS.map((m) => (
-                      <SelectItem key={m.value} value={m.value}>
-                        {m.label}
+                    {MONTH_VALUES.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {t(`months.${m}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Start Year</Label>
+                <Label>{t('startYear')}</Label>
                 <Select value={startYear} onValueChange={setStartYear}>
                   <SelectTrigger className="w-[100px]">
                     <SelectValue />
@@ -119,22 +108,22 @@ export function Component() {
             </div>
             <div className="flex gap-2">
               <div>
-                <Label>End Month</Label>
+                <Label>{t('endMonth')}</Label>
                 <Select value={endMonth} onValueChange={setEndMonth}>
                   <SelectTrigger className="w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {MONTHS.map((m) => (
-                      <SelectItem key={m.value} value={m.value}>
-                        {m.label}
+                    {MONTH_VALUES.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {t(`months.${m}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>End Year</Label>
+                <Label>{t('endYear')}</Label>
                 <Select value={endYear} onValueChange={setEndYear}>
                   <SelectTrigger className="w-[100px]">
                     <SelectValue />
@@ -156,7 +145,7 @@ export function Component() {
               {triggerExport.isPending && (
                 <Loader2 className="mr-1 h-4 w-4 animate-spin" />
               )}
-              Export
+              {t('export')}
             </Button>
           </div>
         </CardContent>
@@ -165,7 +154,7 @@ export function Component() {
       {/* Export History */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Export History</CardTitle>
+          <CardTitle>{t('exportHistory')}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -174,11 +163,11 @@ export function Component() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Period</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>File Name</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t('columns.period')}</TableHead>
+                  <TableHead>{t('columns.status')}</TableHead>
+                  <TableHead>{t('columns.fileName')}</TableHead>
+                  <TableHead>{t('columns.createdAt')}</TableHead>
+                  <TableHead>{t('columns.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -196,11 +185,11 @@ export function Component() {
                       </TableCell>
                       <TableCell>{exp.fileName ?? '-'}</TableCell>
                       <TableCell>
-                        {new Date(exp.createdAt).toLocaleDateString('de-DE')}
+                        {new Date(exp.createdAt).toLocaleDateString(i18n.language)}
                       </TableCell>
                       <TableCell>
                         {exp.status === 'completed' && (
-                          <Button variant="ghost" size="sm" title="Download">
+                          <Button variant="ghost" size="sm" title={t('actions.download')}>
                             <Download className="h-4 w-4" />
                           </Button>
                         )}
@@ -213,7 +202,7 @@ export function Component() {
                       colSpan={5}
                       className="text-center text-muted-foreground"
                     >
-                      No exports yet.
+                      {t('noExports')}
                     </TableCell>
                   </TableRow>
                 )}

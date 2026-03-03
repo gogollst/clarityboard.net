@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useDropzone } from 'react-dropzone';
 import { useEntity } from '@/hooks/useEntity';
 import { useUploadDocument } from '@/hooks/useDocuments';
@@ -21,6 +22,7 @@ const ACCEPTED_TYPES = {
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export function Component() {
+  const { t } = useTranslation('documents');
   const { selectedEntityId } = useEntity();
   const uploadMutation = useUploadDocument();
   const [uploadedDoc, setUploadedDoc] = useState<{
@@ -57,8 +59,8 @@ export function Component() {
   return (
     <div>
       <PageHeader
-        title="Upload Document"
-        description="Upload invoices and receipts for AI-powered processing"
+        title={t('uploadPage.title')}
+        description={t('uploadPage.description')}
       />
 
       {/* Drag and Drop Zone */}
@@ -78,16 +80,16 @@ export function Component() {
             {uploadMutation.isPending ? (
               <>
                 <Loader2 className="mb-4 h-12 w-12 animate-spin text-primary" />
-                <p className="text-lg font-medium">Uploading...</p>
+                <p className="text-lg font-medium">{t('uploadPage.uploading')}</p>
                 <Progress value={65} className="mt-4 w-64" />
               </>
             ) : uploadMutation.isSuccess && uploadedDoc ? (
               <>
                 <Check className="mb-4 h-12 w-12 text-green-500" />
-                <p className="text-lg font-medium">Upload Successful</p>
+                <p className="text-lg font-medium">{t('uploadPage.success')}</p>
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">
-                    Status:
+                    {t('uploadPage.statusLabel')}
                   </span>
                   <StatusBadge
                     status={uploadedDoc.status}
@@ -102,7 +104,7 @@ export function Component() {
                 </div>
                 <div className="mt-4 flex gap-2">
                   <Link to="/documents">
-                    <Button variant="outline">Back to Archive</Button>
+                    <Button variant="outline">{t('uploadPage.backToArchive')}</Button>
                   </Link>
                   <Button
                     onClick={() => {
@@ -110,7 +112,7 @@ export function Component() {
                       uploadMutation.reset();
                     }}
                   >
-                    Upload Another
+                    {t('uploadPage.uploadAnother')}
                   </Button>
                 </div>
               </>
@@ -119,11 +121,11 @@ export function Component() {
                 <Upload className="mb-4 h-12 w-12 text-muted-foreground" />
                 <p className="text-lg font-medium">
                   {isDragActive
-                    ? 'Drop your file here'
-                    : 'Drag & drop a file here, or click to select'}
+                    ? t('uploadPage.dropzone.dragActive')
+                    : t('uploadPage.dropzone.idle')}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  PDF, JPEG, PNG, or TIFF up to 10MB
+                  {t('uploadPage.dropzone.hint')}
                 </p>
               </>
             )}
@@ -134,7 +136,7 @@ export function Component() {
             <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950">
               <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
                 <X className="h-4 w-4" />
-                <span className="text-sm font-medium">File rejected</span>
+                <span className="text-sm font-medium">{t('uploadPage.rejected.title')}</span>
               </div>
               {fileRejections.map(({ file, errors }) => (
                 <div key={file.name} className="mt-1">
@@ -161,7 +163,7 @@ export function Component() {
               <div className="flex items-center gap-2 text-red-700 dark:text-red-300">
                 <X className="h-4 w-4" />
                 <span className="text-sm font-medium">
-                  Upload failed. Please try again.
+                  {t('uploadPage.rejected.uploadFailed')}
                 </span>
               </div>
             </div>

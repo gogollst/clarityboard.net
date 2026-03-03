@@ -1,1 +1,76 @@
-{}
+{
+  "title": "Fixed Assets",
+  "registerAsset": "Register Asset",
+  "noAssets": "No assets registered.",
+  "clickHint": "Click on an asset row above to view details.",
+  "anlagenspiegel": {
+    "title": "Anlagenspiegel (Asset Movement Report)",
+    "noData": "No Anlagenspiegel data available for {{year}}.",
+    "columns": {
+      "category": "Category",
+      "openingCost": "Opening Cost",
+      "additions": "Additions",
+      "disposals": "Disposals",
+      "closingCost": "Closing Cost",
+      "openingDepr": "Opening Depr.",
+      "charge": "Charge",
+      "dispDepr": "Disp. Depr.",
+      "closingDepr": "Closing Depr.",
+      "nbv": "NBV",
+      "total": "Total"
+    }
+  },
+  "columns": {
+    "assetNumber": "Asset #",
+    "name": "Name",
+    "category": "Category",
+    "acquisitionDate": "Acq. Date",
+    "cost": "Cost",
+    "bookValue": "Book Value",
+    "status": "Status",
+    "method": "Method"
+  },
+  "depreciationMethods": {
+    "straight_line": "Straight Line",
+    "declining_balance": "Declining Balance"
+  },
+  "detail": {
+    "title": "Asset Detail",
+    "category": "Category:",
+    "status": "Status:",
+    "acquisitionDate": "Acquisition Date:",
+    "acquisitionCost": "Acquisition Cost:",
+    "bookValue": "Book Value:",
+    "method": "Method:",
+    "usefulLife": "Useful Life:",
+    "months": "months",
+    "bookValueOverTime": "Book Value Over Time",
+    "depreciationSchedule": "Depreciation Schedule",
+    "scheduleColumns": {
+      "date": "Date",
+      "amount": "Amount",
+      "accumulated": "Accumulated",
+      "bookValue": "Book Value"
+    }
+  },
+  "dispose": {
+    "title": "Dispose Asset",
+    "description": "This action will mark the asset as disposed and record the disposal transaction.",
+    "disposalDate": "Disposal Date",
+    "disposalAmount": "Disposal Amount",
+    "confirm": "Confirm Disposal"
+  },
+  "register": {
+    "title": "Register Asset",
+    "name": "Name",
+    "namePlaceholder": "e.g. Office Laptop",
+    "category": "Category",
+    "categoryPlaceholder": "e.g. IT Equipment",
+    "acquisitionDate": "Acquisition Date",
+    "acquisitionCost": "Acquisition Cost",
+    "usefulLife": "Useful Life (months)",
+    "usefulLifePlaceholder": "e.g. 36",
+    "depreciationMethod": "Depreciation Method",
+    "register": "Register"
+  }
+}

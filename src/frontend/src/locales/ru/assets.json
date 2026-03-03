@@ -1,1 +1,76 @@
-{}
+{
+  "title": "Основные средства",
+  "registerAsset": "Зарегистрировать ОС",
+  "noAssets": "Основные средства не зарегистрированы.",
+  "clickHint": "Нажмите на строку объекта выше для просмотра деталей.",
+  "anlagenspiegel": {
+    "title": "Ведомость движения ОС (Anlagenspiegel)",
+    "noData": "Данные о движении ОС за {{year}} год недоступны.",
+    "columns": {
+      "category": "Категория",
+      "openingCost": "Стоимость на начало",
+      "additions": "Поступления",
+      "disposals": "Выбытия",
+      "closingCost": "Стоимость на конец",
+      "openingDepr": "Амортизация на начало",
+      "charge": "Начислено",
+      "dispDepr": "Амортизация выбытий",
+      "closingDepr": "Амортизация на конец",
+      "nbv": "Остаточная стоимость",
+      "total": "Итого"
+    }
+  },
+  "columns": {
+    "assetNumber": "№ ОС",
+    "name": "Наименование",
+    "category": "Категория",
+    "acquisitionDate": "Дата приобретения",
+    "cost": "Первоначальная стоимость",
+    "bookValue": "Остаточная стоимость",
+    "status": "Статус",
+    "method": "Метод"
+  },
+  "depreciationMethods": {
+    "straight_line": "Линейный метод",
+    "declining_balance": "Метод убывающего остатка"
+  },
+  "detail": {
+    "title": "Карточка ОС",
+    "category": "Категория:",
+    "status": "Статус:",
+    "acquisitionDate": "Дата приобретения:",
+    "acquisitionCost": "Первоначальная стоимость:",
+    "bookValue": "Остаточная стоимость:",
+    "method": "Метод амортизации:",
+    "usefulLife": "Срок полезного использования:",
+    "months": "мес.",
+    "bookValueOverTime": "Динамика остаточной стоимости",
+    "depreciationSchedule": "График амортизации",
+    "scheduleColumns": {
+      "date": "Дата",
+      "amount": "Сумма",
+      "accumulated": "Накопленная",
+      "bookValue": "Остаточная стоимость"
+    }
+  },
+  "dispose": {
+    "title": "Списание ОС",
+    "description": "Это действие пометит объект как выбывший и зафиксирует операцию выбытия.",
+    "disposalDate": "Дата выбытия",
+    "disposalAmount": "Выручка от выбытия",
+    "confirm": "Подтвердить списание"
+  },
+  "register": {
+    "title": "Регистрация ОС",
+    "name": "Наименование",
+    "namePlaceholder": "например, Ноутбук офисный",
+    "category": "Категория",
+    "categoryPlaceholder": "например, ИТ-оборудование",
+    "acquisitionDate": "Дата приобретения",
+    "acquisitionCost": "Первоначальная стоимость",
+    "usefulLife": "Срок полезного использования (мес.)",
+    "usefulLifePlaceholder": "например, 36",
+    "depreciationMethod": "Метод амортизации",
+    "register": "Зарегистрировать"
+  }
+}

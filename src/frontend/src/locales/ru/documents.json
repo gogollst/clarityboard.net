@@ -1,1 +1,45 @@
-{}
+{
+  "title": "Документы",
+  "upload": "Загрузить",
+  "allStatuses": "Все статусы",
+  "searchPlaceholder": "Поиск документов...",
+  "noDocuments": "Документы не найдены.",
+  "columns": {
+    "fileName": "Имя файла",
+    "vendor": "Поставщик",
+    "invoiceNumber": "№ счёта",
+    "date": "Дата",
+    "amount": "Сумма",
+    "status": "Статус",
+    "actions": "Действия"
+  },
+  "statuses": {
+    "uploaded": "Загружен",
+    "processing": "Обрабатывается",
+    "extracted": "Извлечён",
+    "booked": "Проведён",
+    "failed": "Ошибка"
+  },
+  "actions": {
+    "view": "Просмотр",
+    "download": "Скачать"
+  },
+  "uploadPage": {
+    "title": "Загрузка документа",
+    "description": "Загрузите счета и квитанции для обработки с помощью ИИ",
+    "dropzone": {
+      "dragActive": "Отпустите файл здесь",
+      "idle": "Перетащите файл сюда или нажмите для выбора",
+      "hint": "PDF, JPEG, PNG или TIFF до 10 МБ"
+    },
+    "uploading": "Загрузка...",
+    "success": "Загрузка выполнена успешно",
+    "statusLabel": "Статус:",
+    "backToArchive": "Назад к архиву",
+    "uploadAnother": "Загрузить ещё",
+    "rejected": {
+      "title": "Файл отклонён",
+      "uploadFailed": "Загрузка не удалась. Попробуйте ещё раз."
+    }
+  }
+}

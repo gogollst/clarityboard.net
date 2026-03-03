@@ -1,1 +1,45 @@
-{}
+{
+  "title": "Documents",
+  "upload": "Upload",
+  "allStatuses": "All Statuses",
+  "searchPlaceholder": "Search documents...",
+  "noDocuments": "No documents found.",
+  "columns": {
+    "fileName": "File Name",
+    "vendor": "Vendor",
+    "invoiceNumber": "Invoice #",
+    "date": "Date",
+    "amount": "Amount",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "statuses": {
+    "uploaded": "Uploaded",
+    "processing": "Processing",
+    "extracted": "Extracted",
+    "booked": "Booked",
+    "failed": "Failed"
+  },
+  "actions": {
+    "view": "View",
+    "download": "Download"
+  },
+  "uploadPage": {
+    "title": "Upload Document",
+    "description": "Upload invoices and receipts for AI-powered processing",
+    "dropzone": {
+      "dragActive": "Drop your file here",
+      "idle": "Drag & drop a file here, or click to select",
+      "hint": "PDF, JPEG, PNG, or TIFF up to 10MB"
+    },
+    "uploading": "Uploading...",
+    "success": "Upload Successful",
+    "statusLabel": "Status:",
+    "backToArchive": "Back to Archive",
+    "uploadAnother": "Upload Another",
+    "rejected": {
+      "title": "File rejected",
+      "uploadFailed": "Upload failed. Please try again."
+    }
+  }
+}
