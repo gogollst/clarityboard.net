@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { api } from '@/lib/api';
+import { api, setAccessToken } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { useEntityStore } from '@/stores/entityStore';
 import type { LegalEntity, CreateEntityRequest, UpdateEntityRequest } from '@/types/entity';
@@ -72,6 +72,29 @@ export function useUpdateEntity() {
         ?? (errors ? Object.values(errors).flat().join('; ') : null)
         ?? 'Failed to update entity';
       toast.error(message);
+    },
+  });
+}
+
+export function useSwitchEntity() {
+  const queryClient = useQueryClient();
+  const setSelectedEntity = useEntityStore((s) => s.setSelectedEntity);
+
+  return useMutation({
+    mutationFn: async (entityId: string) => {
+      const { data } = await api.post<{ accessToken: string; expiresAt: string }>(
+        '/auth/switch-entity',
+        { entityId },
+      );
+      return { accessToken: data.accessToken, entityId };
+    },
+    onSuccess: ({ accessToken, entityId }) => {
+      setAccessToken(accessToken);
+      setSelectedEntity(entityId);
+      queryClient.invalidateQueries();
+    },
+    onError: () => {
+      toast.error('Failed to switch entity');
     },
   });
 }

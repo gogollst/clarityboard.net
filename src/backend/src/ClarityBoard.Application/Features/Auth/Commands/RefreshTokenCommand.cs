@@ -12,6 +12,7 @@ public record RefreshTokenCommand : IRequest<AuthResponse>
     public required string DeviceFingerprint { get; init; }
     public string? IpAddress { get; init; }
     public string? UserAgent { get; init; }
+    public Guid? EntityId { get; init; }
 }
 
 public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
@@ -85,10 +86,10 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
             .Distinct()
             .ToListAsync(cancellationToken);
 
-        var defaultEntityId = userRoles.FirstOrDefault()?.EntityId ?? Guid.Empty;
+        var targetEntityId = request.EntityId ?? userRoles.FirstOrDefault()?.EntityId ?? Guid.Empty;
 
         var accessToken = _jwtTokenService.GenerateAccessToken(
-            user.Id, user.Email, defaultEntityId, roleNames, permissions);
+            user.Id, user.Email, targetEntityId, roleNames, permissions);
 
         await _db.SaveChangesAsync(cancellationToken);
 

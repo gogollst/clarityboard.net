@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
-import { useEntity } from '@/hooks/useEntity';
+import { useEntity, useSwitchEntity } from '@/hooks/useEntity';
+import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -32,7 +33,9 @@ const themeConfig: Record<Theme, { icon: React.ElementType; label: string }> = {
 
 export default function Header() {
   const { user, logout } = useAuth();
-  const { entities, selectedEntityId, switchEntity } = useEntity();
+  const { selectedEntityId } = useEntity();
+  const authUser = useAuthStore((s) => s.user);
+  const { mutate: switchEntity, isPending: isSwitching } = useSwitchEntity();
   const { toggleSidebar, connectionStatus, theme, setTheme } = useUiStore();
 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -86,16 +89,17 @@ export default function Header() {
           <select
             value={selectedEntityId ?? ''}
             onChange={(e) => switchEntity(e.target.value)}
-            className="bg-transparent text-sm font-medium text-foreground focus:outline-none"
+            disabled={isSwitching}
+            className="bg-transparent text-sm font-medium text-foreground focus:outline-none disabled:opacity-60"
           >
-            {entities.length === 0 && (
+            {!authUser?.entities?.length && (
               <option value="" disabled>
                 No entities
               </option>
             )}
-            {entities.map((entity) => (
-              <option key={entity.id} value={entity.id}>
-                {entity.name}
+            {authUser?.entities?.map((entity) => (
+              <option key={entity.entityId} value={entity.entityId}>
+                {entity.entityName}
               </option>
             ))}
           </select>

@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
+import { useEntityStore } from '@/stores/entityStore';
 import { api, setAccessToken, setRefreshToken } from '@/lib/api';
 
 export function useAuth() {
@@ -19,6 +20,9 @@ export function useAuth() {
     setAccessToken(data.accessToken);
     setRefreshToken(data.refreshToken ?? null);
     setUser(data.user);
+    if (data.user.entities?.length > 0) {
+      useEntityStore.getState().setSelectedEntity(data.user.entities[0].entityId);
+    }
     return { requires2FA: false };
   };
 
@@ -27,6 +31,9 @@ export function useAuth() {
     setAccessToken(data.accessToken);
     setRefreshToken(data.refreshToken ?? null);
     setUser(data.user);
+    if (data.user.entities?.length > 0) {
+      useEntityStore.getState().setSelectedEntity(data.user.entities[0].entityId);
+    }
   };
 
   const logout = async () => {

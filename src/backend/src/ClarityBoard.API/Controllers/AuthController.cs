@@ -78,6 +78,19 @@ public class AuthController : ControllerBase
         return NoContent();
     }
 
+    // ── Entity Switching ──────────────────────────────────────────────
+
+    [Authorize]
+    [HttpPost("switch-entity")]
+    [ProducesResponseType(typeof(SwitchEntityResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<SwitchEntityResponse>> SwitchEntity(
+        [FromBody] SwitchEntityCommand command, CancellationToken ct)
+    {
+        var result = await _mediator.Send(command, ct);
+        return Ok(result);
+    }
+
     // ── Two-Factor Authentication ─────────────────────────────────────
 
     [Authorize]

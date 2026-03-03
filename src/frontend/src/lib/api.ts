@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useEntityStore } from '@/stores/entityStore';
 
 export const api = axios.create({
   baseURL: '/api',
@@ -38,9 +39,11 @@ api.interceptors.response.use(
       error.config._retry = true;
 
       try {
+        const entityId = useEntityStore.getState().selectedEntityId;
         const { data } = await api.post('/auth/refresh', {
           refreshToken,
           deviceFingerprint: navigator.userAgent,
+          entityId: entityId ?? undefined,
         });
         accessToken = data.accessToken;
         if (data.refreshToken) {
