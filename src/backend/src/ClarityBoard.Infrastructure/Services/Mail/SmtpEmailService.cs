@@ -57,6 +57,13 @@ public sealed class SmtpEmailService : IEmailService
         return SendWithRetryAsync(toEmail, subject, html, EmailType.UserInvitation, userId: null, ct);
     }
 
+    public Task SendInvitationLinkEmailAsync(string toEmail, string firstName, string invitationToken, string invitedBy, CancellationToken ct)
+    {
+        var link = $"{DefaultAppUrl}/invite/accept?token={Uri.EscapeDataString(invitationToken)}";
+        var (subject, html) = EmailTemplates.InvitationLink(firstName, link, invitedBy);
+        return SendWithRetryAsync(toEmail, subject, html, EmailType.UserInvitation, userId: null, ct);
+    }
+
     public Task SendTwoFactorCodeEmailAsync(string toEmail, string firstName, string code, CancellationToken ct)
     {
         var (subject, html) = EmailTemplates.TwoFactorCode(firstName, code);

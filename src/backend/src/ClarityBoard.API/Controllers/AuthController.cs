@@ -66,6 +66,18 @@ public class AuthController : ControllerBase
         return NoContent();
     }
 
+    // ── Invitation Acceptance ─────────────────────────────────────────
+
+    [AllowAnonymous]
+    [HttpPost("accept-invitation")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AcceptInvitation([FromBody] AcceptInvitationCommand command, CancellationToken ct)
+    {
+        await _mediator.Send(command, ct);
+        return NoContent();
+    }
+
     // ── Two-Factor Authentication ─────────────────────────────────────
 
     [Authorize]

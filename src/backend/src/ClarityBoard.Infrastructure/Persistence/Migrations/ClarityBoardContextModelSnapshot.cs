@@ -1757,6 +1757,13 @@ namespace ClarityBoard.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("InvitationToken")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("InvitationTokenExpiry")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1774,13 +1781,23 @@ namespace ClarityBoard.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("PasswordResetTokenExpiry")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("RecoveryCodesHash")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("Status")
+                        .HasDefaultValue(0)
+                        .HasColumnType("integer");
 
                     b.Property<string>("Timezone")
                         .IsRequired()
@@ -1801,6 +1818,10 @@ namespace ClarityBoard.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("InvitationToken")
+                        .IsUnique()
+                        .HasFilter("\"InvitationToken\" IS NOT NULL");
 
                     b.ToTable("users", "public");
                 });

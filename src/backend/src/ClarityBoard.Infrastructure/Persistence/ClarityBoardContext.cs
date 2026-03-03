@@ -614,8 +614,9 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
         {
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.InvitationToken).IsUnique().HasFilter("\"InvitationToken\" IS NOT NULL");
             entity.Property(e => e.Email).HasMaxLength(256);
-            entity.Property(e => e.PasswordHash).HasMaxLength(500);
+            entity.Property(e => e.PasswordHash).HasMaxLength(500).IsRequired(false);
             entity.Property(e => e.FirstName).HasMaxLength(100);
             entity.Property(e => e.LastName).HasMaxLength(100);
             entity.Property(e => e.Locale).HasMaxLength(10);
@@ -624,6 +625,9 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.Bio).HasMaxLength(500);
             entity.Property(e => e.TwoFactorSecret).HasMaxLength(500);
             entity.Property(e => e.RecoveryCodesHash).HasMaxLength(2000);
+            entity.Property(e => e.Status).HasDefaultValue(UserStatus.Active);
+            entity.Property(e => e.InvitationToken).HasMaxLength(256);
+            entity.Property(e => e.PasswordResetToken).HasMaxLength(256);
             entity.Ignore(e => e.FullName);
             entity.Ignore(e => e.IsLocked);
         });
@@ -768,11 +772,5 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.HasIndex(e => e.UserId);
         });
 
-        // ── User: password reset token fields ────────────────────────────────────
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.Property(e => e.PasswordResetToken).HasMaxLength(256);
-            // PasswordResetTokenExpiry is already mapped as nullable DateTime – no extra config needed
-        });
     }
 }

@@ -7,6 +7,7 @@ import {
   useDeactivateUser,
   useReactivateUser,
   useResetPassword,
+  useResendInvitation,
   useRoles,
   useAssignRole,
   useRemoveRole,
@@ -33,7 +34,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Loader2, Edit, UserX, UserCheck, KeyRound, X, Search } from 'lucide-react';
+import { Plus, Loader2, Edit, UserX, UserCheck, KeyRound, Mail, X, Search } from 'lucide-react';
 
 interface FormState {
   firstName: string;
@@ -85,6 +86,7 @@ export function Component() {
   const deactivateUser = useDeactivateUser();
   const reactivateUser = useReactivateUser();
   const resetPassword = useResetPassword();
+  const resendInvitation = useResendInvitation();
   const assignRole = useAssignRole();
   const removeRole = useRemoveRole();
 
@@ -294,12 +296,12 @@ export function Component() {
       ),
     },
     {
-      key: 'isActive',
+      key: 'status',
       header: 'Status',
       render: (item: Record<string, unknown>) => (
         <StatusBadge
-          status={item.isActive ? 'Active' : 'Inactive'}
-          variantMap={{ active: 'success', inactive: 'destructive' }}
+          status={String(item.status ?? 'Active')}
+          variantMap={{ active: 'success', invited: 'warning', inactive: 'destructive' }}
         />
       ),
     },
@@ -329,17 +331,31 @@ export function Component() {
             >
               <Edit className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              title="Reset Password"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleResetPassword(user.id);
-              }}
-            >
-              <KeyRound className="h-4 w-4" />
-            </Button>
+            {user.status === 'Invited' ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                title="Resend Invitation"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  resendInvitation.mutate(user.id);
+                }}
+              >
+                <Mail className="h-4 w-4 text-amber-500" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                title="Reset Password"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleResetPassword(user.id);
+                }}
+              >
+                <KeyRound className="h-4 w-4" />
+              </Button>
+            )}
             {user.isActive ? (
               <Button
                 variant="ghost"

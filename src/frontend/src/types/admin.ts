@@ -12,6 +12,7 @@ export interface AdminUser {
   firstName: string;
   lastName: string;
   isActive: boolean;
+  status: 'Active' | 'Invited' | 'Inactive';
   twoFactorEnabled: boolean;
   createdAt: string;
   lastLoginAt?: string;
@@ -37,7 +38,6 @@ export interface UpdateUserRequest {
 export interface CreateUserResponse {
   userId: string;
   email: string;
-  temporaryPassword: string;
 }
 
 export interface AuditLogEntry {

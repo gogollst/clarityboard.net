@@ -9,6 +9,7 @@ const AuthLayout = lazy(() => import('./layouts/AuthLayout'));
 const LoginPage = lazy(() => import('@/features/auth/LoginPage'));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
+const AcceptInvitationPage = lazy(() => import('@/features/auth/AcceptInvitationPage'));
 
 // Dashboard
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: '/login', element: <LoginPage /> },
       { path: '/forgot-password', element: <ForgotPasswordPage /> },
       { path: '/reset-password', element: <ResetPasswordPage /> },
+      { path: '/invite/accept', element: <AcceptInvitationPage /> },
     ],
   },
 
