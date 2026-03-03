@@ -101,6 +101,8 @@ export const router = createBrowserRouter([
       { path: 'hr/travel/:id', lazy: () => import('@/features/hr/travel/TravelExpenseDetail') },
       { path: 'hr/reviews', lazy: () => import('@/features/hr/reviews/ReviewList') },
       { path: 'hr/reviews/:id', lazy: () => import('@/features/hr/reviews/ReviewDetail') },
+      { path: 'hr/employees/:employeeId/documents', lazy: () => import('@/features/hr/documents/EmployeeDocuments') },
+      { path: 'hr/admin/deletions', lazy: () => import('@/features/hr/admin/DeletionRequests') },
     ],
   },
 ]);

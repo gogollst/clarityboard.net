@@ -32,6 +32,8 @@ import type {
   PerformanceReview,
   PerformanceReviewDetail,
   ReviewListParams,
+  EmployeeDocument,
+  DeletionRequest,
 } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
@@ -545,5 +547,62 @@ export function useCompleteReview(reviewId: string) {
       queryClient.invalidateQueries({ queryKey: queryKeys.hr.reviews() });
     },
     onError: () => toast.error('Fehler beim Abschließen der Beurteilung'),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Employee Documents
+// ---------------------------------------------------------------------------
+
+export function useEmployeeDocuments(employeeId: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.documents(employeeId),
+    queryFn: async () => {
+      const { data } = await api.get<EmployeeDocument[]>(`/hr/employees/${employeeId}/documents`);
+      return data;
+    },
+    enabled: !!employeeId,
+  });
+}
+
+export function useDeleteDocument(employeeId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (docId: string) => {
+      await api.delete(`/hr/employees/${employeeId}/documents/${docId}`);
+    },
+    onSuccess: () => {
+      toast.success('Dokument gelöscht');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.documents(employeeId) });
+    },
+    onError: () => toast.error('Fehler beim Löschen'),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// DSGVO / Deletion Requests
+// ---------------------------------------------------------------------------
+
+export function useDeletionRequests() {
+  return useQuery({
+    queryKey: queryKeys.hr.deletionRequests(),
+    queryFn: async () => {
+      const { data } = await api.get<PaginatedResponse<DeletionRequest>>('/hr/deletion-requests');
+      return data;
+    },
+  });
+}
+
+export function useScheduleDeletion() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (employeeId: string) => {
+      await api.post(`/hr/employees/${employeeId}/schedule-deletion`);
+    },
+    onSuccess: () => {
+      toast.success('Löschung geplant');
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.deletionRequests() });
+    },
+    onError: () => toast.error('Fehler beim Planen der Löschung'),
   });
 }

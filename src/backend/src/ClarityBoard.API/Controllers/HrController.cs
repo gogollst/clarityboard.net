@@ -2,9 +2,11 @@ using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Common.Models;
 using ClarityBoard.Application.Features.Hr.Commands;
 using ClarityBoard.Application.Features.Hr.Queries;
+using ClarityBoard.Domain.Entities.Hr;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.API.Controllers;
 
@@ -16,12 +18,27 @@ public class HrController : ControllerBase
     private readonly ISender _mediator;
     private readonly IHrExportService _hrExport;
     private readonly ICurrentUser _currentUser;
+    private readonly IHrDocumentService _hrDocumentService;
+    private readonly IEncryptionService _encryption;
+    private readonly IDataAccessLogger _accessLogger;
+    private readonly IAppDbContext _db;
 
-    public HrController(ISender mediator, IHrExportService hrExport, ICurrentUser currentUser)
+    public HrController(
+        ISender mediator,
+        IHrExportService hrExport,
+        ICurrentUser currentUser,
+        IHrDocumentService hrDocumentService,
+        IEncryptionService encryption,
+        IDataAccessLogger accessLogger,
+        IAppDbContext db)
     {
-        _mediator    = mediator;
-        _hrExport    = hrExport;
-        _currentUser = currentUser;
+        _mediator          = mediator;
+        _hrExport          = hrExport;
+        _currentUser       = currentUser;
+        _hrDocumentService = hrDocumentService;
+        _encryption        = encryption;
+        _accessLogger      = accessLogger;
+        _db                = db;
     }
 
     // ── Employees ──
@@ -526,6 +543,135 @@ public class HrController : ControllerBase
     {
         var id = await _mediator.Send(command, ct);
         return Created(string.Empty, new { id });
+    }
+
+    // ── Documents ──
+
+    [HttpGet("employees/{id:guid}/documents")]
+    [ProducesResponseType(typeof(List<EmployeeDocumentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<EmployeeDocumentDto>>> ListDocuments(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new ListDocumentsQuery(id), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("employees/{id:guid}/documents")]
+    [DisableRequestSizeLimit]
+    [ProducesResponseType(typeof(EmployeeDocumentDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<EmployeeDocumentDto>> UploadDocument(
+        Guid id,
+        IFormFile file,
+        [FromForm] string documentType,
+        [FromForm] string title,
+        [FromForm] bool isConfidential = false,
+        CancellationToken ct = default)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest("No file provided.");
+
+        if (!Enum.TryParse<DocumentType>(documentType, ignoreCase: true, out var docType))
+            return BadRequest($"Invalid documentType '{documentType}'.");
+
+        // Verify employee belongs to current user's entity
+        var employee = await _db.Employees
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+        if (employee is null)
+            return NotFound($"Employee {id} not found.");
+        if (employee.EntityId != _currentUser.EntityId)
+            return Forbid();
+
+        // Upload to MinIO and encrypt the storage path
+        using var stream = file.OpenReadStream();
+        var rawPath = await _hrDocumentService.UploadDocumentAsync(
+            id, file.FileName, file.ContentType ?? "application/octet-stream", stream, ct);
+        var encryptedPath = _encryption.Encrypt(rawPath);
+
+        // Persist metadata
+        var document = EmployeeDocument.Create(
+            employeeId:    id,
+            type:          docType,
+            title:         title,
+            fileName:      file.FileName,
+            storagePath:   encryptedPath,
+            mimeType:      file.ContentType ?? "application/octet-stream",
+            fileSizeBytes: file.Length,
+            uploadedBy:    _currentUser.UserId,
+            isConfidential: isConfidential);
+
+        _db.EmployeeDocuments.Add(document);
+        await _db.SaveChangesAsync(ct);
+
+        var dto = new EmployeeDocumentDto
+        {
+            Id                  = document.Id,
+            EmployeeId          = document.EmployeeId,
+            DocumentType        = document.DocumentType.ToString(),
+            Title               = document.Title,
+            FileName            = document.FileName,
+            MimeType            = document.MimeType,
+            FileSizeBytes       = document.FileSizeBytes,
+            UploadedAt          = document.UploadedAt,
+            ExpiresAt           = document.ExpiresAt,
+            IsConfidential      = document.IsConfidential,
+            DeletionScheduledAt = document.DeletionScheduledAt,
+        };
+
+        return Created(string.Empty, dto);
+    }
+
+    [HttpGet("employees/{id:guid}/documents/{docId:guid}/download")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DownloadDocument(Guid id, Guid docId, CancellationToken ct)
+    {
+        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var userAgent = Request.Headers.UserAgent.ToString();
+
+        var result = await _mediator.Send(
+            new GetDocumentDownloadQuery(docId, ipAddress, userAgent), ct);
+
+        return File(result.Stream, result.MimeType, result.FileName);
+    }
+
+    [HttpDelete("employees/{id:guid}/documents/{docId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteDocument(Guid id, Guid docId, CancellationToken ct)
+    {
+        await _mediator.Send(new DeleteDocumentCommand { EmployeeId = id, DocumentId = docId }, ct);
+        return NoContent();
+    }
+
+    // ── DSGVO / Deletion Requests ──
+
+    [HttpGet("deletion-requests")]
+    [ProducesResponseType(typeof(PagedResult<DeletionRequestDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<DeletionRequestDto>>> ListDeletionRequests(
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new ListDeletionRequestsQuery
+        {
+            Status   = status,
+            Page     = page,
+            PageSize = pageSize,
+        }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("employees/{id:guid}/schedule-deletion")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> ScheduleDeletion(Guid id, CancellationToken ct)
+    {
+        var requestId = await _mediator.Send(new ScheduleDeletionCommand { EmployeeId = id }, ct);
+        return Created(string.Empty, new { id = requestId });
     }
 }
 

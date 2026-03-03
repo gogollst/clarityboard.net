@@ -23,6 +23,7 @@ import {
   Calendar,
   Plane,
   Star,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -86,6 +87,13 @@ const hrNavGroup: NavGroup = {
   ],
 };
 
+const hrAdminNavGroup: NavGroup = {
+  label: 'HR Admin',
+  items: [
+    { label: 'DSGVO-Verwaltung', path: '/hr/admin/deletions', icon: Shield },
+  ],
+};
+
 const adminNavGroup: NavGroup = {
   label: 'Admin',
   items: [
@@ -119,6 +127,7 @@ export default function Sidebar() {
 
   const showAdmin = hasPermission('admin.*');
   const showHr = hasPermission('hr.view');
+  const showHrAdmin = hasPermission('hr.admin');
 
   return (
     <aside
@@ -164,6 +173,20 @@ export default function Sidebar() {
             />
             <NavGroupSection
               group={hrNavGroup}
+              collapsed={!sidebarOpen}
+              isActive={isActive}
+            />
+          </>
+        )}
+
+        {showHrAdmin && (
+          <>
+            <div
+              className="mx-3 my-2 border-t"
+              style={{ borderColor: 'var(--color-sidebar-border)' }}
+            />
+            <NavGroupSection
+              group={hrAdminNavGroup}
               collapsed={!sidebarOpen}
               isActive={isActive}
             />

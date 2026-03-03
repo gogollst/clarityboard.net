@@ -9,6 +9,7 @@ using ClarityBoard.Infrastructure.Services;
 using ClarityBoard.Infrastructure.Services.AI;
 using ClarityBoard.Infrastructure.Services.Cache;
 using ClarityBoard.Infrastructure.Services.Datev;
+using ClarityBoard.Infrastructure.Services.Hr;
 using ClarityBoard.Infrastructure.Services.Storage;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -117,6 +118,12 @@ public static class DependencyInjection
 
         // HR Export (travel expenses CSV)
         services.AddScoped<IHrExportService, HrExportService>();
+
+        // HR Document Storage (MinIO bucket: hr-documents)
+        services.AddScoped<IHrDocumentService, HrDocumentService>();
+
+        // DSGVO Data Access Logger
+        services.AddScoped<IDataAccessLogger, DataAccessLogger>();
 
         // Background Services
         services.AddHostedService<RecurringEntryService>();

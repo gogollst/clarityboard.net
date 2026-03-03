@@ -307,6 +307,34 @@ export interface TravelExpenseListParams {
   pageSize?: number;
 }
 
+// Employee Documents
+export interface EmployeeDocument {
+  id: string;
+  employeeId: string;
+  documentType: string;
+  title: string;
+  fileName: string;
+  mimeType: string;
+  fileSizeBytes: number;
+  uploadedAt: string;
+  expiresAt?: string;
+  isConfidential: boolean;
+  deletionScheduledAt?: string;
+}
+
+// DSGVO Deletion Requests
+export interface DeletionRequest {
+  id: string;
+  employeeId: string;
+  employeeFullName: string;
+  requestedBy: string;
+  requestedAt: string;
+  scheduledDeletionAt: string;
+  status: string; // 'Pending' | 'Completed' | 'Blocked'
+  blockReason?: string;
+  completedAt?: string;
+}
+
 // Performance Reviews
 
 export interface PerformanceReview {

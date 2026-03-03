@@ -137,5 +137,7 @@ export const queryKeys = {
     travelExpense: (id: string) => ['hr', 'travel-expense', id] as const,
     reviews: () => ['hr', 'reviews'] as const,
     review: (id: string) => ['hr', 'review', id] as const,
+    documents: (employeeId: string) => ['hr', 'documents', employeeId] as const,
+    deletionRequests: () => ['hr', 'deletion-requests'] as const,
   },
 } as const;
