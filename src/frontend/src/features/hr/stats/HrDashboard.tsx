@@ -13,6 +13,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
 } from 'recharts';
 
 export function Component() {
@@ -106,6 +107,7 @@ export function Component() {
                   <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                   <YAxis allowDecimals={false} />
                   <Tooltip />
+                  <Legend />
                   <Bar dataKey="newHires" name="Einstellungen" fill="#34d399" />
                   <Bar dataKey="terminations" name="Kündigungen" fill="#f87171" />
                 </BarChart>

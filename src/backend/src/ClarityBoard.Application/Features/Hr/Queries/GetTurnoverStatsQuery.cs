@@ -67,15 +67,24 @@ public class GetTurnoverStatsQueryHandler : IRequestHandler<GetTurnoverStatsQuer
             });
         }
 
-        // Average turnover rate = avg monthly terminations / avg active headcount * 100
+        // Average turnover rate = avg monthly terminations / avg monthly headcount * 100
         var avgTerminations = monthlyTurnover.Average(m => (double)m.Terminations);
 
-        // Compute average active headcount over the 12 months
-        var totalActive = employees.Count(e => e.Status != EmployeeStatus.Terminated);
-        var avgHeadcount = totalActive > 0 ? (double)totalActive : 1.0;
+        // Compute average monthly headcount over the 12 months
+        double avgMonthlyHeadcount = 0;
+        for (int i = 0; i < 12; i++)
+        {
+            var monthStart = new DateOnly(today.Year, today.Month, 1).AddMonths(-11 + i);
+            var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+            var count = employees.Count(e =>
+                e.HireDate <= monthEnd &&
+                (e.TerminationDate == null || e.TerminationDate >= monthStart));
+            avgMonthlyHeadcount += count;
+        }
+        avgMonthlyHeadcount /= 12.0;
 
-        var averageTurnoverRate = avgHeadcount > 0
-            ? (decimal)(avgTerminations / avgHeadcount * 100.0)
+        var averageTurnoverRate = avgMonthlyHeadcount > 0
+            ? (decimal)(avgTerminations / avgMonthlyHeadcount * 100.0)
             : 0m;
 
         return new TurnoverStatsDto
