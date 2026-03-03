@@ -36,6 +36,7 @@
         "roleSelectPlaceholder": "Select a role",
         "entities": "Entities",
         "noEntities": "No entities available.",
+        "emailPlaceholder": "user@company.com",
         "createUser": "Create User",
         "errorFallback": "Failed to create user"
       },
@@ -151,7 +152,19 @@
       "parentEntity": "Parent Entity",
       "edit": "Edit",
       "deactivate": "Deactivate",
-      "reactivate": "Reactivate"
+      "reactivate": "Reactivate",
+      "unknownEntity": "Unknown"
+    },
+    "countries": {
+      "DE": "Germany",
+      "AT": "Austria",
+      "CH": "Switzerland",
+      "LU": "Luxembourg",
+      "NL": "Netherlands",
+      "BE": "Belgium",
+      "FR": "France",
+      "GB": "United Kingdom",
+      "US": "USA"
     },
     "months": {
       "1": "January",

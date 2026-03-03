@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEntities, useCreateEntity, useUpdateEntity, useSetEntityActive } from '@/hooks/useEntity';
 import { useUsers } from '@/hooks/useAdmin';
@@ -72,17 +72,7 @@ const emptyForm: FormState = {
 
 const LEGAL_FORMS = ['GmbH', 'AG', 'UG', 'GbR', 'KG', 'OHG', 'eK', 'SE', 'KGaA', 'GmbH & Co. KG'];
 
-const COUNTRIES = [
-  { value: 'DE', label: 'Deutschland' },
-  { value: 'AT', label: 'Österreich' },
-  { value: 'CH', label: 'Schweiz' },
-  { value: 'LU', label: 'Luxemburg' },
-  { value: 'NL', label: 'Niederlande' },
-  { value: 'BE', label: 'Belgien' },
-  { value: 'FR', label: 'Frankreich' },
-  { value: 'GB', label: 'Großbritannien' },
-  { value: 'US', label: 'USA' },
-];
+const COUNTRY_CODES = ['DE', 'AT', 'CH', 'LU', 'NL', 'BE', 'FR', 'GB', 'US'] as const;
 
 const MONTH_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'] as const;
 
@@ -325,6 +315,10 @@ interface EntityFormFieldsProps {
 function EntityFormFields({ form, updateField, entities, users, excludeEntityId }: EntityFormFieldsProps) {
   const { t } = useTranslation('admin');
   const availableParents = entities.filter((e) => e.id !== excludeEntityId);
+  const countries = useMemo(
+    () => COUNTRY_CODES.map((code) => ({ value: code, label: t(`entities.countries.${code}`) })),
+    [t],
+  );
   return (
     <div className="space-y-6">
       <FieldGroup label={t('entities.form.sections.companyInfo')}>
@@ -375,7 +369,7 @@ function EntityFormFields({ form, updateField, entities, users, excludeEntityId 
             <Select value={form.country} onValueChange={(v) => updateField('country', v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {COUNTRIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label} ({c.value})</SelectItem>)}
+                {countries.map((c) => <SelectItem key={c.value} value={c.value}>{c.label} ({c.value})</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -476,7 +470,7 @@ function EntityCard({
 }) {
   const { t } = useTranslation('admin');
   const parentName = entity.parentEntityId
-    ? allEntities.find((e) => e.id === entity.parentEntityId)?.name ?? 'Unknown'
+    ? allEntities.find((e) => e.id === entity.parentEntityId)?.name ?? t('entities.card.unknownEntity')
     : null;
 
   const monthKey = String(entity.fiscalYearStartMonth) as typeof MONTH_KEYS[number];

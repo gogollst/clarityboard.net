@@ -36,6 +36,7 @@
         "roleSelectPlaceholder": "Rolle auswählen",
         "entities": "Entitäten",
         "noEntities": "Keine Entitäten verfügbar.",
+        "emailPlaceholder": "benutzer@firma.de",
         "createUser": "Benutzer erstellen",
         "errorFallback": "Benutzer konnte nicht erstellt werden"
       },
@@ -151,7 +152,19 @@
       "parentEntity": "Übergeordnete Entität",
       "edit": "Bearbeiten",
       "deactivate": "Deaktivieren",
-      "reactivate": "Reaktivieren"
+      "reactivate": "Reaktivieren",
+      "unknownEntity": "Unbekannt"
+    },
+    "countries": {
+      "DE": "Deutschland",
+      "AT": "Österreich",
+      "CH": "Schweiz",
+      "LU": "Luxemburg",
+      "NL": "Niederlande",
+      "BE": "Belgien",
+      "FR": "Frankreich",
+      "GB": "Großbritannien",
+      "US": "USA"
     },
     "months": {
       "1": "Januar",

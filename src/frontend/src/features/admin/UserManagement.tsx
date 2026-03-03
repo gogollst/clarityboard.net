@@ -471,7 +471,7 @@ export function Component() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, email: e.target.value }))
                 }
-                placeholder="user@company.com"
+                placeholder={t('users.dialogs.addUser.emailPlaceholder')}
                 aria-invalid={!!formErrors.email}
               />
               {formErrors.email && (
