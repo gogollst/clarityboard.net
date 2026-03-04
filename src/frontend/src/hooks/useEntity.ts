@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 import { api, setAccessToken } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import { useEntityStore } from '@/stores/entityStore';
-import type { LegalEntity, CreateEntityRequest, UpdateEntityRequest } from '@/types/entity';
+import i18n from '@/i18n';
+import type { LegalEntity, CreateEntityRequest, UpdateEntityRequest, DepartmentNode } from '@/types/entity';
 
 export function useEntity() {
   const { entities, selectedEntityId, setSelectedEntity } = useEntityStore();
@@ -113,5 +114,58 @@ export function useSetEntityActive() {
     onError: () => {
       toast.error('Failed to update entity status');
     },
+  });
+}
+
+export function useEntityDepartments(entityId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.entity.departments(entityId ?? ''),
+    queryFn: async () => {
+      const { data } = await api.get<DepartmentNode[]>(`/entity/${entityId}/departments`);
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function useCreateEntityDepartment(entityId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { name: string; code: string; description?: string; parentDepartmentId?: string }) => {
+      await api.post(`/entity/${entityId}/departments`, body);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.entity.departments(entityId) });
+      toast.success(i18n.t('admin:departments.created'));
+    },
+    onError: () => toast.error(i18n.t('admin:departments.createError')),
+  });
+}
+
+export function useUpdateEntityDepartment(entityId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ departmentId, ...body }: { departmentId: string; name: string; code: string; description?: string; parentDepartmentId?: string | null }) => {
+      await api.put(`/entity/${entityId}/departments/${departmentId}`, body);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.entity.departments(entityId) });
+      toast.success(i18n.t('admin:departments.updated'));
+    },
+    onError: () => toast.error(i18n.t('admin:departments.updateError')),
+  });
+}
+
+export function useDeleteEntityDepartment(entityId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (departmentId: string) => {
+      await api.delete(`/entity/${entityId}/departments/${departmentId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.entity.departments(entityId) });
+      toast.success(i18n.t('admin:departments.deleted'));
+    },
+    onError: () => toast.error(i18n.t('admin:departments.deleteError')),
   });
 }
