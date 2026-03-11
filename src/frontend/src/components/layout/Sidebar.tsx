@@ -26,6 +26,18 @@ import {
   Plane,
   Star,
   Shield,
+  Clock,
+  UserCircle,
+  ListChecks,
+  BookOpen,
+  CalendarRange,
+  Download,
+  Layers,
+  Target,
+  Scale,
+  PieChart,
+  TrendingDown,
+  Receipt,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -87,13 +99,31 @@ export default function Sidebar() {
     },
   ], [t]);
 
+  const accountingNavGroupMemo = useMemo<NavGroup>(() => ({
+    label: t('navigation:groups.accounting'),
+    items: [
+      { label: t('navigation:items.journalEntries'), path: '/accounting/journal-entries', icon: BookOpen },
+      { label: t('navigation:items.trialBalance'), path: '/accounting/trial-balance', icon: Scale },
+      { label: t('navigation:items.balanceSheet'), path: '/accounting/balance-sheet', icon: PieChart },
+      { label: t('navigation:items.profitAndLoss'), path: '/accounting/profit-loss', icon: TrendingDown },
+      { label: t('navigation:items.vatReconciliation'), path: '/accounting/vat', icon: Receipt },
+      { label: t('navigation:items.fiscalPeriods'), path: '/accounting/fiscal-periods', icon: CalendarRange },
+      { label: t('navigation:items.accountingDatev'), path: '/accounting/datev/exports', icon: Download },
+      { label: t('navigation:items.costCenters'), path: '/accounting/cost-centers', icon: Layers },
+      { label: t('navigation:items.accountingScenarios'), path: '/accounting/scenarios', icon: Target },
+    ],
+  }), [t]);
+
   const hrNavGroupMemo = useMemo<NavGroup>(() => ({
     label: t('navigation:groups.hr'),
     items: [
+      { label: t('navigation:items.mySelf'), path: '/hr/me', icon: UserCircle },
       { label: t('navigation:items.employees'), path: '/hr/employees', icon: Users },
       { label: t('navigation:items.leaveRequests'), path: '/hr/leave/requests', icon: Calendar },
+      { label: t('navigation:items.worktime'), path: '/hr/worktime', icon: Clock },
       { label: t('navigation:items.travel'), path: '/hr/travel', icon: Plane },
       { label: t('navigation:items.reviews'), path: '/hr/reviews', icon: Star },
+      { label: t('navigation:items.onboarding'), path: '/hr/onboarding', icon: ListChecks },
       { label: t('navigation:items.stats'), path: '/hr/stats', icon: BarChart2 },
     ],
   }), [t]);
@@ -131,6 +161,7 @@ export default function Sidebar() {
   };
 
   const showAdmin = hasPermission('admin.*');
+  const showAccounting = hasPermission('accounting.view');
   const showHr = hasPermission('hr.view');
   const showHrAdmin = hasPermission('hr.admin');
 
@@ -169,6 +200,20 @@ export default function Sidebar() {
             isActive={isActive}
           />
         ))}
+
+        {showAccounting && (
+          <>
+            <div
+              className="mx-3 my-2 border-t"
+              style={{ borderColor: 'var(--color-sidebar-border)' }}
+            />
+            <NavGroupSection
+              group={accountingNavGroupMemo}
+              collapsed={!sidebarOpen}
+              isActive={isActive}
+            />
+          </>
+        )}
 
         {showHr && (
           <>

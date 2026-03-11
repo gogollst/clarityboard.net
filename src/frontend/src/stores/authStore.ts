@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getStoredUser, clearStoredTokens } from '@/lib/api';
 
 export interface EntityAccess {
   entityId: string;
@@ -26,9 +27,14 @@ interface AuthState {
   logout: () => void;
 }
 
+const _storedUser = getStoredUser() as User | null;
+
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  isAuthenticated: false,
+  user: _storedUser,
+  isAuthenticated: !!_storedUser,
   setUser: (user) => set({ user, isAuthenticated: !!user }),
-  logout: () => set({ user: null, isAuthenticated: false }),
+  logout: () => {
+    clearStoredTokens();
+    set({ user: null, isAuthenticated: false });
+  },
 }));

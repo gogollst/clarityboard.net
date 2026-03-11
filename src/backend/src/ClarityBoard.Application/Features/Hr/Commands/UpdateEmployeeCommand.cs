@@ -17,6 +17,9 @@ public record UpdateEmployeeCommand : IRequest
     public required string TaxId { get; init; }
     public Guid? ManagerId { get; init; }
     public Guid? DepartmentId { get; init; }
+    public string? Iban { get; init; }
+    public string? Bic { get; init; }
+    public Guid? EntityId { get; init; }
 }
 
 public class UpdateEmployeeCommandValidator : AbstractValidator<UpdateEmployeeCommand>
@@ -27,6 +30,8 @@ public class UpdateEmployeeCommandValidator : AbstractValidator<UpdateEmployeeCo
         RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100);
         RuleFor(x => x.LastName).NotEmpty().MaximumLength(100);
         RuleFor(x => x.TaxId).NotEmpty().MaximumLength(50);
+        RuleFor(x => x.Iban).MinimumLength(15).MaximumLength(34).When(x => !string.IsNullOrWhiteSpace(x.Iban));
+        RuleFor(x => x.Bic).MaximumLength(11).When(x => !string.IsNullOrWhiteSpace(x.Bic));
     }
 }
 
@@ -51,7 +56,10 @@ public class UpdateEmployeeCommandHandler : IRequestHandler<UpdateEmployeeComman
             dateOfBirth: request.DateOfBirth,
             taxId: request.TaxId,
             managerId: request.ManagerId,
-            departmentId: request.DepartmentId);
+            departmentId: request.DepartmentId,
+            iban: request.Iban,
+            bic: request.Bic,
+            entityId: request.EntityId);
 
         await _db.SaveChangesAsync(cancellationToken);
     }

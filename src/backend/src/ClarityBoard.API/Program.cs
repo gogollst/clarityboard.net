@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using ClarityBoard.API.Hubs;
 using Microsoft.EntityFrameworkCore;
@@ -43,9 +44,15 @@ builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddScoped<IAlertNotificationService, AlertNotificationService>();
 builder.Services.AddScoped<IKpiNotificationService, KpiNotificationService>();
 builder.Services.AddScoped<IHrHubNotifier, HrHubNotifier>();
+builder.Services.AddScoped<IAccountingHubNotifier, AccountingHubNotifier>();
 
 // Controllers + API Explorer
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -201,6 +208,7 @@ app.MapControllers();
 app.MapHub<KpiHub>("/hubs/kpi");
 app.MapHub<AlertHub>("/hubs/alerts");
 app.MapHub<HrHub>("/hubs/hr");
+app.MapHub<AccountingHub>("/hubs/accounting");
 
 // Health checks
 app.MapHealthChecks("/health");

@@ -15,6 +15,7 @@ public record CreateDepartmentCommand : IRequest<Guid>
     public required string Code { get; init; }
     public Guid? ParentDepartmentId { get; init; }
     public Guid? ManagerId { get; init; }
+    public string? Description { get; init; }
 }
 
 public class CreateDepartmentCommandValidator : AbstractValidator<CreateDepartmentCommand>
@@ -48,7 +49,8 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
             name: request.Name,
             code: request.Code,
             parentDepartmentId: request.ParentDepartmentId,
-            managerId: request.ManagerId);
+            managerId: request.ManagerId,
+            description: request.Description);
 
         _db.Departments.Add(department);
         await _db.SaveChangesAsync(cancellationToken);

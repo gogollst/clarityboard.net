@@ -36,6 +36,7 @@ public record DocumentDetailDto
     public Guid? BookedJournalEntryId { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? ProcessedAt { get; init; }
+    public IReadOnlyList<string> ReviewReasons { get; init; } = [];
     public IReadOnlyList<DocumentFieldDto> Fields { get; init; } = [];
     public BookingSuggestionDto? BookingSuggestion { get; init; }
 }

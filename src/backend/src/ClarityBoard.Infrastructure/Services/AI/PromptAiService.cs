@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Domain.Entities.AI;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +26,23 @@ public sealed class PromptAiService : IPromptAiService
     private readonly ILogger<PromptAiService> _logger;
 
     private static readonly TimeSpan PromptCacheTtl = TimeSpan.FromMinutes(5);
+    private static readonly Regex ConditionalBlockRegex = new(@"{{#if ([^}]+)}}(.*?){{/if}}", RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex PlaceholderRegex = new(@"{{[^}]+}}", RegexOptions.Compiled);
 
     // Anthropic constants
     private const string AnthropicUrl     = "https://api.anthropic.com/v1/messages";
     private const string AnthropicVersion = "2023-06-01";
+    private const string AnthropicRelativePath = "v1/messages";
 
     // OpenAI constants
     private const string OpenAiUrl = "https://api.openai.com/v1/chat/completions";
+    private const string OpenAiRelativePath = "v1/chat/completions";
+    private const string GrokUrl = "https://api.x.ai/v1/chat/completions";
+    private const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+    private const string GeminiRelativePath = "v1beta/openai/chat/completions";
+    private const string ZaiUrl = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+    private const string ZaiRelativePath = "api/paas/v4/chat/completions";
+    private const string ManusUrl = "https://api.manus.im/v1/chat/completions";
 
     public PromptAiService(
         IServiceProvider sp,
@@ -129,13 +140,13 @@ public sealed class PromptAiService : IPromptAiService
     {
         try
         {
-            var apiKey = await GetApiKeyAsync(provider, ct);
-            if (apiKey is null) return false;
+            var settings = await TryGetProviderSettingsAsync(provider, ct);
+            if (settings is null) return false;
 
             var result = await CallProviderAsync(
-                provider, GetDefaultModel(provider),
+                provider, settings.ModelDefault ?? GetDefaultModel(provider),
                 "You are a health check bot.", "Respond with exactly: OK",
-                temperature: 0m, maxTokens: 10, ct, apiKey);
+                temperature: 0m, maxTokens: 10, ct, settings.ApiKey);
 
             return result.Content.Contains("OK", StringComparison.OrdinalIgnoreCase);
         }
@@ -150,6 +161,7 @@ public sealed class PromptAiService : IPromptAiService
     // ── Private Helpers ───────────────────────────────────────────────────
 
     private sealed record AiCallResult(string Content, int InputTokens, int OutputTokens);
+    private sealed record ProviderRuntimeSettings(string ApiKey, string? BaseUrl, string? ModelDefault);
 
     private async Task<AiCallResult> CallProviderAsync(
         AiProvider provider, string model,
@@ -157,23 +169,25 @@ public sealed class PromptAiService : IPromptAiService
         decimal temperature, int maxTokens,
         CancellationToken ct, string? overrideKey = null)
     {
-        var apiKey = overrideKey ?? await GetApiKeyAsync(provider, ct)
-            ?? throw new InvalidOperationException($"No active API key found for provider {provider}.");
+        var settings = await GetRequiredProviderSettingsAsync(provider, overrideKey, ct);
+        var modelToUse = string.IsNullOrWhiteSpace(model)
+            ? settings.ModelDefault ?? GetDefaultModel(provider)
+            : model;
 
         return provider switch
         {
-            AiProvider.Anthropic => await CallAnthropicAsync(apiKey, model, systemPrompt, userMessage, temperature, maxTokens, ct),
-            AiProvider.OpenAI    => await CallOpenAiAsync(apiKey, model, systemPrompt, userMessage, temperature, maxTokens, ct),
-            AiProvider.Grok      => await CallOpenAiCompatibleAsync(apiKey, "https://api.x.ai/v1/chat/completions", model, systemPrompt, userMessage, temperature, maxTokens, ct),
-            AiProvider.Gemini    => await CallOpenAiCompatibleAsync(apiKey, "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", model, systemPrompt, userMessage, temperature, maxTokens, ct),
-            AiProvider.ZAI       => await CallOpenAiCompatibleAsync(apiKey, "https://open.bigmodel.cn/api/paas/v4/chat/completions", model, systemPrompt, userMessage, temperature, maxTokens, ct),
-            AiProvider.Manus     => await CallOpenAiCompatibleAsync(apiKey, "https://api.manus.im/v1/chat/completions", model, systemPrompt, userMessage, temperature, maxTokens, ct),
+            AiProvider.Anthropic => await CallAnthropicAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, AnthropicUrl, AnthropicRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
+            AiProvider.OpenAI    => await CallOpenAiAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, OpenAiUrl, OpenAiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
+            AiProvider.Grok      => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, GrokUrl, OpenAiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
+            AiProvider.Gemini    => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, GeminiUrl, GeminiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
+            AiProvider.ZAI       => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, ZaiUrl, ZaiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
+            AiProvider.Manus     => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, ManusUrl, OpenAiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
             _                    => throw new NotSupportedException($"Provider {provider} is not supported."),
         };
     }
 
     private async Task<AiCallResult> CallAnthropicAsync(
-        string apiKey, string model, string systemPrompt, string userMessage,
+        string apiKey, string url, string model, string systemPrompt, string userMessage,
         decimal temperature, int maxTokens, CancellationToken ct)
     {
         using var client = _httpClientFactory.CreateClient("ai_prompt");
@@ -190,7 +204,7 @@ public sealed class PromptAiService : IPromptAiService
         }, SnakeCaseOptions);
 
         using var httpContent = new StringContent(body, Encoding.UTF8, "application/json");
-        using var response    = await client.PostAsync(AnthropicUrl, httpContent, ct);
+        using var response    = await client.PostAsync(url, httpContent, ct);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -208,9 +222,9 @@ public sealed class PromptAiService : IPromptAiService
     }
 
     private async Task<AiCallResult> CallOpenAiAsync(
-        string apiKey, string model, string systemPrompt, string userMessage,
+        string apiKey, string url, string model, string systemPrompt, string userMessage,
         decimal temperature, int maxTokens, CancellationToken ct)
-        => await CallOpenAiCompatibleAsync(apiKey, OpenAiUrl, model, systemPrompt, userMessage, temperature, maxTokens, ct);
+        => await CallOpenAiCompatibleAsync(apiKey, url, model, systemPrompt, userMessage, temperature, maxTokens, ct);
 
     private async Task<AiCallResult> CallOpenAiCompatibleAsync(
         string apiKey, string url, string model, string systemPrompt, string userMessage,
@@ -243,15 +257,15 @@ public sealed class PromptAiService : IPromptAiService
 
         using var doc  = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
         var root       = doc.RootElement;
-        var text       = root.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString() ?? string.Empty;
-        var usage      = root.GetProperty("usage");
-        var inputTok   = usage.GetProperty("prompt_tokens").GetInt32();
-        var outputTok  = usage.GetProperty("completion_tokens").GetInt32();
+        var text       = ExtractOpenAiCompatibleContent(root);
+        var usage      = root.TryGetProperty("usage", out var usageElement) ? usageElement : default;
+        var inputTok   = GetInt32OrDefault(usage, "prompt_tokens");
+        var outputTok  = GetInt32OrDefault(usage, "completion_tokens");
 
         return new AiCallResult(text, inputTok, outputTok);
     }
 
-    private async Task<string?> GetApiKeyAsync(AiProvider provider, CancellationToken ct)
+    private async Task<ProviderRuntimeSettings?> TryGetProviderSettingsAsync(AiProvider provider, CancellationToken ct)
     {
         using var scope  = _sp.CreateScope();
         var db           = scope.ServiceProvider.GetRequiredService<Application.Common.Interfaces.IAppDbContext>();
@@ -259,7 +273,25 @@ public sealed class PromptAiService : IPromptAiService
             .FirstOrDefaultAsync(c => c.Provider == provider && c.IsActive, ct);
 
         if (config is null) return null;
-        return _encryption.Decrypt(config.EncryptedApiKey);
+
+        return new ProviderRuntimeSettings(
+            _encryption.Decrypt(config.EncryptedApiKey),
+            config.BaseUrl,
+            config.ModelDefault);
+    }
+
+    private async Task<ProviderRuntimeSettings> GetRequiredProviderSettingsAsync(
+        AiProvider provider,
+        string? overrideKey,
+        CancellationToken ct)
+    {
+        var settings = await TryGetProviderSettingsAsync(provider, ct);
+        var apiKey = overrideKey ?? settings?.ApiKey;
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException($"No active API key found for provider {provider}.");
+
+        return new ProviderRuntimeSettings(apiKey, settings?.BaseUrl, settings?.ModelDefault);
     }
 
     private async Task<Domain.Entities.AI.AiPrompt?> LoadPromptAsync(string promptKey, CancellationToken ct)
@@ -310,10 +342,84 @@ public sealed class PromptAiService : IPromptAiService
 
     private static string ReplaceVariables(string template, Dictionary<string, string> variables)
     {
-        var sb = new StringBuilder(template);
+        var rendered = ConditionalBlockRegex.Replace(template, match =>
+        {
+            var key = match.Groups[1].Value.Trim();
+            return variables.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+                ? match.Groups[2].Value
+                : string.Empty;
+        });
+
+        var sb = new StringBuilder(rendered);
         foreach (var (key, value) in variables)
             sb.Replace($"{{{{{key}}}}}", value);
-        return sb.ToString();
+
+        return PlaceholderRegex.Replace(sb.ToString(), string.Empty).Trim();
+    }
+
+    private static string ExtractOpenAiCompatibleContent(JsonElement root)
+    {
+        var content = root.GetProperty("choices")[0].GetProperty("message").GetProperty("content");
+
+        return content.ValueKind switch
+        {
+            JsonValueKind.String => content.GetString() ?? string.Empty,
+            JsonValueKind.Array => string.Join("\n", content.EnumerateArray()
+                .Where(item => item.ValueKind == JsonValueKind.Object)
+                .Select(item => item.TryGetProperty("text", out var text) ? text.GetString() : null)
+                .Where(text => !string.IsNullOrWhiteSpace(text))),
+            JsonValueKind.Object when content.TryGetProperty("text", out var text) => text.GetString() ?? string.Empty,
+            _ => string.Empty,
+        };
+    }
+
+    private static int GetInt32OrDefault(JsonElement element, string propertyName)
+        => element.ValueKind == JsonValueKind.Object && element.TryGetProperty(propertyName, out var property)
+            ? property.GetInt32()
+            : 0;
+
+    private static string ResolveEndpoint(string? configuredBaseUrl, string defaultUrl, string relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(configuredBaseUrl))
+            return defaultUrl;
+
+        var trimmedBaseUrl = configuredBaseUrl.TrimEnd('/');
+        var relativeSegments = relativePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (!Uri.TryCreate(trimmedBaseUrl, UriKind.Absolute, out var configuredUri))
+            return trimmedBaseUrl;
+
+        var baseSegments = configuredUri.AbsolutePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var overlap = GetPathOverlap(baseSegments, relativeSegments);
+        var remainder = string.Join('/', relativeSegments.Skip(overlap));
+
+        return string.IsNullOrWhiteSpace(remainder)
+            ? trimmedBaseUrl
+            : $"{trimmedBaseUrl}/{remainder}";
+    }
+
+    private static int GetPathOverlap(string[] baseSegments, string[] relativeSegments)
+    {
+        for (var count = Math.Min(baseSegments.Length, relativeSegments.Length); count > 0; count--)
+        {
+            var matches = true;
+            for (var i = 0; i < count; i++)
+            {
+                if (!string.Equals(
+                        baseSegments[baseSegments.Length - count + i],
+                        relativeSegments[i],
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    matches = false;
+                    break;
+                }
+            }
+
+            if (matches)
+                return count;
+        }
+
+        return 0;
     }
 
     private static string GetDefaultModel(AiProvider provider) => provider switch

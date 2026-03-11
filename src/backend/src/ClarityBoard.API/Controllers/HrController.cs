@@ -78,6 +78,15 @@ public class HrController : ControllerBase
         return CreatedAtAction(nameof(GetEmployee), new { id }, new { id });
     }
 
+    [HttpGet("employees/me")]
+    [ProducesResponseType(typeof(EmployeeDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<EmployeeDetailDto>> GetMyEmployee(CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetMyEmployeeQuery(), ct);
+        return Ok(result);
+    }
+
     [HttpGet("employees/{id:guid}")]
     [ProducesResponseType(typeof(EmployeeDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -96,13 +105,16 @@ public class HrController : ControllerBase
     {
         await _mediator.Send(new UpdateEmployeeCommand
         {
-            Id          = id,
-            FirstName   = body.FirstName,
-            LastName    = body.LastName,
-            DateOfBirth = body.DateOfBirth,
-            TaxId       = body.TaxId,
-            ManagerId   = body.ManagerId,
+            Id           = id,
+            FirstName    = body.FirstName,
+            LastName     = body.LastName,
+            DateOfBirth  = body.DateOfBirth,
+            TaxId        = body.TaxId,
+            ManagerId    = body.ManagerId,
             DepartmentId = body.DepartmentId,
+            Iban         = body.Iban,
+            Bic          = body.Bic,
+            EntityId     = body.EntityId,
         }, ct);
         return NoContent();
     }
@@ -705,6 +717,86 @@ public class HrController : ControllerBase
         var requestId = await _mediator.Send(new ScheduleDeletionCommand { EmployeeId = id }, ct);
         return Created(string.Empty, new { id = requestId });
     }
+
+    // ── Onboarding ──────────────────────────────────────────────────────────
+
+    [HttpGet("onboarding")]
+    [ProducesResponseType(typeof(List<OnboardingChecklistSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<OnboardingChecklistSummaryDto>>> ListOnboardingChecklists(
+        [FromQuery] Guid employeeId,
+        CancellationToken ct)
+    {
+        var result = await _mediator.Send(new ListOnboardingChecklistsQuery { EmployeeId = employeeId }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("onboarding")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> CreateOnboardingChecklist(
+        [FromBody] CreateOnboardingChecklistRequest body, CancellationToken ct)
+    {
+        var id = await _mediator.Send(new CreateOnboardingChecklistCommand
+        {
+            EmployeeId = body.EmployeeId,
+            Title      = body.Title,
+            Tasks      = (body.Tasks ?? []).Select(t => new CreateOnboardingTaskItem
+            {
+                Title       = t.Title,
+                Description = t.Description,
+                DueDate     = t.DueDate,
+                SortOrder   = t.SortOrder,
+            }).ToList(),
+        }, ct);
+        return Created(string.Empty, new { id });
+    }
+
+    [HttpGet("onboarding/{id:guid}")]
+    [ProducesResponseType(typeof(OnboardingChecklistDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OnboardingChecklistDetailDto>> GetOnboardingChecklist(
+        Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetOnboardingChecklistQuery { ChecklistId = id }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("onboarding/{id:guid}/tasks")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> AddOnboardingTask(
+        Guid id, [FromBody] AddOnboardingTaskRequest body, CancellationToken ct)
+    {
+        var taskId = await _mediator.Send(new AddOnboardingTaskCommand
+        {
+            ChecklistId = id,
+            Title       = body.Title,
+            Description = body.Description,
+            DueDate     = body.DueDate,
+            SortOrder   = body.SortOrder,
+        }, ct);
+        return Created(string.Empty, new { id = taskId });
+    }
+
+    [HttpPut("onboarding/{id:guid}/tasks/{taskId:guid}/complete")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> CompleteOnboardingTask(Guid id, Guid taskId, CancellationToken ct)
+    {
+        await _mediator.Send(new CompleteOnboardingTaskCommand { ChecklistId = id, TaskId = taskId }, ct);
+        return NoContent();
+    }
+
+    [HttpPut("onboarding/{id:guid}/tasks/{taskId:guid}/reopen")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> ReopenOnboardingTask(Guid id, Guid taskId, CancellationToken ct)
+    {
+        await _mediator.Send(new ReopenOnboardingTaskCommand { ChecklistId = id, TaskId = taskId }, ct);
+        return NoContent();
+    }
 }
 
 // ── Request DTOs ──
@@ -715,7 +807,10 @@ public record UpdateEmployeeRequest(
     DateOnly DateOfBirth,
     string TaxId,
     Guid? ManagerId,
-    Guid? DepartmentId);
+    Guid? DepartmentId,
+    string? Iban,
+    string? Bic,
+    Guid? EntityId);
 
 public record TerminateEmployeeRequest(
     DateOnly TerminationDate,
@@ -782,3 +877,20 @@ public record SubmitFeedbackRequest(
     int Rating,
     string? Comments,
     Dictionary<string, int>? CompetencyScores);
+
+public record CreateOnboardingChecklistRequest(
+    Guid EmployeeId,
+    string Title,
+    List<CreateOnboardingTaskRequestItem>? Tasks);
+
+public record CreateOnboardingTaskRequestItem(
+    string Title,
+    string? Description,
+    DateOnly? DueDate,
+    int SortOrder);
+
+public record AddOnboardingTaskRequest(
+    string Title,
+    string? Description,
+    DateOnly? DueDate,
+    int SortOrder);

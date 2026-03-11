@@ -1,0 +1,289 @@
+{
+  "journalEntries": {
+    "title": "Journal Entries",
+    "newEntry": "New Journal Entry",
+    "searchPlaceholder": "Reference or description...",
+    "noEntries": "No journal entries found.",
+    "noEntitySelected": "Please select an entity first.",
+    "columns": {
+      "entryDate": "Date",
+      "entryNumber": "Number",
+      "description": "Description",
+      "sourceType": "Source",
+      "status": "Status",
+      "documentRef": "Doc. Ref."
+    },
+    "status": {
+      "draft": "Draft",
+      "posted": "Posted",
+      "reversed": "Reversed"
+    },
+    "actions": {
+      "post": "Post",
+      "reverse": "Reverse",
+      "view": "Details"
+    },
+    "postConfirmTitle": "Post Journal Entry?",
+    "postConfirmDescription": "The journal entry will be secured with a GoBD-compliant SHA-256 hash and can no longer be modified.",
+    "postConfirm": "Post Now"
+  },
+  "fiscalPeriods": {
+    "title": "Fiscal Periods",
+    "newPeriod": "New Period",
+    "noEntries": "No fiscal periods found.",
+    "noEntitySelected": "Please select an entity first.",
+    "columns": {
+      "year": "Year",
+      "month": "Month",
+      "status": "Status",
+      "exportCount": "Exports"
+    },
+    "status": {
+      "open": "Open",
+      "soft_close": "Soft Closed",
+      "exported": "Exported",
+      "hard_closed": "Hard Closed"
+    },
+    "actions": {
+      "close": "Close",
+      "reopen": "Reopen"
+    }
+  },
+  "datevExports": {
+    "title": "DATEV Exports",
+    "generate": "Generate Export",
+    "noEntries": "No exports available.",
+    "noEntitySelected": "Please select an entity first.",
+    "columns": {
+      "exportType": "Type",
+      "fiscalPeriod": "Period",
+      "status": "Status",
+      "recordCount": "Records",
+      "createdAt": "Created",
+      "completedAt": "Completed"
+    },
+    "status": {
+      "Pending": "Pending",
+      "Generating": "Generating...",
+      "Ready": "Ready",
+      "Failed": "Failed"
+    },
+    "exportType": {
+      "Buchungsstapel": "Transaction Batch",
+      "Stammdaten": "Master Data"
+    },
+    "dialogTitle": "Generate New DATEV Export",
+    "fiscalPeriodLabel": "Fiscal Period",
+    "exportTypeLabel": "Export Type",
+    "download": "Download",
+    "travelSync": "Sync Travel Expenses",
+    "travelSyncDialogTitle": "Sync HR Travel Expenses",
+    "travelSyncFromDate": "From",
+    "travelSyncToDate": "To",
+    "travelSyncButton": "Synchronize"
+  },
+  "costCenters": {
+    "title": "Cost Centers",
+    "newCostCenter": "New Cost Center",
+    "noEntries": "No cost centers found.",
+    "noEntitySelected": "Please select an entity first.",
+    "columns": {
+      "code": "Code",
+      "shortName": "Name",
+      "type": "Type",
+      "isActive": "Active"
+    },
+    "type": {
+      "Department": "Department",
+      "Project": "Project",
+      "Employee": "Employee",
+      "Other": "Other"
+    },
+    "fields": {
+      "code": "Code",
+      "shortName": "Name",
+      "description": "Description",
+      "type": "Type"
+    },
+    "placeholders": {
+      "code": "e.g. C100",
+      "shortName": "e.g. Sales",
+      "description": "Optional description"
+    },
+    "dialogTitle": "Create New Cost Center"
+  },
+  "accountingScenarios": {
+    "title": "Planning Scenarios",
+    "newScenario": "New Scenario",
+    "noEntries": "No scenarios found.",
+    "noEntitySelected": "Please select an entity first.",
+    "columns": {
+      "name": "Name",
+      "scenarioType": "Type",
+      "year": "Year",
+      "isLocked": "Locked",
+      "isBaseline": "Baseline"
+    },
+    "type": {
+      "Budget": "Budget",
+      "Forecast": "Forecast",
+      "Custom": "Custom"
+    },
+    "fields": {
+      "name": "Name",
+      "description": "Description",
+      "type": "Type",
+      "year": "Year"
+    },
+    "placeholders": {
+      "name": "e.g. Budget 2026",
+      "description": "Optional description"
+    },
+    "dialogTitle": "Create New Planning Scenario"
+  },
+  "trialBalance": {
+    "title": "Trial Balance",
+    "noEntitySelected": "Please select an entity first.",
+    "noEntries": "No accounts with balances found.",
+    "totals": "Totals",
+    "columns": {
+      "accountNumber": "Account",
+      "accountName": "Name",
+      "accountType": "Type",
+      "accountClass": "Class",
+      "debit": "Debit",
+      "credit": "Credit",
+      "balance": "Balance"
+    }
+  },
+  "balanceSheet": {
+    "title": "Balance Sheet",
+    "noEntitySelected": "Please select an entity first.",
+    "assets": "ASSETS",
+    "liabilitiesAndEquity": "LIABILITIES & EQUITY",
+    "totalAssets": "Total Assets",
+    "totalLiabilitiesAndEquity": "Total Liabilities & Equity",
+    "compareWith": "Compare with",
+    "amount": "Amount",
+    "priorAmount": "Prior Period",
+    "balanced": "Balanced",
+    "imbalanced": "Imbalanced"
+  },
+  "profitAndLoss": {
+    "title": "Profit & Loss Statement",
+    "noEntitySelected": "Please select an entity first.",
+    "netIncome": "Net Income",
+    "compareWith": "Compare with",
+    "amount": "Amount",
+    "priorAmount": "Prior Period",
+    "position": "Position",
+    "subtotal": "Subtotal"
+  },
+  "vatReconciliation": {
+    "title": "VAT Reconciliation",
+    "noEntitySelected": "Please select an entity first.",
+    "periodStart": "Period Start",
+    "periodEnd": "Period End",
+    "outputVat19": "Output VAT 19%",
+    "outputVat7": "Output VAT 7%",
+    "outputVat0": "Tax-free Revenue",
+    "inputVat": "Input VAT",
+    "reverseCharge": "Reverse Charge",
+    "intraEu": "Intra-EU Acquisitions",
+    "netAmount": "Net Amount",
+    "vatAmount": "VAT Amount",
+    "totalOutputVat": "Total Output VAT",
+    "totalInputVat": "Total Input VAT",
+    "netPayable": "Net Payable",
+    "lineDetails": "Detail Breakdown",
+    "noData": "No VAT data for this period.",
+    "columns": {
+      "accountNumber": "Account",
+      "accountName": "Name",
+      "vatCode": "VAT Code",
+      "vatRate": "Rate",
+      "vatType": "Type",
+      "netAmount": "Net",
+      "vatAmount": "VAT"
+    }
+  },
+  "journalEntryDetail": {
+    "title": "Journal Entry",
+    "backToList": "Back to Journal Entries",
+    "entryNumber": "Entry Number",
+    "entryDate": "Entry Date",
+    "postingDate": "Posting Date",
+    "description": "Description",
+    "status": "Status",
+    "sourceType": "Source Type",
+    "sourceRef": "Source Reference",
+    "hash": "Hash",
+    "createdAt": "Created At",
+    "createdBy": "Created By",
+    "isReversal": "This entry is a reversal of entry {{number}}",
+    "lines": "Lines",
+    "reverseConfirmTitle": "Reverse Journal Entry?",
+    "reverseConfirmDescription": "A new reversal entry will be created. Please provide a reason.",
+    "reverseReasonLabel": "Reason",
+    "reverseConfirm": "Reverse",
+    "columns": {
+      "lineNumber": "#",
+      "accountNumber": "Account",
+      "accountName": "Name",
+      "debit": "Debit",
+      "credit": "Credit",
+      "currency": "Curr.",
+      "vatAmount": "VAT",
+      "vatCode": "VAT Code",
+      "costCenter": "Cost Center",
+      "description": "Description"
+    }
+  },
+  "journalEntryCreate": {
+    "title": "New Journal Entry",
+    "entryDate": "Entry Date",
+    "description": "Description",
+    "descriptionPlaceholder": "e.g. Monthly rent payment",
+    "lines": "Entry Lines",
+    "addLine": "Add Line",
+    "account": "Account",
+    "selectAccount": "Select account...",
+    "debit": "Debit",
+    "credit": "Credit",
+    "vatCode": "VAT Code",
+    "vatAmount": "VAT Amount",
+    "costCenter": "Cost Center",
+    "lineDescription": "Description",
+    "removeLine": "Remove",
+    "totalDebit": "Total Debit",
+    "totalCredit": "Total Credit",
+    "difference": "Difference",
+    "balanced": "Balanced",
+    "unbalanced": "Unbalanced",
+    "submit": "Create Entry",
+    "validation": {
+      "descriptionRequired": "Description is required",
+      "bothDebitAndCredit": "A line cannot have both debit and credit"
+    }
+  },
+  "toast": {
+    "journalEntryCreated": "Journal entry created",
+    "journalEntryCreateError": "Failed to create journal entry",
+    "journalEntryPosted": "Journal entry posted",
+    "journalEntryPostError": "Failed to post journal entry",
+    "journalEntryReversed": "Journal entry reversed",
+    "journalEntryReverseError": "Failed to reverse journal entry",
+    "costCenterCreated": "Cost center created",
+    "costCenterCreateError": "Failed to create cost center",
+    "datevExportGenerated": "DATEV export started",
+    "datevExportError": "Failed to generate DATEV export",
+    "scenarioCreated": "Planning scenario created",
+    "scenarioCreateError": "Failed to create planning scenario",
+    "travelSynced": "{{count}} travel reports synced ({{skipped}} skipped)",
+    "travelSyncError": "Failed to sync travel expenses",
+    "fiscalPeriodCreated": "Fiscal period created",
+    "fiscalPeriodCreateError": "Failed to create fiscal period",
+    "fiscalPeriodClosed": "Fiscal period closed",
+    "fiscalPeriodCloseError": "Failed to close fiscal period"
+  }
+}

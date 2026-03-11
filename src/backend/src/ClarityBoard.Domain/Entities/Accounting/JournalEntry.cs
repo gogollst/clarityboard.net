@@ -7,14 +7,20 @@ public class JournalEntry
     public long EntryNumber { get; private set; }
     public DateOnly EntryDate { get; private set; }
     public DateOnly PostingDate { get; private set; }
+    public DateOnly? DocumentDate { get; private set; }
+    public DateOnly? ServiceDate { get; private set; }
     public string Description { get; private set; } = default!;
+    public string? DocumentRef { get; private set; }   // max 36 (DATEV Belegfeld 1)
+    public string? DocumentRef2 { get; private set; }  // max 12 (DATEV Belegfeld 2)
+    public string? Notes { get; private set; }
     public Guid? DocumentId { get; private set; }
     public Guid FiscalPeriodId { get; private set; }
     public string Status { get; private set; } = "draft"; // draft, posted, reversed
     public bool IsReversal { get; private set; }
     public Guid? ReversalOf { get; private set; }
-    public string? SourceType { get; private set; } // manual, webhook, recurring, ai-suggestion
+    public string? SourceType { get; private set; }
     public string? SourceRef { get; private set; }
+    public Guid? PartnerEntityId { get; private set; }
     public string Hash { get; private set; } = default!;
     public string? PreviousHash { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -35,7 +41,10 @@ public class JournalEntry
         Guid createdBy,
         string? sourceType = null,
         string? sourceRef = null,
-        Guid? documentId = null)
+        Guid? documentId = null,
+        string? documentRef = null,
+        DateOnly? documentDate = null,
+        DateOnly? serviceDate = null)
     {
         return new JournalEntry
         {
@@ -44,14 +53,17 @@ public class JournalEntry
             EntryNumber = entryNumber,
             EntryDate = entryDate,
             PostingDate = entryDate,
+            DocumentDate = documentDate,
+            ServiceDate = serviceDate,
             Description = description,
+            DocumentRef = documentRef,
             FiscalPeriodId = fiscalPeriodId,
             CreatedBy = createdBy,
             SourceType = sourceType,
             SourceRef = sourceRef,
             DocumentId = documentId,
             CreatedAt = DateTime.UtcNow,
-            Hash = string.Empty, // Set after creation via ComputeHash
+            Hash = string.Empty,
         };
     }
 
@@ -81,7 +93,6 @@ public class JournalEntry
     {
         if (Status == "reversed")
             throw new InvalidOperationException("This journal entry has already been reversed.");
-
         Status = "reversed";
     }
 }

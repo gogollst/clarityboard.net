@@ -9,6 +9,7 @@ using ClarityBoard.Infrastructure.Services;
 using ClarityBoard.Infrastructure.Services.AI;
 using ClarityBoard.Infrastructure.Services.Cache;
 using ClarityBoard.Infrastructure.Services.Datev;
+using ClarityBoard.Infrastructure.Services.Documents;
 using ClarityBoard.Infrastructure.Services.Hr;
 using ClarityBoard.Infrastructure.Services.Storage;
 using MassTransit;
@@ -112,6 +113,11 @@ public static class DependencyInjection
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IWorkingCapitalService, WorkingCapitalService>();
         services.AddScoped<IMessagePublisher, MassTransitMessagePublisher>();
+        services.AddSingleton<DocumentTextExtractor>();
+        services.AddSingleton<IDocumentPageRasterizer, PdfPageRasterizer>();
+        services.AddScoped<IDocumentVisionService, DocumentVisionService>();
+        services.AddScoped<IDocumentTextAcquisitionService, DocumentTextAcquisitionService>();
+        services.AddScoped<DocumentStatusChangeNotifier>();
 
         // KPI Calculators (registered as IKpiCalculationService for resolution by CalculatorName)
         services.AddScoped<IKpiCalculationService, ClarityBoard.Application.Services.FinancialKpiCalculator>();
@@ -129,8 +135,12 @@ public static class DependencyInjection
         // Depreciation Service
         services.AddScoped<IDepreciationService, DepreciationService>();
 
-        // DATEV Export
+        // DATEV Export (legacy direct service)
         services.AddScoped<DatevExportService>();
+
+        // Accounting services (GoBD hash chaining + managed DATEV export via IDatevExportService)
+        services.AddScoped<IJournalEntryHashService, JournalEntryHashService>();
+        services.AddScoped<IDatevExportService, ManagedDatevExportService>();
 
         // HR Export (travel expenses CSV)
         services.AddScoped<IHrExportService, HrExportService>();
@@ -153,27 +163,27 @@ public static class DependencyInjection
         services.AddSingleton<IExchangeRateService>(sp => sp.GetRequiredService<BackgroundServices.ExchangeRateService>());
         services.AddHostedService(sp => sp.GetRequiredService<BackgroundServices.ExchangeRateService>());
 
-        // Legacy AI Service (Claude) – used by DocumentProcessingConsumer
-        services.AddHttpClient<IAiService, ClaudeAiProvider>(client =>
-            {
-                client.Timeout = TimeSpan.FromSeconds(30);
-            })
-            .AddPolicyHandler(GetCircuitBreakerPolicy());
-
         // Encryption service for API keys (AES-256-GCM)
         services.AddSingleton<IEncryptionService, ClarityBoard.Infrastructure.Services.AI.AesEncryptionService>();
 
         // Mail service (SMTP with retry + DB logging)
         services.AddScoped<IEmailService, ClarityBoard.Infrastructure.Services.Mail.SmtpEmailService>();
 
-        // Named HttpClient for the prompt AI service (30s timeout, no auth headers – each call sets its own)
+        // Named HttpClient for the prompt AI service (60s timeout, no auth headers – each call sets its own)
         services.AddHttpClient("ai_prompt", client =>
         {
             client.Timeout = TimeSpan.FromSeconds(60);
         });
 
+        // Named HttpClient for the vision OCR service (120s timeout for large multi-page documents)
+        services.AddHttpClient("ai_vision", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(120);
+        });
+
         // Prompt-based AI service (new, centralised engine)
         services.AddScoped<IPromptAiService, ClarityBoard.Infrastructure.Services.AI.PromptAiService>();
+        services.AddScoped<IAiService, PromptBackedAiServiceAdapter>();
 
         // Background health check for AI providers (daily at 03:00 UTC)
         services.AddHostedService<ClarityBoard.Infrastructure.BackgroundServices.AiHealthCheckService>();

@@ -45,7 +45,11 @@ public class RestorePromptVersionCommandHandler : IRequestHandler<RestorePromptV
             prompt.SystemPrompt,
             prompt.UserPromptTemplate,
             prompt.PrimaryProvider,
+            prompt.PrimaryModel,
             prompt.FallbackProvider,
+            prompt.FallbackModel,
+            prompt.Temperature,
+            prompt.MaxTokens,
             $"Auto-snapshot before restoring v{request.Version}",
             _currentUser.UserId);
 
@@ -55,7 +59,11 @@ public class RestorePromptVersionCommandHandler : IRequestHandler<RestorePromptV
             oldVersion.SystemPrompt,
             oldVersion.UserPromptTemplate,
             oldVersion.PrimaryProvider,
+            oldVersion.PrimaryModel,
             oldVersion.FallbackProvider,
+            oldVersion.FallbackModel,
+            oldVersion.Temperature,
+            oldVersion.MaxTokens,
             _currentUser.UserId);
 
         await _db.SaveChangesAsync(cancellationToken);

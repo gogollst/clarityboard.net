@@ -13,6 +13,7 @@ public class FiscalPeriod
     public Guid? ClosedBy { get; private set; }
     public DateTime? ExportedAt { get; private set; }
     public Guid? ExportedBy { get; private set; }
+    public int ExportCount { get; private set; } = 0;
 
     private FiscalPeriod() { }
 
@@ -61,4 +62,6 @@ public class FiscalPeriod
         ExportedAt = DateTime.UtcNow;
         ExportedBy = exportedBy;
     }
+
+    public void IncrementExportCount() => ExportCount++;
 }

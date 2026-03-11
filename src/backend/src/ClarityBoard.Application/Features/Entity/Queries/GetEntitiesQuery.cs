@@ -1,5 +1,6 @@
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Features.Entity.DTOs;
+using ClarityBoard.Domain.Entities.Entity;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,14 +22,26 @@ public class GetEntitiesQueryHandler : IRequestHandler<GetEntitiesQuery, IReadOn
     public async Task<IReadOnlyList<LegalEntityDto>> Handle(
         GetEntitiesQuery request, CancellationToken cancellationToken)
     {
-        var entityIds = await _db.UserRoles
-            .Where(ur => ur.UserId == _currentUser.UserId)
-            .Select(ur => ur.EntityId)
-            .Distinct()
-            .ToListAsync(cancellationToken);
+        // Admin users (with admin.users.view permission) must be able to see ALL entities
+        // so they can assign any entity when managing users.
+        // All other users only see entities they have a role in.
+        IQueryable<Domain.Entities.Entity.LegalEntity> query;
+        if (_currentUser.HasPermission("admin.users.view"))
+        {
+            query = _db.LegalEntities;
+        }
+        else
+        {
+            var entityIds = await _db.UserRoles
+                .Where(ur => ur.UserId == _currentUser.UserId)
+                .Select(ur => ur.EntityId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
 
-        return await _db.LegalEntities
-            .Where(le => entityIds.Contains(le.Id))
+            query = _db.LegalEntities.Where(le => entityIds.Contains(le.Id));
+        }
+
+        return await query
             .OrderBy(le => le.Name)
             .Select(le => new LegalEntityDto
             {

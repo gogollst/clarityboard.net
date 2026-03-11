@@ -19,7 +19,8 @@ public class JwtTokenService : IJwtTokenService
 
     public string GenerateAccessToken(
         Guid userId, string email, Guid entityId,
-        IEnumerable<string> roles, IEnumerable<string> permissions)
+        IEnumerable<string> roles, IEnumerable<string> permissions,
+        TimeSpan? expiry = null)
     {
         var secret = _configuration["Jwt:Secret"]
             ?? throw new InvalidOperationException("JWT Secret is not configured.");
@@ -37,13 +38,14 @@ public class JwtTokenService : IJwtTokenService
         claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
         claims.AddRange(permissions.Select(p => new Claim("permission", p)));
 
-        var expiryMinutes = int.Parse(_configuration["Jwt:AccessTokenExpiryMinutes"] ?? "15");
+        var configMinutes = int.Parse(_configuration["Jwt:AccessTokenExpiryMinutes"] ?? "60");
+        var tokenExpiry = expiry ?? TimeSpan.FromMinutes(configMinutes);
 
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
+            expires: DateTime.UtcNow.Add(tokenExpiry),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

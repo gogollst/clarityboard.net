@@ -1,5 +1,6 @@
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Features.Auth.DTOs;
+using ClarityBoard.Domain.Entities.Admin;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ public record LoginCommand : IRequest<AuthResponse>
     public required string Email { get; init; }
     public required string Password { get; init; }
     public required string DeviceFingerprint { get; init; }
+    public bool RememberMe { get; init; }
     public string? IpAddress { get; init; }
     public string? UserAgent { get; init; }
 }
@@ -90,6 +92,17 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
     {
         user.RecordLogin();
 
+        var authConfig = await _db.AuthConfigs.FirstOrDefaultAsync(cancellationToken)
+            ?? AuthConfig.CreateDefault();
+
+        var accessTokenExpiry = request.RememberMe
+            ? TimeSpan.FromDays(authConfig.RememberMeTokenLifetimeDays)
+            : TimeSpan.FromHours(authConfig.TokenLifetimeHours);
+
+        var refreshTokenExpiry = request.RememberMe
+            ? TimeSpan.FromDays(authConfig.RememberMeTokenLifetimeDays)
+            : TimeSpan.FromDays(7);
+
         var userRoles = await _db.UserRoles
             .Where(ur => ur.UserId == user.Id)
             .Join(_db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.EntityId, RoleName = r.Name })
@@ -108,14 +121,14 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
         var defaultEntityId = userRoles.FirstOrDefault()?.EntityId ?? Guid.Empty;
 
         var accessToken = _jwtTokenService.GenerateAccessToken(
-            user.Id, user.Email, defaultEntityId, roleNames, permissions);
+            user.Id, user.Email, defaultEntityId, roleNames, permissions, accessTokenExpiry);
         var refreshTokenValue = _jwtTokenService.GenerateRefreshToken();
 
         var refreshToken = Domain.Entities.Identity.RefreshToken.Create(
             user.Id,
             refreshTokenValue,
             request.DeviceFingerprint,
-            DateTime.UtcNow.AddDays(7),
+            DateTime.UtcNow.Add(refreshTokenExpiry),
             request.IpAddress,
             request.UserAgent);
 
@@ -137,7 +150,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
         {
             AccessToken = accessToken,
             RefreshToken = refreshTokenValue,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+            ExpiresAt = DateTime.UtcNow.Add(accessTokenExpiry),
             User = new UserInfo
             {
                 Id = user.Id,

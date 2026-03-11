@@ -1,4 +1,5 @@
 using ClarityBoard.Application.Common.Interfaces;
+using ClarityBoard.Application.Features.Document;
 using ClarityBoard.Application.Features.Document.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,7 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
             BookedJournalEntryId = document.BookedJournalEntryId,
             CreatedAt = document.CreatedAt,
             ProcessedAt = document.ProcessedAt,
+            ReviewReasons = DocumentExtractedDataReader.ReadReviewReasons(document.ExtractedData),
             Fields = document.Fields.Select(f => new DocumentFieldDto
             {
                 Id = f.Id,

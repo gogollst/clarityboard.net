@@ -17,6 +17,7 @@
     "uploaded": "Uploaded",
     "processing": "Processing",
     "extracted": "Extracted",
+    "review": "Needs Review",
     "booked": "Booked",
     "failed": "Failed"
   },

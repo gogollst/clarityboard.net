@@ -42,7 +42,8 @@
       "dateOfBirth": "Geburtsdatum",
       "taxId": "Steuer-ID",
       "department": "Abteilung",
-      "status": "Status"
+      "status": "Status",
+      "entity": "Niederlassung"
     },
     "placeholders": {
       "firstName": "Max",
@@ -51,7 +52,8 @@
       "taxId": "12345678901",
       "selectType": "Anstellungsart wählen",
       "selectDepartment": "Abteilung wählen (optional)",
-      "noDepartment": "Keine Abteilung"
+      "noDepartment": "Keine Abteilung",
+      "selectEntity": "Niederlassung wählen"
     },
     "validation": {
       "firstNameRequired": "Vorname ist erforderlich",
@@ -62,12 +64,22 @@
       "hireDateRequired": "Einstellungsdatum ist erforderlich",
       "dateOfBirthRequired": "Geburtsdatum ist erforderlich",
       "taxIdRequired": "Steuer-ID ist erforderlich",
-      "taxIdMaxLength": "Steuer-ID darf maximal 50 Zeichen haben"
+      "taxIdMaxLength": "Steuer-ID darf maximal 50 Zeichen haben",
+      "entityRequired": "Niederlassung ist erforderlich"
     },
     "tabs": {
       "profile": "Profil",
       "salary": "Gehalt",
-      "contracts": "Verträge"
+      "contracts": "Verträge",
+      "bank": "Bankverbindung"
+    },
+    "bankDetails": {
+      "title": "Bankverbindung",
+      "iban": "IBAN",
+      "bic": "BIC / SWIFT",
+      "saved": "Bankdaten gespeichert",
+      "ibanPlaceholder": "DE89 3704 0044 0532 0130 00",
+      "bicPlaceholder": "DEUTDEDB"
     },
     "profile": {
       "terminationDialogTitle": "Mitarbeiter kündigen",
@@ -85,7 +97,12 @@
       "current": "Aktuell",
       "typeMonthly": "Monatlich",
       "typeHourly": "Stündlich",
-      "typeDailyRate": "Tagessatz"
+      "typeDailyRate": "Tagessatz",
+      "addButton": "Gehalt erfassen",
+      "dialogTitle": "Neues Gehalt erfassen",
+      "grossAmountEur": "Bruttobetrag (EUR)",
+      "grossAmountPlaceholder": "z.B. 5000",
+      "changeReasonPlaceholder": "z.B. Jahreserhöhung 2026"
     },
     "contracts": {
       "noEntries": "Keine Vertragseinträge vorhanden.",
@@ -423,5 +440,48 @@
     "documentUploadError": "Fehler beim Hochladen",
     "deletionScheduled": "Löschung geplant",
     "deletionScheduleError": "Fehler beim Planen der Löschung"
+  },
+  "mySelf": {
+    "title": "Mein Profil",
+    "notLinked": "Kein Mitarbeiterprofil verknüpft",
+    "notLinkedDescription": "Dein Benutzerkonto ist noch nicht mit einem Mitarbeiterprofil verknüpft. Wende dich an deinen HR-Administrator.",
+    "personalInfo": "Persönliche Daten",
+    "employment": "Anstellungsdaten",
+    "employeeNumber": "Personalnummer",
+    "department": "Abteilung",
+    "manager": "Vorgesetzter",
+    "hireDate": "Einstellungsdatum",
+    "employeeType": "Anstellungsart",
+    "status": "Status",
+    "myLeaveRequests": "Meine Urlaubsanträge",
+    "myTravelExpenses": "Meine Reisekosten",
+    "myWorktime": "Meine Arbeitszeit",
+    "quickActions": "Schnellzugriff",
+    "requestLeave": "Urlaub beantragen",
+    "logWorkTime": "Zeit erfassen",
+    "newTravelExpense": "Reisekosten einreichen"
+  },
+  "onboarding": {
+    "title": "Onboarding",
+    "newChecklist": "Checkliste erstellen",
+    "checklistTitle": "Titel der Checkliste",
+    "addTask": "Aufgabe hinzufügen",
+    "taskTitle": "Aufgabentitel",
+    "taskDescription": "Beschreibung",
+    "dueDate": "Fälligkeitsdatum",
+    "status": {
+      "InProgress": "In Bearbeitung",
+      "Completed": "Abgeschlossen"
+    },
+    "progress": "{{completed}} von {{total}} Aufgaben erledigt",
+    "created": "Onboarding-Checkliste erstellt",
+    "createError": "Fehler beim Erstellen der Checkliste",
+    "taskError": "Fehler beim Aktualisieren der Aufgabe",
+    "noChecklists": "Noch keine Onboarding-Checklisten vorhanden.",
+    "completeTask": "Aufgabe als erledigt markieren",
+    "reopenTask": "Aufgabe wieder öffnen",
+    "createChecklist": "Neue Checkliste",
+    "employeeLabel": "Mitarbeiter",
+    "back": "Zurück zur Übersicht"
   }
 }

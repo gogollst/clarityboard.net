@@ -375,5 +375,23 @@
       "saved": "Auth configuration saved",
       "saveFailed": "Failed to save auth configuration"
     }
+  },
+  "departments": {
+    "title": "Departments",
+    "empty": "No departments created yet.",
+    "addRoot": "Add department",
+    "namePlaceholder": "Name",
+    "codePlaceholder": "Code",
+    "descriptionPlaceholder": "Description (optional)",
+    "confirmDelete": "Delete department \"{{name}}\"?",
+    "templateLabel": "Copy department structure from (optional)",
+    "templatePlaceholder": "No template",
+    "noTemplate": "No template",
+    "created": "Department created",
+    "createError": "Failed to create department",
+    "updated": "Department updated",
+    "updateError": "Failed to update department",
+    "deleted": "Department deleted",
+    "deleteError": "Failed to delete department"
   }
 }

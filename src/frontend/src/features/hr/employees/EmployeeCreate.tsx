@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useCreateEmployee, useDepartments } from '@/hooks/useHr';
-import { useEntity } from '@/hooks/useEntity';
+import { useEntity, useEntities } from '@/hooks/useEntity';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,7 @@ import {
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 type FormValues = {
+  entityId: string;
   firstName: string;
   lastName: string;
   employeeNumber: string;
@@ -41,12 +42,14 @@ export function Component() {
   const { t } = useTranslation('hr');
   const navigate = useNavigate();
   const { selectedEntityId } = useEntity();
+  const { data: entities = [] } = useEntities();
   const createEmployee = useCreateEmployee();
   const { data: departments } = useDepartments(selectedEntityId ?? undefined);
 
   const schema = useMemo(
     () =>
       z.object({
+        entityId: z.string().min(1, t('employees.validation.entityRequired')),
         firstName: z.string().min(1, t('employees.validation.firstNameRequired')),
         lastName: z.string().min(1, t('employees.validation.lastNameRequired')),
         employeeNumber: z
@@ -74,6 +77,7 @@ export function Component() {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      entityId: selectedEntityId ?? '',
       firstName: '',
       lastName: '',
       employeeNumber: '',
@@ -85,15 +89,14 @@ export function Component() {
     },
   });
 
+  const entityId = watch('entityId');
   const employeeType = watch('employeeType');
   const departmentId = watch('departmentId');
 
   const onSubmit = (values: FormValues) => {
-    if (!selectedEntityId) return;
-
     createEmployee.mutate(
       {
-        entityId: selectedEntityId,
+        entityId: values.entityId,
         employeeNumber: values.employeeNumber,
         employeeType: values.employeeType,
         firstName: values.firstName,
@@ -161,6 +164,29 @@ export function Component() {
                     </p>
                   )}
                 </div>
+              </div>
+
+              {/* Niederlassung */}
+              <div className="space-y-1.5">
+                <Label htmlFor="entityId">{t('employees.fields.entity')} *</Label>
+                <Select
+                  value={entityId}
+                  onValueChange={(v) => setValue('entityId', v, { shouldValidate: true, shouldDirty: true })}
+                >
+                  <SelectTrigger id="entityId">
+                    <SelectValue placeholder={t('employees.placeholders.selectEntity')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {entities.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.entityId && (
+                  <p className="text-destructive text-xs">{errors.entityId.message}</p>
+                )}
               </div>
 
               {/* Personalnummer */}
@@ -286,7 +312,7 @@ export function Component() {
               <div className="flex gap-3 pt-2">
                 <Button
                   type="submit"
-                  disabled={createEmployee.isPending || !selectedEntityId}
+                  disabled={createEmployee.isPending}
                 >
                   {createEmployee.isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -301,12 +327,6 @@ export function Component() {
                   {t('common:buttons.cancel')}
                 </Button>
               </div>
-
-              {!selectedEntityId && (
-                <p className="text-destructive text-sm">
-                  {t('employees.noEntitySelected')}
-                </p>
-              )}
             </form>
           </CardContent>
         </Card>

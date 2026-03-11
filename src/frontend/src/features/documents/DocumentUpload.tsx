@@ -97,6 +97,7 @@ export function Component() {
                       uploaded: 'info',
                       processing: 'warning',
                       extracted: 'success',
+                      review: 'warning',
                       booked: 'success',
                       failed: 'destructive',
                     }}

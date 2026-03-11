@@ -59,12 +59,17 @@ public class UpdateSalaryCommandHandler : IRequestHandler<UpdateSalaryCommand, U
             .FirstOrDefaultAsync(e => e.Id == request.EmployeeId, cancellationToken)
             ?? throw new NotFoundException("Employee", request.EmployeeId);
 
+        // Ensure ValidFrom is UTC (date strings from JSON arrive as Unspecified)
+        var validFrom = request.ValidFrom.Kind == DateTimeKind.Unspecified
+            ? DateTime.SpecifyKind(request.ValidFrom, DateTimeKind.Utc)
+            : request.ValidFrom.ToUniversalTime();
+
         // Close current active salary record
         var current = await _db.SalaryHistories
             .FirstOrDefaultAsync(s => s.EmployeeId == request.EmployeeId && s.ValidTo == null, cancellationToken);
 
         if (current != null)
-            current.Close(request.ValidFrom);
+            current.Close(validFrom);
 
         var salaryType = Enum.Parse<SalaryType>(request.SalaryType, ignoreCase: true);
 
@@ -76,7 +81,7 @@ public class UpdateSalaryCommandHandler : IRequestHandler<UpdateSalaryCommand, U
             bonusAmountCents:  request.BonusAmountCents,
             bonusCurrencyCode: request.BonusCurrencyCode,
             paymentCycleMonths: request.PaymentCycleMonths,
-            validFrom:         request.ValidFrom,
+            validFrom:         validFrom,
             createdBy:         _currentUser.UserId,
             changeReason:      request.ChangeReason);
 

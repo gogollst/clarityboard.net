@@ -12,7 +12,11 @@ public class AiPromptVersion
     public string SystemPrompt { get; private set; } = default!;
     public string? UserPromptTemplate { get; private set; }
     public AiProvider PrimaryProvider { get; private set; }
+    public string PrimaryModel { get; private set; } = default!;
     public AiProvider FallbackProvider { get; private set; }
+    public string FallbackModel { get; private set; } = default!;
+    public decimal Temperature { get; private set; }
+    public int MaxTokens { get; private set; }
 
     /// <summary>Required: describes what changed and why.</summary>
     public string ChangeSummary { get; private set; } = default!;
@@ -28,7 +32,11 @@ public class AiPromptVersion
         string systemPrompt,
         string? userPromptTemplate,
         AiProvider primaryProvider,
+        string primaryModel,
         AiProvider fallbackProvider,
+        string fallbackModel,
+        decimal temperature,
+        int maxTokens,
         string changeSummary,
         Guid createdByUserId)
     {
@@ -40,7 +48,11 @@ public class AiPromptVersion
             SystemPrompt       = systemPrompt,
             UserPromptTemplate = userPromptTemplate,
             PrimaryProvider    = primaryProvider,
+            PrimaryModel       = primaryModel,
             FallbackProvider   = fallbackProvider,
+            FallbackModel      = fallbackModel,
+            Temperature        = temperature,
+            MaxTokens          = maxTokens,
             ChangeSummary      = changeSummary,
             CreatedAt          = DateTime.UtcNow,
             CreatedByUserId    = createdByUserId,

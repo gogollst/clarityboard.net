@@ -26,6 +26,8 @@ function computeDates(range: DateRange) {
   return {
     startDate: start.toISOString().split('T')[0],
     endDate: end.toISOString().split('T')[0],
+    year: end.getFullYear(),
+    month: end.getMonth() + 1,
   };
 }
 
@@ -38,17 +40,18 @@ export function Component() {
   const { selectedEntityId, selectedEntity } = useEntity();
   const [dateRange, setDateRange] = useState<DateRange>('12m');
 
-  const { startDate, endDate } = useMemo(() => computeDates(dateRange), [dateRange]);
+  const { startDate, endDate, year, month } = useMemo(() => computeDates(dateRange), [dateRange]);
 
   // Data fetching
   const { data: pnl, isLoading: pnlLoading } = useProfitAndLoss(
     selectedEntityId,
-    startDate,
-    endDate,
+    year,
+    month,
   );
   const { data: balanceSheet, isLoading: bsLoading } = useBalanceSheet(
     selectedEntityId,
-    endDate,
+    year,
+    month,
   );
   const { data: dashboard, isLoading: kpiLoading } = useKpiDashboard(selectedEntityId);
   const { data: definitions } = useKpiDefinitions();
@@ -152,20 +155,20 @@ export function Component() {
   // -----------------------------------------------------------------------
 
   const revenueVsCostsData = useMemo(() => {
-    if (!pnl) return [];
-    // Show a single-period summary when we only have aggregate P&L
+    if (!pnl || pnl.sections.length === 0) return [];
+    // Extract revenue (first section subtotal) and sum remaining sections as costs
+    const revenueSection = pnl.sections[0];
+    const costSections = pnl.sections.slice(1);
+    const totalCosts = costSections.reduce((sum, s) => sum + Math.abs(s.subtotal), 0);
     return [
       {
-        period: `${startDate.slice(0, 7)} - ${endDate.slice(0, 7)}`,
-        [revLabel]: pnl.revenue,
-        [cogsLabel]: pnl.cogs,
-        [opexLabel]: pnl.operatingExpenses.reduce(
-          (sum, c) => sum + c.amount,
-          0,
-        ),
+        period: `${pnl.year}-${String(pnl.month).padStart(2, '0')}`,
+        [revLabel]: revenueSection?.subtotal ?? 0,
+        [cogsLabel]: costSections[0]?.subtotal ? Math.abs(costSections[0].subtotal) : 0,
+        [opexLabel]: totalCosts - (costSections[0]?.subtotal ? Math.abs(costSections[0].subtotal) : 0),
       },
     ];
-  }, [pnl, startDate, endDate, revLabel, cogsLabel, opexLabel]);
+  }, [pnl, revLabel, cogsLabel, opexLabel]);
 
   // -----------------------------------------------------------------------
   // Loading state
@@ -205,21 +208,18 @@ export function Component() {
   // P&L helper rows
   // -----------------------------------------------------------------------
 
-  const pnlRows = pnl
-    ? [
-        { label: t('financial.pnl.revenue'), value: pnl.revenue },
-        { label: t('financial.pnl.cogs'), value: -pnl.cogs },
-        { label: t('financial.pnl.grossProfit'), value: pnl.grossProfit, bold: true },
-        ...pnl.operatingExpenses.map((c) => ({
-          label: c.name,
-          value: -c.amount,
-        })),
-        { label: t('financial.pnl.ebit'), value: pnl.ebit, bold: true },
-        { label: t('financial.pnl.interest'), value: -pnl.interest },
-        { label: t('financial.pnl.taxes'), value: -pnl.taxes },
-        { label: t('financial.pnl.netIncome'), value: pnl.netIncome, bold: true },
-      ]
-    : [];
+  const pnlRows = useMemo(() => {
+    if (!pnl) return [];
+    const rows: { label: string; value: number; bold?: boolean }[] = [];
+    for (const section of pnl.sections) {
+      for (const item of section.items) {
+        rows.push({ label: item.label, value: item.amount });
+      }
+      rows.push({ label: section.name, value: section.subtotal, bold: true });
+    }
+    rows.push({ label: t('financial.pnl.netIncome'), value: pnl.netIncome, bold: true });
+    return rows;
+  }, [pnl, t]);
 
   // -----------------------------------------------------------------------
   // Render
@@ -303,30 +303,25 @@ export function Component() {
                     className="flex items-center justify-between py-1 pl-4 text-sm"
                   >
                     <span className="text-muted-foreground">{section.name}</span>
-                    <span>{formatCurrency(section.amount)}</span>
+                    <span>{formatCurrency(section.subtotal)}</span>
                   </div>
                 ))}
 
                 <div className="flex items-center justify-between border-t border-border py-1.5 text-sm font-semibold">
                   <span className="text-muted-foreground">
-                    {t('financial.balanceSheet.totalLiabilities')}
+                    {t('financial.balanceSheet.totalLiabilitiesAndEquity')}
                   </span>
-                  <span>{formatCurrency(balanceSheet.totalLiabilities)}</span>
+                  <span>{formatCurrency(balanceSheet.totalLiabilitiesAndEquity)}</span>
                 </div>
-                {balanceSheet.liabilities.map((section) => (
+                {balanceSheet.liabilitiesAndEquity.map((section) => (
                   <div
                     key={section.name}
                     className="flex items-center justify-between py-1 pl-4 text-sm"
                   >
                     <span className="text-muted-foreground">{section.name}</span>
-                    <span>{formatCurrency(section.amount)}</span>
+                    <span>{formatCurrency(section.subtotal)}</span>
                   </div>
                 ))}
-
-                <div className="flex items-center justify-between border-t border-border py-1.5 text-sm font-semibold">
-                  <span className="text-muted-foreground">{t('financial.balanceSheet.equity')}</span>
-                  <span>{formatCurrency(balanceSheet.equity)}</span>
-                </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">

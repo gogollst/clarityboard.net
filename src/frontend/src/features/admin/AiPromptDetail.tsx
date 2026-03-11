@@ -220,7 +220,13 @@ export function Component() {
                 {prompt.versions.map(v => (
                   <TableRow key={v.id}>
                     <TableCell className="font-mono text-xs">v{v.version}</TableCell>
-                    <TableCell>{v.primaryProvider}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1 text-xs">
+                        <div>{v.primaryProvider} · <span className="font-mono">{v.primaryModel}</span></div>
+                        <div className="text-muted-foreground">→ {v.fallbackProvider} · <span className="font-mono">{v.fallbackModel}</span></div>
+                        <div className="text-muted-foreground">T {v.temperature} · Max {v.maxTokens}</div>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-muted-foreground max-w-xs truncate text-sm">{v.changeSummary}</TableCell>
                     <TableCell className="text-muted-foreground text-xs">{new Date(v.createdAt).toLocaleString(i18n.language)}</TableCell>
                     <TableCell>

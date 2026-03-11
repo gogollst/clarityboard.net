@@ -1,3 +1,4 @@
+using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Common.Models;
 using ClarityBoard.Application.Features.Accounting.Commands;
 using ClarityBoard.Application.Features.Accounting.DTOs;
@@ -14,10 +15,12 @@ namespace ClarityBoard.API.Controllers;
 public class AccountingController : ControllerBase
 {
     private readonly ISender _mediator;
+    private readonly IDatevExportService _datevExportService;
 
-    public AccountingController(ISender mediator)
+    public AccountingController(ISender mediator, IDatevExportService datevExportService)
     {
         _mediator = mediator;
+        _datevExportService = datevExportService;
     }
 
     // ── Accounts ─────────────────────────────────────────────────────────
@@ -175,6 +178,103 @@ public class AccountingController : ControllerBase
     {
         await _mediator.Send(new ReopenFiscalPeriodCommand(entityId, id), ct);
         return NoContent();
+    }
+
+    // ── Post Journal Entry (GoBD hash chaining) ──────────────────────────
+
+    [HttpPost("journal-entries/{id:guid}/post")]
+    [ProducesResponseType(typeof(PostJournalEntryResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PostJournalEntryResult>> PostJournalEntry(
+        Guid id, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new PostJournalEntryCommand { JournalEntryId = id }, ct);
+        return Ok(result);
+    }
+
+    // ── Cost Centers ─────────────────────────────────────────────────────
+
+    [HttpGet("cost-centers")]
+    [ProducesResponseType(typeof(List<CostCenterDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<CostCenterDto>>> GetCostCenters(
+        [FromQuery] Guid entityId, [FromQuery] bool activeOnly = true, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetCostCentersQuery { EntityId = entityId, ActiveOnly = activeOnly }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("cost-centers")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Guid>> CreateCostCenter(
+        CreateCostCenterCommand command, CancellationToken ct)
+    {
+        var id = await _mediator.Send(command, ct);
+        return CreatedAtAction(nameof(GetCostCenters), new { }, id);
+    }
+
+    // ── DATEV Exports ────────────────────────────────────────────────────
+
+    [HttpGet("datev/exports")]
+    [ProducesResponseType(typeof(List<DatevExportDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<DatevExportDto>>> GetDatevExports(
+        [FromQuery] Guid entityId, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetDatevExportsQuery { EntityId = entityId }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("datev/exports")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Guid>> GenerateDatevExport(
+        GenerateDatevExportCommand command, CancellationToken ct)
+    {
+        var id = await _mediator.Send(command, ct);
+        return AcceptedAtAction(nameof(GetDatevExports), new { }, id);
+    }
+
+    [HttpGet("datev/exports/{id:guid}/download")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DownloadDatevExport(Guid id, CancellationToken ct = default)
+    {
+        var stream = await _datevExportService.GetExportStreamAsync(id, ct);
+        return File(stream, "text/csv", $"datev-export-{id:N}.csv");
+    }
+
+    // ── Accounting Scenarios ─────────────────────────────────────────────
+
+    [HttpGet("scenarios")]
+    [ProducesResponseType(typeof(List<AccountingScenarioDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<AccountingScenarioDto>>> GetAccountingScenarios(
+        [FromQuery] Guid entityId, [FromQuery] int? year = null, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetAccountingScenariosQuery { EntityId = entityId, Year = year }, ct);
+        return Ok(result);
+    }
+
+    [HttpPost("scenarios")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Guid>> CreateAccountingScenario(
+        CreateAccountingScenarioCommand command, CancellationToken ct)
+    {
+        var id = await _mediator.Send(command, ct);
+        return CreatedAtAction(nameof(GetAccountingScenarios), new { }, id);
+    }
+
+    // ── Travel Cost Sync ─────────────────────────────────────────────────
+
+    [HttpPost("travel-costs/sync")]
+    [ProducesResponseType(typeof(SyncTravelCostsResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<SyncTravelCostsResult>> SyncTravelCosts(
+        SyncTravelCostsCommand command, CancellationToken ct)
+    {
+        var result = await _mediator.Send(command, ct);
+        return Ok(result);
     }
 }
 

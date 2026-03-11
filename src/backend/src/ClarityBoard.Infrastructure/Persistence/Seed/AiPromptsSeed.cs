@@ -36,23 +36,45 @@ Guidelines:
 - Return ONLY the improved system prompt text, no preamble or explanation
 """,
             UserTemplate: """
-Module: {{module}}
 Description: {{description}}
 Function: {{function_description}}
 
 Current system prompt:
 {{current_system_prompt}}
 
-{{#if user_template}}
-Current user template:
+Current user template (may be empty):
 {{user_template}}
-{{/if}}
 
 Please return the improved system prompt:
 """,
             Primary: AiProvider.Anthropic, PrimaryModel: "claude-sonnet-4-20250514",
             Fallback: AiProvider.Anthropic, FallbackModel: "claude-haiku-4-20250514",
             Temp: 0.4m, MaxTok: 2048),
+
+        new(
+            Key: "document_extraction",
+            Name: "Document Extraction",
+            Module: "Document",
+            Description: "Extracts structured accounting data fields from OCR text of invoices, receipts and other business documents.",
+            FunctionDescription: "Input: raw OCR text and MIME type. Output: a JSON object with vendor name, invoice number, date, amounts, line items and confidence score.",
+            SystemPrompt: """
+You are a German accounting document processor specialising in HGB-compliant invoice processing.
+Extract structured fields from the provided OCR text of invoices, receipts or delivery notes.
+
+Rules:
+- Return ONLY a valid JSON object with snake_case field names
+- All monetary amounts in original currency; identify EUR, USD, GBP
+- Dates in ISO format YYYY-MM-DD
+- German Umsatzsteuer rates: 19% (standard), 7% (reduced), 0% (exempt)
+- Distinguish Nettobetrag, Steuerbetrag and Bruttobetrag
+- Extract all line items with description, quantity, unit price and total
+- Assign a confidence score 0.0–1.0 based on text quality and completeness
+- If a field cannot be determined reliably, omit it rather than guess
+""",
+            UserTemplate: "Extract all accounting-relevant fields from this document (MIME: {{mime_type}}). Return only JSON.\n\n{{document_text}}",
+            Primary: AiProvider.Anthropic, PrimaryModel: "claude-sonnet-4-20250514",
+            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.0-flash",
+            Temp: 0.1m, MaxTok: 4096),
 
         new(
             Key: "document.ocr_extraction",
@@ -65,6 +87,7 @@ You are a German accounting document processor specialising in HGB-compliant inv
 Extract structured fields from the provided OCR text of invoices, receipts or delivery notes.
 
 Rules:
+- Return ONLY a valid JSON object with snake_case field names
 - All monetary amounts in original currency; identify EUR, USD, GBP
 - Dates in ISO format YYYY-MM-DD
 - German Umsatzsteuer rates: 19% (standard), 7% (reduced), 0% (exempt)
@@ -73,10 +96,51 @@ Rules:
 - Assign a confidence score 0.0–1.0 based on text quality and completeness
 - If a field cannot be determined reliably, omit it rather than guess
 """,
-            UserTemplate: "Extract all accounting-relevant fields from this document (MIME: {{mime_type}}):\n\n{{document_text}}",
+            UserTemplate: "Extract all accounting-relevant fields from this document (MIME: {{mime_type}}). Return only JSON.\n\n{{document_text}}",
             Primary: AiProvider.Anthropic, PrimaryModel: "claude-sonnet-4-20250514",
-            Fallback: AiProvider.OpenAI, FallbackModel: "gpt-4o",
+            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.0-flash",
             Temp: 0.1m, MaxTok: 4096),
+
+        new(
+            Key: "document.vision_ocr",
+            Name: "Document Vision OCR",
+            Module: "Document",
+            Description: "Multimodal OCR for images and rasterized PDF pages. Extracts all visible text and returns a structured JSON result with per-page text, confidence scores and warnings.",
+            FunctionDescription: "Input: one or more document page images (base64). Output: JSON with full_text, pages array (page_number, text, confidence, warnings), overall confidence, and warnings.",
+            SystemPrompt: """
+You are a precision OCR engine for German business documents (invoices, receipts, delivery notes, bank statements).
+Extract ALL visible text from the provided document image(s) exactly as printed.
+
+Rules:
+- Preserve the original text layout, line breaks and structure as closely as possible
+- Maintain the reading order (top-to-bottom, left-to-right)
+- Preserve numbers, dates, currency symbols and special characters exactly
+- For tables: use tab-separated columns
+- Include header, footer, stamps, handwritten notes if legible
+- Do NOT interpret, translate, summarise or restructure the content
+- Do NOT add any text that is not visible in the document
+- If text is partially illegible, include what is readable and note quality issues in warnings
+- Language hint: German (but extract all languages present)
+
+Output format — return ONLY valid JSON:
+{
+  "full_text": "complete concatenated text from all pages",
+  "confidence": 0.0-1.0,
+  "warnings": ["list of quality issues if any"],
+  "pages": [
+    {
+      "page_number": 1,
+      "text": "text from this page",
+      "confidence": 0.0-1.0,
+      "warnings": []
+    }
+  ]
+}
+""",
+            UserTemplate: null,
+            Primary: AiProvider.Gemini, PrimaryModel: "gemini-2.0-flash",
+            Fallback: AiProvider.OpenAI, FallbackModel: "gpt-4o",
+            Temp: 0.0m, MaxTok: 8192),
 
         new(
             Key: "document.booking_suggestion",
@@ -89,13 +153,14 @@ You are a certified German accountant (Buchhalter) with deep expertise in SKR03 
 Given extracted document data, suggest the correct double-entry booking.
 
 Rules:
+- Return ONLY a valid JSON object with snake_case field names
 - Use SKR03 account numbers by default unless entity uses SKR04
 - Apply correct Vorsteuer (VSt) or Umsatzsteuer (USt) codes: VSt19, VSt7, USt19, USt7
 - For tax-exempt transactions use code "steuerfrei"
 - Provide reasoning for account selection
 - Confidence 0.0–1.0 reflects certainty of the booking recommendation
 """,
-            UserTemplate: "Suggest a double-entry booking for this extracted document:\n\n{{extraction_json}}",
+            UserTemplate: "Suggest a double-entry booking for this extracted document. Return only JSON.\n\n{{extraction_json}}",
             Primary: AiProvider.Anthropic, PrimaryModel: "claude-sonnet-4-20250514",
             Fallback: AiProvider.OpenAI, FallbackModel: "gpt-4o",
             Temp: 0.1m, MaxTok: 2048),

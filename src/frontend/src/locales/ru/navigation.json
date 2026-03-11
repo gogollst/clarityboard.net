@@ -4,6 +4,7 @@
     "kpis": "КПИ",
     "cashFlow": "Денежный поток",
     "planning": "Планирование",
+    "accounting": "Бухгалтерия",
     "hr": "Кадры",
     "hrAdmin": "Кадровый администратор",
     "admin": "Администрирование",
@@ -22,10 +23,13 @@
     "budget": "Бюджет",
     "assets": "Основные средства",
     "datevExport": "Экспорт DATEV",
+    "mySelf": "Мой профиль",
     "employees": "Сотрудники",
     "leaveRequests": "Заявки на отпуск",
+    "worktime": "Учёт рабочего времени",
     "travel": "Командировочные расходы",
     "reviews": "Оценки",
+    "onboarding": "Онбординг",
     "stats": "Статистика",
     "gdprManagement": "Управление GDPR",
     "users": "Пользователи",
@@ -35,6 +39,15 @@
     "mailConfig": "Конфигурация почты",
     "providers": "Провайдеры",
     "prompts": "Промпты",
-    "callLogs": "Журнал запросов"
+    "callLogs": "Журнал запросов",
+    "journalEntries": "Журнальные проводки",
+    "fiscalPeriods": "Отчётные периоды",
+    "accountingDatev": "Экспорты DATEV",
+    "costCenters": "Центры затрат",
+    "accountingScenarios": "Сценарии планирования",
+    "trialBalance": "Оборотная ведомость",
+    "balanceSheet": "Баланс",
+    "profitAndLoss": "ОПиУ",
+    "vatReconciliation": "Сверка НДС"
   }
 }

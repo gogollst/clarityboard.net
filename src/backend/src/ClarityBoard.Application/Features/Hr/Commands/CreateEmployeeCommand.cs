@@ -1,5 +1,6 @@
 using ClarityBoard.Application.Common.Attributes;
 using ClarityBoard.Application.Common.Interfaces;
+using ClarityBoard.Domain.Entities.Accounting;
 using ClarityBoard.Domain.Entities.Hr;
 using FluentValidation;
 using MediatR;
@@ -72,6 +73,23 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
 
         _db.Employees.Add(employee);
         await _db.SaveChangesAsync(cancellationToken);
+
+        // Auto-create an employee cost center for accounting integration
+        var ccExists = await _db.CostCenters
+            .AnyAsync(cc => cc.HrEmployeeId == employee.Id && cc.EntityId == employee.EntityId,
+                cancellationToken);
+        if (!ccExists)
+        {
+            var fullName = $"{employee.FirstName} {employee.LastName}";
+            var costCenter = CostCenter.Create(
+                entityId: employee.EntityId,
+                code: $"E{employee.EmployeeNumber}",
+                shortName: fullName[..Math.Min(fullName.Length, 100)],
+                type: CostCenterType.Employee,
+                hrEmployeeId: employee.Id);
+            _db.CostCenters.Add(costCenter);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
 
         return employee.Id;
     }

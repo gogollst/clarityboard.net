@@ -25,6 +25,7 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   pagination?: PaginationProps;
   className?: string;
+  onRowClick?: (item: T) => void;
 }
 
 const SKELETON_ROWS = 5;
@@ -36,6 +37,7 @@ export default function DataTable<T extends Record<string, unknown>>({
   emptyMessage,
   pagination,
   className,
+  onRowClick,
 }: DataTableProps<T>) {
   const { t } = useTranslation('common');
   const totalPages = pagination
@@ -84,7 +86,11 @@ export default function DataTable<T extends Record<string, unknown>>({
               data.map((item, rowIdx) => (
                 <tr
                   key={rowIdx}
-                  className="border-b border-border last:border-0 hover:bg-muted/50 transition-colors"
+                  className={cn(
+                    'border-b border-border last:border-0 hover:bg-muted/50 transition-colors',
+                    onRowClick && 'cursor-pointer',
+                  )}
+                  onClick={onRowClick ? () => onRowClick(item) : undefined}
                 >
                   {columns.map((col) => (
                     <td key={col.key} className="px-4 py-3">

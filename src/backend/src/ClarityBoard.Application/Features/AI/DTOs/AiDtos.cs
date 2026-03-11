@@ -79,7 +79,11 @@ public record AiPromptVersionDto
     public string SystemPrompt { get; init; } = default!;
     public string? UserPromptTemplate { get; init; }
     public AiProvider PrimaryProvider { get; init; }
+    public string PrimaryModel { get; init; } = default!;
     public AiProvider FallbackProvider { get; init; }
+    public string FallbackModel { get; init; } = default!;
+    public decimal Temperature { get; init; }
+    public int MaxTokens { get; init; }
     public string ChangeSummary { get; init; } = default!;
     public DateTime CreatedAt { get; init; }
     public Guid CreatedByUserId { get; init; }

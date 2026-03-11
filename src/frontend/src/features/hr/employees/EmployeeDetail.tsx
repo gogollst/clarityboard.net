@@ -6,8 +6,12 @@ import {
   useSalaryHistory,
   useContractHistory,
   useTerminateEmployee,
+  useUpdateEmployee,
+  useUpdateSalary,
 } from '@/hooks/useHr';
-import type { SalaryEntry, ContractEntry } from '@/types/hr';
+import { useAuth } from '@/hooks/useAuth';
+import { useEntity } from '@/hooks/useEntity';
+import type { SalaryEntry, ContractEntry, EmployeeDetail } from '@/types/hr';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +40,14 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ArrowLeft, Loader2, Plus } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Profile detail row helper
@@ -181,8 +192,55 @@ function CurrentBadge({ isCurrent }: { isCurrent: boolean }) {
 // Salary history tab
 // ---------------------------------------------------------------------------
 
-function SalaryTab({ entries }: { entries: SalaryEntry[] }) {
+interface SalaryTabProps {
+  entries: SalaryEntry[];
+  isLoading: boolean;
+  employeeId: string;
+}
+
+function SalaryTab({ entries, isLoading, employeeId }: SalaryTabProps) {
   const { t, i18n } = useTranslation('hr');
+  const { hasPermission } = useAuth();
+  const updateSalary = useUpdateSalary();
+  const [open, setOpen] = useState(false);
+  const [salaryType, setSalaryType] = useState('Monthly');
+  const [grossAmountEur, setGrossAmountEur] = useState('');
+  const [validFrom, setValidFrom] = useState('');
+  const [changeReason, setChangeReason] = useState('');
+
+  const canManageSalary = hasPermission('hr.salary.manage');
+
+  function resetForm() {
+    setSalaryType('Monthly');
+    setGrossAmountEur('');
+    setValidFrom('');
+    setChangeReason('');
+  }
+
+  function handleClose() {
+    resetForm();
+    setOpen(false);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const cents = Math.round(parseFloat(grossAmountEur) * 100);
+    if (!cents || cents <= 0) return;
+    updateSalary.mutate(
+      {
+        employeeId,
+        salaryType,
+        grossAmountCents: cents,
+        currencyCode: 'EUR',
+        bonusAmountCents: 0,
+        bonusCurrencyCode: 'EUR',
+        paymentCycleMonths: 12,
+        validFrom,
+        changeReason,
+      },
+      { onSuccess: handleClose },
+    );
+  }
 
   function formatCents(cents: number): string {
     return (cents / 100).toLocaleString(i18n.language, {
@@ -198,54 +256,140 @@ function SalaryTab({ entries }: { entries: SalaryEntry[] }) {
 
   function salaryTypeLabel(type: string): string {
     switch (type) {
-      case 'Monthly':  return t('employees.salary.typeMonthly');
-      case 'Hourly':   return t('employees.salary.typeHourly');
+      case 'Monthly':   return t('employees.salary.typeMonthly');
+      case 'Hourly':    return t('employees.salary.typeHourly');
       case 'DailyRate': return t('employees.salary.typeDailyRate');
-      default:         return type;
+      default:          return type;
     }
   }
 
-  if (entries.length === 0) {
+  if (isLoading) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
-        {t('employees.salary.noEntries')}
-      </p>
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-10 w-full rounded" />
+        ))}
+      </div>
     );
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t('employees.salary.type')}</TableHead>
-          <TableHead className="text-right">{t('employees.salary.grossAmount')}</TableHead>
-          <TableHead>{t('employees.salary.validFrom')}</TableHead>
-          <TableHead>{t('employees.salary.changeReason')}</TableHead>
-          <TableHead />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {entries.map((entry) => (
-          <TableRow key={entry.id}>
-            <TableCell className="text-sm text-muted-foreground">
-              {salaryTypeLabel(entry.salaryType)}
-            </TableCell>
-            <TableCell className="text-right font-medium tabular-nums">
-              {formatCents(entry.grossAmountCents)}
-            </TableCell>
-            <TableCell className="text-sm">
-              {formatDate(entry.validFrom)}
-            </TableCell>
-            <TableCell className="text-sm text-muted-foreground">
-              {entry.changeReason || '—'}
-            </TableCell>
-            <TableCell>
-              <CurrentBadge isCurrent={entry.isCurrent} />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <>
+      {canManageSalary && (
+        <div className="mb-4 flex justify-end">
+          <Button size="sm" onClick={() => setOpen(true)}>
+            <Plus className="mr-1 h-4 w-4" />
+            {t('employees.salary.addButton')}
+          </Button>
+        </div>
+      )}
+
+      {entries.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          {t('employees.salary.noEntries')}
+        </p>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('employees.salary.type')}</TableHead>
+              <TableHead className="text-right">{t('employees.salary.grossAmount')}</TableHead>
+              <TableHead>{t('employees.salary.validFrom')}</TableHead>
+              <TableHead>{t('employees.salary.changeReason')}</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {entries.map((entry) => (
+              <TableRow key={entry.id}>
+                <TableCell className="text-sm text-muted-foreground">
+                  {salaryTypeLabel(entry.salaryType)}
+                </TableCell>
+                <TableCell className="text-right font-medium tabular-nums">
+                  {formatCents(entry.grossAmountCents)}
+                </TableCell>
+                <TableCell className="text-sm">
+                  {formatDate(entry.validFrom)}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {entry.changeReason || '—'}
+                </TableCell>
+                <TableCell>
+                  <CurrentBadge isCurrent={entry.isCurrent} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+
+      <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('employees.salary.dialogTitle')}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t('employees.salary.type')}</Label>
+              <Select value={salaryType} onValueChange={setSalaryType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Monthly">{t('employees.salary.typeMonthly')}</SelectItem>
+                  <SelectItem value="Hourly">{t('employees.salary.typeHourly')}</SelectItem>
+                  <SelectItem value="DailyRate">{t('employees.salary.typeDailyRate')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="grossAmount">{t('employees.salary.grossAmountEur')} *</Label>
+              <Input
+                id="grossAmount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={grossAmountEur}
+                onChange={(e) => setGrossAmountEur(e.target.value)}
+                placeholder={t('employees.salary.grossAmountPlaceholder')}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="salaryValidFrom">{t('employees.salary.validFrom')} *</Label>
+              <Input
+                id="salaryValidFrom"
+                type="date"
+                value={validFrom}
+                onChange={(e) => setValidFrom(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="changeReason">{t('employees.salary.changeReason')} *</Label>
+              <Input
+                id="changeReason"
+                value={changeReason}
+                onChange={(e) => setChangeReason(e.target.value)}
+                placeholder={t('employees.salary.changeReasonPlaceholder')}
+                required
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={handleClose}>
+                {t('common:buttons.cancel')}
+              </Button>
+              <Button type="submit" disabled={updateSalary.isPending}>
+                {updateSalary.isPending && (
+                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                )}
+                {t('common:buttons.save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -316,6 +460,67 @@ function ContractTab({ entries }: { entries: ContractEntry[] }) {
 }
 
 // ---------------------------------------------------------------------------
+// Bank details tab
+// ---------------------------------------------------------------------------
+
+function BankDetailsTab({ employee }: { employee: EmployeeDetail }) {
+  const { t } = useTranslation('hr');
+  const updateEmployee = useUpdateEmployee();
+  const [iban, setIban] = useState(employee.iban ?? '');
+  const [bic, setBic] = useState(employee.bic ?? '');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateEmployee.mutate({
+      id:          employee.id,
+      firstName:   employee.firstName,
+      lastName:    employee.lastName,
+      dateOfBirth: employee.dateOfBirth,
+      taxId:       employee.taxId,
+      managerId:   employee.managerId,
+      departmentId: employee.departmentId,
+      iban:        iban.trim() || undefined,
+      bic:         bic.trim() || undefined,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="iban">{t('employees.bankDetails.iban')}</Label>
+          <Input
+            id="iban"
+            value={iban}
+            onChange={(e) => setIban(e.target.value)}
+            placeholder={t('employees.bankDetails.ibanPlaceholder')}
+            maxLength={34}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="bic">{t('employees.bankDetails.bic')}</Label>
+          <Input
+            id="bic"
+            value={bic}
+            onChange={(e) => setBic(e.target.value)}
+            placeholder={t('employees.bankDetails.bicPlaceholder')}
+            maxLength={11}
+          />
+        </div>
+      </div>
+      <div className="flex justify-end border-t pt-4">
+        <Button type="submit" disabled={updateEmployee.isPending}>
+          {updateEmployee.isPending && (
+            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+          )}
+          {t('common:buttons.save')}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
@@ -323,10 +528,14 @@ export function Component() {
   const { t, i18n } = useTranslation('hr');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { hasPermission } = useAuth();
+  const { entities } = useEntity();
   const [terminateOpen, setTerminateOpen] = useState(false);
+  const [editEntityId, setEditEntityId] = useState<string>('');
+  const updateEmployee = useUpdateEmployee();
 
   const { data: employee, isLoading } = useEmployee(id ?? '');
-  const { data: salaryHistory = [] } = useSalaryHistory(id ?? '');
+  const { data: salaryHistory = [], isLoading: salaryLoading } = useSalaryHistory(id ?? '');
   const { data: contractHistory = [] } = useContractHistory(id ?? '');
 
   function formatDate(iso: string | undefined): string {
@@ -383,6 +592,7 @@ export function Component() {
           <TabsTrigger value="profil">{t('employees.tabs.profile')}</TabsTrigger>
           <TabsTrigger value="gehalt">{t('employees.tabs.salary')}</TabsTrigger>
           <TabsTrigger value="vertraege">{t('employees.tabs.contracts')}</TabsTrigger>
+          <TabsTrigger value="bank">{t('employees.tabs.bank')}</TabsTrigger>
         </TabsList>
 
         {/* ----------------------------------------------------------------- */}
@@ -424,10 +634,62 @@ export function Component() {
                   label={t('employees.columns.manager')}
                   value={employee.managerName ?? '—'}
                 />
+                <DetailRow
+                  label={t('employees.fields.entity')}
+                  value={entities.find((e) => e.id === employee.entityId)?.name ?? employee.entityId}
+                />
               </dl>
 
+              {hasPermission('hr.manage') && employee.status !== 'Terminated' && entities.length > 1 && (
+                <div className="mt-6 border-t pt-4">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {t('employees.fields.entity')}
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Select
+                      value={editEntityId || employee.entityId}
+                      onValueChange={setEditEntityId}
+                    >
+                      <SelectTrigger className="w-64">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {entities.map((e) => (
+                          <SelectItem key={e.id} value={e.id}>
+                            {e.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={updateEmployee.isPending || (editEntityId === '' || editEntityId === employee.entityId)}
+                      onClick={() => {
+                        if (!editEntityId || editEntityId === employee.entityId) return;
+                        updateEmployee.mutate({
+                          id: employee.id,
+                          firstName: employee.firstName,
+                          lastName: employee.lastName,
+                          dateOfBirth: employee.dateOfBirth,
+                          taxId: employee.taxId,
+                          managerId: employee.managerId,
+                          departmentId: employee.departmentId,
+                          iban: employee.iban,
+                          bic: employee.bic,
+                          entityId: editEntityId,
+                        }, { onSuccess: () => setEditEntityId('') });
+                      }}
+                    >
+                      {updateEmployee.isPending && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                      {t('common:buttons.save')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {employee.status !== 'Terminated' && (
-                <div className="mt-8 flex justify-end border-t pt-4">
+                <div className="mt-6 flex justify-end border-t pt-4">
                   <Button
                     variant="destructive"
                     onClick={() => setTerminateOpen(true)}
@@ -446,7 +708,11 @@ export function Component() {
         <TabsContent value="gehalt">
           <Card>
             <CardContent className="pt-6">
-              <SalaryTab entries={salaryHistory} />
+              <SalaryTab
+                entries={salaryHistory}
+                isLoading={salaryLoading}
+                employeeId={id ?? ''}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -458,6 +724,17 @@ export function Component() {
           <Card>
             <CardContent className="pt-6">
               <ContractTab entries={contractHistory} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ----------------------------------------------------------------- */}
+        {/* Bank details tab                                                   */}
+        {/* ----------------------------------------------------------------- */}
+        <TabsContent value="bank">
+          <Card>
+            <CardContent className="pt-6">
+              <BankDetailsTab employee={employee} />
             </CardContent>
           </Card>
         </TabsContent>

@@ -26,6 +26,8 @@ public record EmployeeDetailDto
     public string? ManagerName { get; init; }
     public Guid? DepartmentId { get; init; }
     public string? DepartmentName { get; init; }
+    public string? Iban { get; init; }
+    public string? Bic { get; init; }
     public Guid EntityId { get; init; }
     public DateTime CreatedAt { get; init; }
 }
@@ -63,6 +65,8 @@ public class GetEmployeeQueryHandler : IRequestHandler<GetEmployeeQuery, Employe
                     .Where(d => d.Id == e.DepartmentId)
                     .Select(d => d.Name)
                     .FirstOrDefault(),
+                Iban              = e.Iban,
+                Bic               = e.Bic,
                 EntityId          = e.EntityId,
                 CreatedAt         = e.CreatedAt,
             })

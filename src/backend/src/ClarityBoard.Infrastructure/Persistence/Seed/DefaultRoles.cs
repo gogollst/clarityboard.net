@@ -12,10 +12,14 @@ public static class DefaultRoles
         new("accounting.create", "accounting", "create"),
         new("accounting.edit", "accounting", "edit"),
         new("accounting.delete", "accounting", "delete"),
+        new("accounting.post", "accounting", "post"),
         new("accounting.close_period", "accounting", "close_period"),
         new("accounting.reopen_period", "accounting", "reopen_period"),
         new("accounting.export", "accounting", "export"),
         new("accounting.reverse", "accounting", "reverse"),
+        new("accounting.plan", "accounting", "plan"),
+        new("accounting.document", "accounting", "document"),
+        new("accounting.admin", "accounting", "admin"),
 
         // KPI
         new("kpi.view", "kpi", "view"),
@@ -96,7 +100,7 @@ public static class DefaultRoles
         new("Admin", "Full system administrator with all permissions", AllPermissions.Select(p => p.Name).ToArray()),
 
         new("Finance", "Finance team - accounting, DATEV, budget, cash flow", [
-            "accounting.view", "accounting.create", "accounting.edit", "accounting.close_period", "accounting.export", "accounting.reverse",
+            "accounting.view", "accounting.create", "accounting.edit", "accounting.post", "accounting.close_period", "accounting.export", "accounting.reverse", "accounting.plan", "accounting.document",
             "kpi.view", "kpi.alerts.acknowledge",
             "cashflow.view", "cashflow.create", "cashflow.edit", "cashflow.forecast",
             "documents.view", "documents.upload", "documents.approve",
@@ -139,6 +143,10 @@ public static class DefaultRoles
             "hr.self",
             "hr.view",
             "hr.manager",
+        ]),
+
+        new("Employee", "Regular employee - time tracking, leave management, 360° feedback", [
+            "hr.self",
         ]),
     ];
 }

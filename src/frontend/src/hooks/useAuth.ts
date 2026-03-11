@@ -1,24 +1,36 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
 import { useEntityStore } from '@/stores/entityStore';
-import { api, setAccessToken, setRefreshToken } from '@/lib/api';
+import {
+  api,
+  setAccessToken,
+  setRefreshToken,
+  storeTokens,
+  storeUser,
+  getStoredRememberMe,
+} from '@/lib/api';
 
 export function useAuth() {
   const { user, isAuthenticated, setUser, logout: clearAuth } = useAuthStore();
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe = false) => {
     const { data } = await api.post('/auth/login', {
       email,
       password,
       deviceFingerprint: navigator.userAgent,
+      rememberMe,
     });
 
     if (data.requires2FA) {
+      // Persist rememberMe so verify2FA can use it
+      sessionStorage.setItem('cb_pending_remember_me', rememberMe ? 'true' : 'false');
       return { requires2FA: true, challengeToken: data.challengeToken };
     }
 
     setAccessToken(data.accessToken);
     setRefreshToken(data.refreshToken ?? null);
+    storeTokens(data.accessToken, data.refreshToken ?? null, rememberMe);
+    storeUser(data.user, rememberMe);
     setUser(data.user);
     if (data.user.entities?.length > 0) {
       useEntityStore.getState().setSelectedEntity(data.user.entities[0].entityId);
@@ -27,9 +39,15 @@ export function useAuth() {
   };
 
   const verify2FA = async (challengeToken: string, totpCode: string) => {
+    const rememberMe =
+      sessionStorage.getItem('cb_pending_remember_me') === 'true' || getStoredRememberMe();
+    sessionStorage.removeItem('cb_pending_remember_me');
+
     const { data } = await api.post('/auth/verify-2fa', { challengeToken, totpCode });
     setAccessToken(data.accessToken);
     setRefreshToken(data.refreshToken ?? null);
+    storeTokens(data.accessToken, data.refreshToken ?? null, rememberMe);
+    storeUser(data.user, rememberMe);
     setUser(data.user);
     if (data.user.entities?.length > 0) {
       useEntityStore.getState().setSelectedEntity(data.user.entities[0].entityId);

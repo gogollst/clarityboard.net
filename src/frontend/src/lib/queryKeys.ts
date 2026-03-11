@@ -30,6 +30,14 @@ export const queryKeys = {
       ['accounting', 'fiscal-periods', entityId] as const,
     vatReconciliation: (entityId: string) =>
       ['accounting', 'vat-reconciliation', entityId] as const,
+    costCenters: (entityId: string) =>
+      ['accounting', 'cost-centers', entityId] as const,
+    datevExports: (entityId: string) =>
+      ['accounting', 'datev-exports', entityId] as const,
+    accountingScenarios: (entityId: string) =>
+      ['accounting', 'scenarios', entityId] as const,
+    accounts: (entityId: string) =>
+      ['accounting', 'accounts', entityId] as const,
   },
 
   cashflow: {
@@ -122,6 +130,11 @@ export const queryKeys = {
     all: () => ['version'] as const,
   },
 
+  entity: {
+    all: ['entity'] as const,
+    departments: (entityId: string) => ['entity', entityId, 'departments'] as const,
+  },
+
   hr: {
     all: ['hr'] as const,
     employees: () => ['hr', 'employees'] as const,
@@ -142,5 +155,7 @@ export const queryKeys = {
     headcountStats: (entityId: string) => ['hr', 'stats', 'headcount', entityId] as const,
     turnoverStats: (entityId: string) => ['hr', 'stats', 'turnover', entityId] as const,
     salaryBands: (entityId: string) => ['hr', 'stats', 'salary-bands', entityId] as const,
+    onboardingChecklists: (employeeId: string) => ['hr', 'onboarding', employeeId] as const,
+    onboardingChecklist: (id: string) => ['hr', 'onboarding', 'detail', id] as const,
   },
 } as const;

@@ -4,6 +4,7 @@
     "kpis": "KPIs",
     "cashFlow": "Cash Flow",
     "planning": "Planung",
+    "accounting": "Buchhaltung",
     "hr": "HR",
     "hrAdmin": "HR Admin",
     "admin": "Administration",
@@ -22,10 +23,13 @@
     "budget": "Budget",
     "assets": "Anlagevermögen",
     "datevExport": "DATEV-Export",
+    "mySelf": "Mein Profil",
     "employees": "Mitarbeiter",
     "leaveRequests": "Urlaubsanträge",
+    "worktime": "Zeiterfassung",
     "travel": "Reisekosten",
     "reviews": "Beurteilungen",
+    "onboarding": "Onboarding",
     "stats": "Statistiken",
     "gdprManagement": "DSGVO-Verwaltung",
     "users": "Benutzer",
@@ -35,6 +39,15 @@
     "mailConfig": "Mail-Konfiguration",
     "providers": "Anbieter",
     "prompts": "Prompts",
-    "callLogs": "Aufrufprotokolle"
+    "callLogs": "Aufrufprotokolle",
+    "journalEntries": "Buchungssätze",
+    "fiscalPeriods": "Perioden",
+    "accountingDatev": "DATEV-Exporte",
+    "costCenters": "Kostenstellen",
+    "accountingScenarios": "Planungsszenarien",
+    "trialBalance": "Saldenliste",
+    "balanceSheet": "Bilanz",
+    "profitAndLoss": "GuV",
+    "vatReconciliation": "USt-Abgleich"
   }
 }

@@ -1,7 +1,8 @@
-using System.Text.Json;
+using System.Diagnostics;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Common.Messaging;
 using ClarityBoard.Domain.Entities.Document;
+using ClarityBoard.Infrastructure.Services.Documents;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -10,21 +11,29 @@ namespace ClarityBoard.Infrastructure.Messaging.Consumers;
 
 public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
 {
+    private const decimal LowConfidenceThreshold = 0.70m;
+
     private readonly ILogger<DocumentProcessingConsumer> _logger;
     private readonly IAppDbContext _db;
     private readonly IAiService _aiService;
     private readonly IDocumentStorage _documentStorage;
+    private readonly IDocumentTextAcquisitionService _textAcquisitionService;
+    private readonly DocumentStatusChangeNotifier _documentStatusChangeNotifier;
 
     public DocumentProcessingConsumer(
         ILogger<DocumentProcessingConsumer> logger,
         IAppDbContext db,
         IAiService aiService,
-        IDocumentStorage documentStorage)
+        IDocumentStorage documentStorage,
+        IDocumentTextAcquisitionService textAcquisitionService,
+        DocumentStatusChangeNotifier documentStatusChangeNotifier)
     {
         _logger = logger;
         _db = db;
         _aiService = aiService;
         _documentStorage = documentStorage;
+        _textAcquisitionService = textAcquisitionService;
+        _documentStatusChangeNotifier = documentStatusChangeNotifier;
     }
 
     public async Task Consume(ConsumeContext<ProcessDocument> context)
@@ -32,45 +41,95 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         var documentId = context.Message.DocumentId;
         var entityId = context.Message.EntityId;
         var ct = context.CancellationToken;
+        var overallStopwatch = Stopwatch.StartNew();
+        var currentStage = "load_document";
+        var reviewReasons = new List<string>();
 
-        _logger.LogInformation("Processing document {DocumentId} for entity {EntityId}", documentId, entityId);
+        using var logScope = _logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["DocumentId"] = documentId,
+            ["EntityId"] = entityId,
+        });
+
+        _logger.LogInformation("Starting document processing pipeline");
 
         // 1. Load Document from DB
+        var loadDocumentStopwatch = Stopwatch.StartNew();
         var document = await _db.Documents
             .FirstOrDefaultAsync(d => d.Id == documentId && d.EntityId == entityId, ct);
+        loadDocumentStopwatch.Stop();
 
         if (document is null)
         {
-            _logger.LogWarning("Document {DocumentId} not found for entity {EntityId}", documentId, entityId);
+            LogStageWarning(currentStage, loadDocumentStopwatch.ElapsedMilliseconds, "not_found");
             return;
         }
 
+        LogStageInformation(currentStage, loadDocumentStopwatch.ElapsedMilliseconds, "loaded",
+            "status {Status} contentType {ContentType}", document.Status, document.ContentType);
+
         try
         {
+            currentStage = "mark_processing";
+            var markProcessingStopwatch = Stopwatch.StartNew();
             document.MarkProcessing();
             await _db.SaveChangesAsync(ct);
+            await _documentStatusChangeNotifier.NotifyAsync(entityId, document.Id, document.Status, ct);
+            markProcessingStopwatch.Stop();
+            LogStageInformation(currentStage, markProcessingStopwatch.ElapsedMilliseconds, document.Status);
 
             // 2. Download file from MinIO
+            currentStage = "download_document";
+            var downloadStopwatch = Stopwatch.StartNew();
             using var fileStream = await _documentStorage.DownloadAsync(entityId, document.StoragePath, ct);
+            downloadStopwatch.Stop();
+            LogStageInformation(currentStage, downloadStopwatch.ElapsedMilliseconds, "downloaded",
+                "contentType {ContentType} fileSizeBytes {FileSizeBytes}", document.ContentType, document.FileSize);
 
-            // 3. Extract text from document
-            var documentText = await ExtractTextAsync(fileStream, document.ContentType, ct);
+            // 3. Acquire text (native extraction → quality check → vision OCR fallback)
+            currentStage = "acquire_text";
+            var acquireTextStopwatch = Stopwatch.StartNew();
+            var textResult = await _textAcquisitionService.AcquireTextAsync(
+                fileStream, document.ContentType, documentId, entityId, document.FileName, ct);
+            acquireTextStopwatch.Stop();
+
+            var documentText = textResult.Text;
+            reviewReasons.AddRange(textResult.ReviewReasons);
 
             if (string.IsNullOrWhiteSpace(documentText))
             {
-                _logger.LogWarning("No text extracted from document {DocumentId}", documentId);
+                LogStageWarning(currentStage, acquireTextStopwatch.ElapsedMilliseconds, "empty_text",
+                    "source {Source} usedVision {UsedVision} contentType {ContentType}",
+                    textResult.Source, textResult.UsedVision, document.ContentType);
                 documentText = "[No text could be extracted from this document]";
+            }
+            else
+            {
+                LogStageInformation(currentStage, acquireTextStopwatch.ElapsedMilliseconds, "text_acquired",
+                    "source {Source} usedVision {UsedVision} confidence {Confidence} nativeLen {NativeLen} visionLen {VisionLen}",
+                    textResult.Source, textResult.UsedVision, textResult.Confidence,
+                    textResult.NativeTextLength, textResult.VisionTextLength);
             }
 
             // 4. Send extracted text to AI for field extraction
+            currentStage = "extract_fields";
+            var extractFieldsStopwatch = Stopwatch.StartNew();
             var extraction = await _aiService.ExtractDocumentFieldsAsync(
                 documentText, document.ContentType, ct);
+            extractFieldsStopwatch.Stop();
+            LogConfidenceStage(currentStage, extractFieldsStopwatch.ElapsedMilliseconds, extraction.Confidence,
+                "fieldsDetected {FieldsDetected} lineItems {LineItemCount} rawFieldCount {RawFieldCount}",
+                CountDetectedFields(extraction), extraction.LineItems.Count, extraction.RawFields.Count);
+            if (extraction.Confidence < LowConfidenceThreshold)
+                reviewReasons.Add("low_extraction_confidence");
 
             // 5. Store DocumentFields from extraction result
+            currentStage = "persist_extraction";
+            var persistExtractionStopwatch = Stopwatch.StartNew();
             StoreDocumentFields(document, extraction);
 
             // 6. Update Document entity with extracted metadata
-            var extractedJson = JsonSerializer.Serialize(extraction);
+            var extractedJson = DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons);
             document.SetExtraction(
                 ocrText: documentText,
                 extractedData: extractedJson,
@@ -80,59 +139,150 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                 invoiceDate: extraction.InvoiceDate,
                 totalAmount: extraction.TotalAmount,
                 currency: extraction.Currency);
+            persistExtractionStopwatch.Stop();
+            LogStageInformation(currentStage, persistExtractionStopwatch.ElapsedMilliseconds, document.Status,
+                "storedFieldCount {StoredFieldCount}", document.Fields.Count);
 
             // 7. Call AI for booking suggestion
+            currentStage = "suggest_booking";
+            var suggestBookingStopwatch = Stopwatch.StartNew();
             var bookingSuggestion = await _aiService.SuggestBookingAsync(extraction, entityId, ct);
+            suggestBookingStopwatch.Stop();
+            LogConfidenceStage(currentStage, suggestBookingStopwatch.ElapsedMilliseconds, bookingSuggestion.Confidence,
+                "amount {Amount} debitAccount {DebitAccount} creditAccount {CreditAccount}",
+                bookingSuggestion.Amount, bookingSuggestion.DebitAccountNumber, bookingSuggestion.CreditAccountNumber);
+            if (bookingSuggestion.Confidence < LowConfidenceThreshold)
+                reviewReasons.Add("low_booking_confidence");
 
             // 8. Create BookingSuggestion entity
-            await CreateBookingSuggestionAsync(document, entityId, bookingSuggestion, ct);
+            currentStage = "persist_results";
+            var persistResultsStopwatch = Stopwatch.StartNew();
+            var bookingSuggestionCreated = await CreateBookingSuggestionAsync(document, entityId, bookingSuggestion, ct);
+            if (!bookingSuggestionCreated)
+                reviewReasons.Add("booking_suggestion_unresolved_accounts");
+
+            document.UpdateExtractedData(DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons));
+
+            if (reviewReasons.Count > 0)
+                document.MarkReview();
 
             // 9. Status is already set to "extracted" by SetExtraction
             await _db.SaveChangesAsync(ct);
+            persistResultsStopwatch.Stop();
+            LogStageInformation(currentStage, persistResultsStopwatch.ElapsedMilliseconds,
+                bookingSuggestionCreated ? "saved" : "saved_without_booking_suggestion",
+                "documentStatus {DocumentStatus} storedFieldCount {StoredFieldCount}", document.Status, document.Fields.Count);
+
+            if (reviewReasons.Count > 0)
+            {
+                _logger.LogWarning(
+                    "Document marked for manual review with reasons {ReviewReasons}",
+                    string.Join(",", reviewReasons));
+            }
+
+            await _documentStatusChangeNotifier.NotifyAsync(entityId, document.Id, document.Status, ct);
+
+            overallStopwatch.Stop();
 
             _logger.LogInformation(
-                "Successfully processed document {DocumentId}: vendor={Vendor}, amount={Amount}, confidence={Confidence}",
-                documentId, extraction.VendorName, extraction.TotalAmount, extraction.Confidence);
+                "Document processing completed in {DurationMs}ms with result {Result} status {Status} extractionConfidence {ExtractionConfidence} bookingConfidence {BookingConfidence} reviewReasonCount {ReviewReasonCount}",
+                overallStopwatch.ElapsedMilliseconds, "success", document.Status, extraction.Confidence, bookingSuggestion.Confidence, reviewReasons.Count);
         }
         catch (Exception ex)
         {
             // 10. On error, set status to "failed"
-            _logger.LogError(ex, "Failed to process document {DocumentId}", documentId);
+            overallStopwatch.Stop();
+            _logger.LogError(ex,
+                "Document processing failed in stage {Stage} after {DurationMs}ms with currentStatus {Status}",
+                currentStage, overallStopwatch.ElapsedMilliseconds, document.Status);
             document.MarkFailed();
             await _db.SaveChangesAsync(ct);
+            await _documentStatusChangeNotifier.NotifyAsync(entityId, document.Id, document.Status, ct);
             throw; // Re-throw so MassTransit retry policy can handle it
         }
     }
 
-    /// <summary>
-    /// Simple text extraction. For PDFs this is a placeholder for a proper PDF library.
-    /// For images, we pass a placeholder -- in production this would use OCR.
-    /// </summary>
-    private static async Task<string> ExtractTextAsync(Stream fileStream, string contentType, CancellationToken ct)
+    private void LogStageInformation(string stage, long durationMs, string result,
+        string? detailsTemplate = null, params object?[] details)
     {
-        if (contentType == "application/pdf")
+        if (detailsTemplate is null)
         {
-            // Simple text extraction for PDF -- reads raw text content.
-            // In production, replace with a proper PDF text extraction library (e.g., PdfPig, iText).
-            using var reader = new StreamReader(fileStream);
-            var rawContent = await reader.ReadToEndAsync(ct);
-
-            // Basic PDF text extraction: strip binary content, keep readable text
-            var textChars = rawContent
-                .Where(c => !char.IsControl(c) || c == '\n' || c == '\r' || c == '\t')
-                .ToArray();
-            return new string(textChars);
+            _logger.LogInformation(
+                "Document processing stage {Stage} completed in {DurationMs}ms with result {Result}",
+                stage, durationMs, result);
+            return;
         }
 
-        if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        _logger.LogInformation(
+            $"Document processing stage {{Stage}} completed in {{DurationMs}}ms with result {{Result}} and {detailsTemplate}",
+            CreateLogArguments(stage, durationMs, result, details));
+    }
+
+    private void LogStageWarning(string stage, long durationMs, string result,
+        string? detailsTemplate = null, params object?[] details)
+    {
+        if (detailsTemplate is null)
         {
-            // For images, OCR would be needed. This is a placeholder.
-            return "[Image document -- OCR extraction pending. Please implement OCR provider.]";
+            _logger.LogWarning(
+                "Document processing stage {Stage} completed in {DurationMs}ms with result {Result}",
+                stage, durationMs, result);
+            return;
         }
 
-        // Fallback: attempt to read as text
-        using var fallbackReader = new StreamReader(fileStream);
-        return await fallbackReader.ReadToEndAsync(ct);
+        _logger.LogWarning(
+            $"Document processing stage {{Stage}} completed in {{DurationMs}}ms with result {{Result}} and {detailsTemplate}",
+            CreateLogArguments(stage, durationMs, result, details));
+    }
+
+    private void LogConfidenceStage(string stage, long durationMs, decimal confidence,
+        string detailsTemplate, params object?[] details)
+    {
+        var result = confidence < LowConfidenceThreshold ? "low_confidence" : "completed";
+        var message = $"Document processing stage {{Stage}} completed in {{DurationMs}}ms with result {{Result}} and confidence {{Confidence}} and {detailsTemplate}";
+        var arguments = CreateLogArguments(stage, durationMs, result, confidence, details);
+
+        if (confidence < LowConfidenceThreshold)
+        {
+            _logger.LogWarning(message, arguments);
+            return;
+        }
+
+        _logger.LogInformation(message, arguments);
+    }
+
+    private static object?[] CreateLogArguments(object? first, object? second, object? third, params object?[] remaining)
+    {
+        var arguments = new object?[3 + remaining.Length];
+        arguments[0] = first;
+        arguments[1] = second;
+        arguments[2] = third;
+        Array.Copy(remaining, 0, arguments, 3, remaining.Length);
+        return arguments;
+    }
+
+    private static object?[] CreateLogArguments(object? first, object? second, object? third, object? fourth, params object?[] remaining)
+    {
+        var arguments = new object?[4 + remaining.Length];
+        arguments[0] = first;
+        arguments[1] = second;
+        arguments[2] = third;
+        arguments[3] = fourth;
+        Array.Copy(remaining, 0, arguments, 4, remaining.Length);
+        return arguments;
+    }
+
+    private static int CountDetectedFields(DocumentExtractionResult extraction)
+    {
+        var count = 0;
+
+        if (!string.IsNullOrWhiteSpace(extraction.VendorName)) count++;
+        if (!string.IsNullOrWhiteSpace(extraction.InvoiceNumber)) count++;
+        if (extraction.InvoiceDate.HasValue) count++;
+        if (extraction.TotalAmount.HasValue) count++;
+        if (!string.IsNullOrWhiteSpace(extraction.Currency)) count++;
+        if (extraction.TaxRate.HasValue) count++;
+
+        return count + extraction.LineItems.Count + extraction.RawFields.Count;
     }
 
     private static void StoreDocumentFields(Document document, DocumentExtractionResult extraction)
@@ -172,7 +322,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         }
     }
 
-    private async Task CreateBookingSuggestionAsync(
+    private async Task<bool> CreateBookingSuggestionAsync(
         Document document, Guid entityId,
         BookingSuggestionResult suggestion, CancellationToken ct)
     {
@@ -188,9 +338,10 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         if (debitAccount is null || creditAccount is null)
         {
             _logger.LogWarning(
-                "Could not resolve accounts for booking suggestion: debit={Debit}, credit={Credit}",
+                "Document processing stage {Stage} completed with result {Result}: debitAccount {Debit} creditAccount {Credit}",
+                "persist_results", "account_resolution_failed",
                 suggestion.DebitAccountNumber, suggestion.CreditAccountNumber);
-            return;
+            return false;
         }
 
         var bookingSuggestion = BookingSuggestion.Create(
@@ -206,5 +357,6 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             aiReasoning: suggestion.Reasoning);
 
         _db.BookingSuggestions.Add(bookingSuggestion);
+        return true;
     }
 }

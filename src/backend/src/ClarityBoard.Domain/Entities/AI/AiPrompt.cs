@@ -109,13 +109,25 @@ public class AiPrompt
         UpdatedAt           = DateTime.UtcNow;
     }
 
-    public void Restore(string systemPrompt, string? userPromptTemplate,
-        AiProvider primaryProvider, AiProvider fallbackProvider, Guid editedByUserId)
+    public void Restore(
+        string systemPrompt,
+        string? userPromptTemplate,
+        AiProvider primaryProvider,
+        string primaryModel,
+        AiProvider fallbackProvider,
+        string fallbackModel,
+        decimal temperature,
+        int maxTokens,
+        Guid editedByUserId)
     {
         SystemPrompt       = systemPrompt;
         UserPromptTemplate = userPromptTemplate;
         PrimaryProvider    = primaryProvider;
+        PrimaryModel       = primaryModel;
         FallbackProvider   = fallbackProvider;
+        FallbackModel      = fallbackModel;
+        Temperature        = temperature;
+        MaxTokens          = maxTokens;
         Version            += 1;
         LastEditedByUserId = editedByUserId;
         UpdatedAt          = DateTime.UtcNow;

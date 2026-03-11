@@ -1,0 +1,289 @@
+{
+  "journalEntries": {
+    "title": "Журнальные проводки",
+    "newEntry": "Новая проводка",
+    "searchPlaceholder": "Ссылка или описание...",
+    "noEntries": "Журнальные проводки не найдены.",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "columns": {
+      "entryDate": "Дата",
+      "entryNumber": "Номер",
+      "description": "Описание",
+      "sourceType": "Источник",
+      "status": "Статус",
+      "documentRef": "Рег. номер"
+    },
+    "status": {
+      "draft": "Черновик",
+      "posted": "Проведено",
+      "reversed": "Сторнировано"
+    },
+    "actions": {
+      "post": "Провести",
+      "reverse": "Сторнировать",
+      "view": "Подробнее"
+    },
+    "postConfirmTitle": "Провести журнальную проводку?",
+    "postConfirmDescription": "Проводка будет защищена GoBD-совместимым хешем SHA-256 и не может быть изменена.",
+    "postConfirm": "Провести"
+  },
+  "fiscalPeriods": {
+    "title": "Отчётные периоды",
+    "newPeriod": "Новый период",
+    "noEntries": "Отчётные периоды не найдены.",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "columns": {
+      "year": "Год",
+      "month": "Месяц",
+      "status": "Статус",
+      "exportCount": "Экспорты"
+    },
+    "status": {
+      "open": "Открыт",
+      "soft_close": "Мягко закрыт",
+      "exported": "Экспортирован",
+      "hard_closed": "Окончательно закрыт"
+    },
+    "actions": {
+      "close": "Закрыть",
+      "reopen": "Открыть"
+    }
+  },
+  "datevExports": {
+    "title": "Экспорты DATEV",
+    "generate": "Создать экспорт",
+    "noEntries": "Экспорты отсутствуют.",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "columns": {
+      "exportType": "Тип",
+      "fiscalPeriod": "Период",
+      "status": "Статус",
+      "recordCount": "Записи",
+      "createdAt": "Создан",
+      "completedAt": "Завершён"
+    },
+    "status": {
+      "Pending": "Ожидание",
+      "Generating": "Создаётся...",
+      "Ready": "Готов",
+      "Failed": "Ошибка"
+    },
+    "exportType": {
+      "Buchungsstapel": "Пакет проводок",
+      "Stammdaten": "Справочные данные"
+    },
+    "dialogTitle": "Создать новый экспорт DATEV",
+    "fiscalPeriodLabel": "Отчётный период",
+    "exportTypeLabel": "Тип экспорта",
+    "download": "Скачать",
+    "travelSync": "Синхронизировать командировки",
+    "travelSyncDialogTitle": "Синхронизировать HR-командировки",
+    "travelSyncFromDate": "С",
+    "travelSyncToDate": "По",
+    "travelSyncButton": "Синхронизировать"
+  },
+  "costCenters": {
+    "title": "Центры затрат",
+    "newCostCenter": "Новый центр затрат",
+    "noEntries": "Центры затрат не найдены.",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "columns": {
+      "code": "Код",
+      "shortName": "Наименование",
+      "type": "Тип",
+      "isActive": "Активен"
+    },
+    "type": {
+      "Department": "Отдел",
+      "Project": "Проект",
+      "Employee": "Сотрудник",
+      "Other": "Прочее"
+    },
+    "fields": {
+      "code": "Код",
+      "shortName": "Наименование",
+      "description": "Описание",
+      "type": "Тип"
+    },
+    "placeholders": {
+      "code": "напр. К100",
+      "shortName": "напр. Продажи",
+      "description": "Необязательное описание"
+    },
+    "dialogTitle": "Создать новый центр затрат"
+  },
+  "accountingScenarios": {
+    "title": "Сценарии планирования",
+    "newScenario": "Новый сценарий",
+    "noEntries": "Сценарии не найдены.",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "columns": {
+      "name": "Название",
+      "scenarioType": "Тип",
+      "year": "Год",
+      "isLocked": "Заблокирован",
+      "isBaseline": "Базовый"
+    },
+    "type": {
+      "Budget": "Бюджет",
+      "Forecast": "Прогноз",
+      "Custom": "Пользовательский"
+    },
+    "fields": {
+      "name": "Название",
+      "description": "Описание",
+      "type": "Тип",
+      "year": "Год"
+    },
+    "placeholders": {
+      "name": "напр. Бюджет 2026",
+      "description": "Необязательное описание"
+    },
+    "dialogTitle": "Создать новый сценарий планирования"
+  },
+  "trialBalance": {
+    "title": "Оборотная ведомость",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "noEntries": "Счета с остатками не найдены.",
+    "totals": "Итого",
+    "columns": {
+      "accountNumber": "Счёт",
+      "accountName": "Наименование",
+      "accountType": "Тип",
+      "accountClass": "Класс",
+      "debit": "Дебет",
+      "credit": "Кредит",
+      "balance": "Сальдо"
+    }
+  },
+  "balanceSheet": {
+    "title": "Баланс",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "assets": "АКТИВЫ",
+    "liabilitiesAndEquity": "ПАССИВЫ",
+    "totalAssets": "Итого активы",
+    "totalLiabilitiesAndEquity": "Итого пассивы",
+    "compareWith": "Сравнить с",
+    "amount": "Сумма",
+    "priorAmount": "Предыдущий период",
+    "balanced": "Сбалансировано",
+    "imbalanced": "Не сбалансировано"
+  },
+  "profitAndLoss": {
+    "title": "Отчёт о прибылях и убытках",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "netIncome": "Чистая прибыль",
+    "compareWith": "Сравнить с",
+    "amount": "Сумма",
+    "priorAmount": "Предыдущий период",
+    "position": "Позиция",
+    "subtotal": "Промежуточный итог"
+  },
+  "vatReconciliation": {
+    "title": "Сверка НДС",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "periodStart": "Начало периода",
+    "periodEnd": "Конец периода",
+    "outputVat19": "НДС к уплате 19%",
+    "outputVat7": "НДС к уплате 7%",
+    "outputVat0": "Необлагаемая выручка",
+    "inputVat": "НДС к вычету",
+    "reverseCharge": "Обратное начисление",
+    "intraEu": "Внутри-ЕС приобретения",
+    "netAmount": "Сумма нетто",
+    "vatAmount": "Сумма НДС",
+    "totalOutputVat": "НДС к уплате итого",
+    "totalInputVat": "НДС к вычету итого",
+    "netPayable": "К оплате",
+    "lineDetails": "Детализация",
+    "noData": "Нет данных НДС за этот период.",
+    "columns": {
+      "accountNumber": "Счёт",
+      "accountName": "Наименование",
+      "vatCode": "Код НДС",
+      "vatRate": "Ставка",
+      "vatType": "Тип",
+      "netAmount": "Нетто",
+      "vatAmount": "НДС"
+    }
+  },
+  "journalEntryDetail": {
+    "title": "Журнальная проводка",
+    "backToList": "Назад к проводкам",
+    "entryNumber": "Номер проводки",
+    "entryDate": "Дата проводки",
+    "postingDate": "Дата учёта",
+    "description": "Описание",
+    "status": "Статус",
+    "sourceType": "Тип источника",
+    "sourceRef": "Ссылка на источник",
+    "hash": "Хеш",
+    "createdAt": "Дата создания",
+    "createdBy": "Создано",
+    "isReversal": "Эта проводка является сторнированием проводки {{number}}",
+    "lines": "Строки",
+    "reverseConfirmTitle": "Сторнировать проводку?",
+    "reverseConfirmDescription": "Будет создана сторнирующая проводка. Укажите причину.",
+    "reverseReasonLabel": "Причина",
+    "reverseConfirm": "Сторнировать",
+    "columns": {
+      "lineNumber": "#",
+      "accountNumber": "Счёт",
+      "accountName": "Наименование",
+      "debit": "Дебет",
+      "credit": "Кредит",
+      "currency": "Вал.",
+      "vatAmount": "НДС",
+      "vatCode": "Код НДС",
+      "costCenter": "Центр затрат",
+      "description": "Описание"
+    }
+  },
+  "journalEntryCreate": {
+    "title": "Новая проводка",
+    "entryDate": "Дата проводки",
+    "description": "Описание",
+    "descriptionPlaceholder": "напр. Ежемесячная оплата аренды",
+    "lines": "Строки проводки",
+    "addLine": "Добавить строку",
+    "account": "Счёт",
+    "selectAccount": "Выберите счёт...",
+    "debit": "Дебет",
+    "credit": "Кредит",
+    "vatCode": "Код НДС",
+    "vatAmount": "Сумма НДС",
+    "costCenter": "Центр затрат",
+    "lineDescription": "Описание",
+    "removeLine": "Удалить",
+    "totalDebit": "Итого дебет",
+    "totalCredit": "Итого кредит",
+    "difference": "Разница",
+    "balanced": "Сбалансировано",
+    "unbalanced": "Не сбалансировано",
+    "submit": "Создать проводку",
+    "validation": {
+      "descriptionRequired": "Описание обязательно",
+      "bothDebitAndCredit": "Строка не может иметь одновременно дебет и кредит"
+    }
+  },
+  "toast": {
+    "journalEntryCreated": "Проводка создана",
+    "journalEntryCreateError": "Ошибка создания проводки",
+    "journalEntryPosted": "Проводка проведена",
+    "journalEntryPostError": "Ошибка проведения проводки",
+    "journalEntryReversed": "Проводка сторнирована",
+    "journalEntryReverseError": "Ошибка сторнирования проводки",
+    "costCenterCreated": "Центр затрат создан",
+    "costCenterCreateError": "Ошибка создания центра затрат",
+    "datevExportGenerated": "Экспорт DATEV запущен",
+    "datevExportError": "Ошибка создания экспорта DATEV",
+    "scenarioCreated": "Сценарий планирования создан",
+    "scenarioCreateError": "Ошибка создания сценария планирования",
+    "travelSynced": "Синхронизировано {{count}} отчётов о командировках (пропущено: {{skipped}})",
+    "travelSyncError": "Ошибка синхронизации командировочных расходов",
+    "fiscalPeriodCreated": "Отчётный период создан",
+    "fiscalPeriodCreateError": "Ошибка создания отчётного периода",
+    "fiscalPeriodClosed": "Отчётный период закрыт",
+    "fiscalPeriodCloseError": "Ошибка закрытия отчётного периода"
+  }
+}

@@ -78,7 +78,11 @@ export interface AiPromptVersion {
   systemPrompt: string;
   userPromptTemplate: string | null;
   primaryProvider: AiProvider;
+  primaryModel: string;
   fallbackProvider: AiProvider;
+  fallbackModel: string;
+  temperature: number;
+  maxTokens: number;
   changeSummary: string;
   createdAt: string;
   createdByUserId: string;

@@ -17,6 +17,10 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.Property(e => e.LastName).HasMaxLength(100).IsRequired();
         builder.Property(e => e.TaxId).HasMaxLength(50).IsRequired();
         builder.Property(e => e.SocialSecurityNumber).HasMaxLength(200);
+        builder.Property(e => e.Iban).HasMaxLength(34);
+        builder.Property(e => e.Bic).HasMaxLength(11);
+        builder.Property(e => e.UserId);
+        builder.HasIndex(e => e.UserId).IsUnique().HasFilter("\"UserId\" IS NOT NULL");
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(e => e.TerminationReason).HasMaxLength(500);
         builder.Ignore(e => e.FullName);

@@ -2,6 +2,7 @@ using ClarityBoard.Application.Common.Attributes;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Features.Entity.DTOs;
 using ClarityBoard.Domain.Entities.Entity;
+using ClarityBoard.Domain.Entities.Hr;
 using ClarityBoard.Domain.Entities.Identity;
 using FluentValidation;
 using MediatR;
@@ -28,6 +29,7 @@ public record CreateEntityCommand : IRequest<LegalEntityDto>
     public string? DatevClientNumber { get; init; }
     public string? DatevConsultantNumber { get; init; }
     public Guid? ManagingDirectorId { get; init; }
+    public Guid? TemplateDepartmentEntityId { get; init; }
 }
 
 public class CreateEntityCommandValidator : AbstractValidator<CreateEntityCommand>
@@ -143,6 +145,35 @@ public class CreateEntityCommandHandler : IRequestHandler<CreateEntityCommand, L
             ipAddress: null,
             userAgent: null,
             ct: cancellationToken);
+
+        if (request.TemplateDepartmentEntityId.HasValue)
+        {
+            var sourceDepts = await _db.Departments
+                .Where(d => d.EntityId == request.TemplateDepartmentEntityId.Value && d.IsActive)
+                .OrderBy(d => d.CreatedAt)
+                .ToListAsync(cancellationToken);
+
+            var idMap = new Dictionary<Guid, Guid>();
+            foreach (var src in sourceDepts)
+            {
+                Guid? newParentId = src.ParentDepartmentId.HasValue && idMap.TryGetValue(src.ParentDepartmentId.Value, out var mappedParent)
+                    ? mappedParent
+                    : null;
+
+                var newDept = Department.Create(
+                    entityId: entity.Id,
+                    name: src.Name,
+                    code: src.Code,
+                    parentDepartmentId: newParentId,
+                    managerId: null,
+                    description: src.Description);
+                _db.Departments.Add(newDept);
+                idMap[src.Id] = newDept.Id;
+            }
+
+            if (sourceDepts.Count > 0)
+                await _db.SaveChangesAsync(cancellationToken);
+        }
 
         return new LegalEntityDto
         {

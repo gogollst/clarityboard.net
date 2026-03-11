@@ -12,7 +12,13 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.HasKey(d => d.Id);
         builder.Property(d => d.Name).HasMaxLength(200).IsRequired();
         builder.Property(d => d.Code).HasMaxLength(50).IsRequired();
+        builder.Property(d => d.Description).HasMaxLength(500);
         builder.Property(d => d.IsActive).IsRequired();
         builder.HasIndex(d => new { d.EntityId, d.Code }).IsUnique();
+
+        builder.HasOne<Department>()
+            .WithMany()
+            .HasForeignKey(d => d.ParentDepartmentId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

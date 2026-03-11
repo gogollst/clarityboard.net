@@ -1,4 +1,4 @@
-export type DocumentStatus = 'uploaded' | 'processing' | 'extracted' | 'booked' | 'failed';
+export type DocumentStatus = 'uploaded' | 'processing' | 'extracted' | 'review' | 'booked' | 'failed';
 
 export interface Document {
   id: string;

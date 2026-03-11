@@ -116,3 +116,14 @@ export interface SendTestEmailResult {
   success: boolean;
   errorMessage: string | null;
 }
+
+export interface AuthConfig {
+  tokenLifetimeHours: number;
+  rememberMeTokenLifetimeDays: number;
+  updatedAt: string;
+}
+
+export interface UpsertAuthConfigRequest {
+  tokenLifetimeHours: number;
+  rememberMeTokenLifetimeDays: number;
+}

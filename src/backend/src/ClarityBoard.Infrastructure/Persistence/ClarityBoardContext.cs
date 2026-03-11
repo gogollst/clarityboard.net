@@ -31,6 +31,12 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
     public DbSet<FiscalPeriod> FiscalPeriods => Set<FiscalPeriod>();
     public DbSet<RecurringEntry> RecurringEntries => Set<RecurringEntry>();
     public DbSet<VatRecord> VatRecords => Set<VatRecord>();
+    public DbSet<LegalEntityExtension> LegalEntityExtensions => Set<LegalEntityExtension>();
+    public DbSet<CostCenter> CostCenters => Set<CostCenter>();
+    public DbSet<AccountingDocument> AccountingDocuments => Set<AccountingDocument>();
+    public DbSet<AccountingScenario> AccountingScenarios => Set<AccountingScenario>();
+    public DbSet<AccountingPlanEntry> AccountingPlanEntries => Set<AccountingPlanEntry>();
+    public DbSet<DatevExport> DatevExports => Set<DatevExport>();
 
     // Entity
     public DbSet<LegalEntity> LegalEntities => Set<LegalEntity>();
@@ -97,6 +103,8 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
     public DbSet<DataAccessLog> DataAccessLogs => Set<DataAccessLog>();
     public DbSet<DeletionRequest> DeletionRequests => Set<DeletionRequest>();
     public DbSet<PublicHoliday> PublicHolidays => Set<PublicHoliday>();
+    public DbSet<OnboardingChecklist> OnboardingChecklists => Set<OnboardingChecklist>();
+    public DbSet<OnboardingTask> OnboardingTasks => Set<OnboardingTask>();
 
     // AI Management
     public DbSet<AiProviderConfig> AiProviderConfigs => Set<AiProviderConfig>();
@@ -133,6 +141,14 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
         modelBuilder.Entity<FiscalPeriod>().ToTable("fiscal_periods", "accounting");
         modelBuilder.Entity<RecurringEntry>().ToTable("recurring_entries", "accounting");
         modelBuilder.Entity<VatRecord>().ToTable("vat_records", "accounting");
+
+        // new accounting entities
+        modelBuilder.Entity<LegalEntityExtension>().ToTable("legal_entity_extensions", "accounting");
+        modelBuilder.Entity<CostCenter>().ToTable("cost_centers", "accounting");
+        modelBuilder.Entity<AccountingDocument>().ToTable("accounting_documents", "accounting");
+        modelBuilder.Entity<AccountingScenario>().ToTable("accounting_scenarios", "accounting");
+        modelBuilder.Entity<AccountingPlanEntry>().ToTable("accounting_plan_entries", "accounting");
+        modelBuilder.Entity<DatevExport>().ToTable("datev_exports", "accounting");
 
         // Entity schema
         modelBuilder.Entity<LegalEntity>().ToTable("legal_entities", "entity");
@@ -214,6 +230,7 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.VatDefault).HasMaxLength(10);
             entity.Property(e => e.DatevAuto).HasMaxLength(10);
             entity.Property(e => e.CostCenterDefault).HasMaxLength(50);
+            entity.Property(e => e.BwaLine).HasMaxLength(10);
         });
 
         modelBuilder.Entity<JournalEntry>(entity =>
@@ -228,6 +245,9 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.SourceRef).HasMaxLength(200);
             entity.Property(e => e.Hash).HasMaxLength(64);
             entity.Property(e => e.PreviousHash).HasMaxLength(64);
+            entity.Property(e => e.DocumentRef).HasMaxLength(36);
+            entity.Property(e => e.DocumentRef2).HasMaxLength(12);
+            entity.Property(e => e.Notes).HasMaxLength(1000);
             entity.HasMany(e => e.Lines).WithOne().HasForeignKey(l => l.JournalEntryId);
         });
 
@@ -244,6 +264,7 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.Currency).HasMaxLength(3);
             entity.Property(e => e.VatCode).HasMaxLength(10);
             entity.Property(e => e.CostCenter).HasMaxLength(50);
+            entity.Property(e => e.TaxCode).HasMaxLength(10);
             entity.Property(e => e.Description).HasMaxLength(300);
         });
 
@@ -272,6 +293,67 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.NetAmount).HasPrecision(18, 2);
             entity.Property(e => e.VatAmount).HasPrecision(18, 2);
             entity.Property(e => e.VatRate).HasPrecision(5, 2);
+        });
+
+        modelBuilder.Entity<LegalEntityExtension>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.EntityId).IsUnique();
+            entity.Property(e => e.DatevConsultantNumber).HasMaxLength(20);
+            entity.Property(e => e.DatevClientNumber).HasMaxLength(20);
+            entity.Property(e => e.HrbNumber).HasMaxLength(50);
+            entity.Property(e => e.VatId).HasMaxLength(20);
+            entity.Property(e => e.TaxOffice).HasMaxLength(100);
+            entity.Property(e => e.DefaultCurrencyCode).HasMaxLength(3);
+            entity.Property(e => e.FiscalYearStartMonth).HasMaxLength(2);
+        });
+
+        modelBuilder.Entity<CostCenter>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.EntityId, e.Code }).IsUnique();
+            entity.Property(e => e.Code).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ShortName).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.Type).HasConversion<string>().HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<AccountingDocument>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.EntityId, e.Status });
+            entity.Property(e => e.DocumentType).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.DocumentNumber).HasMaxLength(100);
+            entity.Property(e => e.VendorName).HasMaxLength(200);
+            entity.Property(e => e.CurrencyCode).HasMaxLength(3);
+            entity.Property(e => e.StoragePath).HasMaxLength(1000);
+            entity.Property(e => e.MimeType).HasMaxLength(100);
+            entity.Property(e => e.Status).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<AccountingScenario>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.EntityId, e.Year });
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.ScenarioType).HasConversion<string>().HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<AccountingPlanEntry>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ScenarioId, e.AccountId, e.PeriodYear, e.PeriodMonth, e.HrEmployeeId });
+            entity.Property(e => e.Source).HasConversion<string>().HasMaxLength(20);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<DatevExport>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.EntityId, e.CreatedAt });
+            entity.Property(e => e.ExportType).HasConversion<string>().HasMaxLength(30);
+            entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
         });
 
         // ───────────────────────────────────────────────
@@ -759,8 +841,11 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => new { e.PromptId, e.Version }).IsUnique();
             entity.Property(e => e.ChangeSummary).HasMaxLength(500);
+            entity.Property(e => e.PrimaryModel).HasMaxLength(100);
             entity.Property(e => e.PrimaryProvider).HasConversion<int>();
+            entity.Property(e => e.FallbackModel).HasMaxLength(100);
             entity.Property(e => e.FallbackProvider).HasConversion<int>();
+            entity.Property(e => e.Temperature).HasPrecision(4, 2);
             entity.HasOne<AiPrompt>().WithMany()
                 .HasForeignKey(e => e.PromptId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -823,5 +908,7 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
         modelBuilder.ApplyConfiguration(new DataAccessLogConfiguration());
         modelBuilder.ApplyConfiguration(new DeletionRequestConfiguration());
         modelBuilder.ApplyConfiguration(new PublicHolidayConfiguration());
+        modelBuilder.ApplyConfiguration(new OnboardingChecklistConfiguration());
+        modelBuilder.ApplyConfiguration(new OnboardingTaskConfiguration());
     }
 }

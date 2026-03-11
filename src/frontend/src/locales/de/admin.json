@@ -375,5 +375,23 @@
       "saved": "Authentifizierungskonfiguration gespeichert",
       "saveFailed": "Authentifizierungskonfiguration konnte nicht gespeichert werden"
     }
+  },
+  "departments": {
+    "title": "Abteilungen",
+    "empty": "Keine Abteilungen angelegt.",
+    "addRoot": "Abteilung hinzufügen",
+    "namePlaceholder": "Name",
+    "codePlaceholder": "Kürzel",
+    "descriptionPlaceholder": "Beschreibung (optional)",
+    "confirmDelete": "Abteilung \"{{name}}\" wirklich löschen?",
+    "templateLabel": "Abteilungsstruktur kopieren von (optional)",
+    "templatePlaceholder": "Keine Vorlage",
+    "noTemplate": "Keine Vorlage",
+    "created": "Abteilung erstellt",
+    "createError": "Fehler beim Erstellen der Abteilung",
+    "updated": "Abteilung aktualisiert",
+    "updateError": "Fehler beim Aktualisieren der Abteilung",
+    "deleted": "Abteilung gelöscht",
+    "deleteError": "Fehler beim Löschen der Abteilung"
   }
 }

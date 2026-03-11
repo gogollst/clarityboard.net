@@ -42,7 +42,8 @@
       "dateOfBirth": "Date of Birth",
       "taxId": "Tax ID",
       "department": "Department",
-      "status": "Status"
+      "status": "Status",
+      "entity": "Branch / Entity"
     },
     "placeholders": {
       "firstName": "John",
@@ -51,7 +52,8 @@
       "taxId": "12345678901",
       "selectType": "Select employment type",
       "selectDepartment": "Select department (optional)",
-      "noDepartment": "No department"
+      "noDepartment": "No department",
+      "selectEntity": "Select branch / entity"
     },
     "validation": {
       "firstNameRequired": "First name is required",
@@ -62,12 +64,22 @@
       "hireDateRequired": "Hire date is required",
       "dateOfBirthRequired": "Date of birth is required",
       "taxIdRequired": "Tax ID is required",
-      "taxIdMaxLength": "Tax ID must not exceed 50 characters"
+      "taxIdMaxLength": "Tax ID must not exceed 50 characters",
+      "entityRequired": "Branch / entity is required"
     },
     "tabs": {
       "profile": "Profile",
       "salary": "Salary",
-      "contracts": "Contracts"
+      "contracts": "Contracts",
+      "bank": "Bank Details"
+    },
+    "bankDetails": {
+      "title": "Bank Details",
+      "iban": "IBAN",
+      "bic": "BIC / SWIFT",
+      "saved": "Bank details saved",
+      "ibanPlaceholder": "DE89 3704 0044 0532 0130 00",
+      "bicPlaceholder": "DEUTDEDB"
     },
     "profile": {
       "terminationDialogTitle": "Terminate Employee",
@@ -85,7 +97,12 @@
       "current": "Current",
       "typeMonthly": "Monthly",
       "typeHourly": "Hourly",
-      "typeDailyRate": "Daily Rate"
+      "typeDailyRate": "Daily Rate",
+      "addButton": "Add Salary",
+      "dialogTitle": "New Salary Entry",
+      "grossAmountEur": "Gross Amount (EUR)",
+      "grossAmountPlaceholder": "e.g. 5000",
+      "changeReasonPlaceholder": "e.g. Annual raise 2026"
     },
     "contracts": {
       "noEntries": "No contract entries available.",
@@ -423,5 +440,48 @@
     "documentUploadError": "Failed to upload document",
     "deletionScheduled": "Deletion scheduled",
     "deletionScheduleError": "Failed to schedule deletion"
+  },
+  "mySelf": {
+    "title": "My Profile",
+    "notLinked": "No Employee Profile Linked",
+    "notLinkedDescription": "Your user account is not yet linked to an employee profile. Please contact your HR administrator.",
+    "personalInfo": "Personal Information",
+    "employment": "Employment Details",
+    "employeeNumber": "Employee Number",
+    "department": "Department",
+    "manager": "Manager",
+    "hireDate": "Hire Date",
+    "employeeType": "Employment Type",
+    "status": "Status",
+    "myLeaveRequests": "My Leave Requests",
+    "myTravelExpenses": "My Travel Expenses",
+    "myWorktime": "My Working Hours",
+    "quickActions": "Quick Actions",
+    "requestLeave": "Request Leave",
+    "logWorkTime": "Log Work Time",
+    "newTravelExpense": "Submit Travel Expenses"
+  },
+  "onboarding": {
+    "title": "Onboarding",
+    "newChecklist": "Create Checklist",
+    "checklistTitle": "Checklist Title",
+    "addTask": "Add Task",
+    "taskTitle": "Task Title",
+    "taskDescription": "Description",
+    "dueDate": "Due Date",
+    "status": {
+      "InProgress": "In Progress",
+      "Completed": "Completed"
+    },
+    "progress": "{{completed}} of {{total}} tasks done",
+    "created": "Onboarding checklist created",
+    "createError": "Failed to create checklist",
+    "taskError": "Failed to update task",
+    "noChecklists": "No onboarding checklists yet.",
+    "completeTask": "Mark task as done",
+    "reopenTask": "Reopen task",
+    "createChecklist": "New Checklist",
+    "employeeLabel": "Employee",
+    "back": "Back to list"
   }
 }

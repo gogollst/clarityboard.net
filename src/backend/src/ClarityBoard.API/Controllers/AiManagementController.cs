@@ -11,10 +11,10 @@ namespace ClarityBoard.API.Controllers;
 
 /// <summary>
 /// Admin-only endpoints for managing AI provider API keys and prompts.
-/// All routes require the Admin role.
+/// All routes require the Admin or SuperAdmin role.
 /// </summary>
 [ApiController]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,SuperAdmin")]
 [Route("api/[controller]")]
 public class AiManagementController : ControllerBase
 {

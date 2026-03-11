@@ -1,0 +1,289 @@
+{
+  "journalEntries": {
+    "title": "Buchungssätze",
+    "newEntry": "Neuer Buchungssatz",
+    "searchPlaceholder": "Referenz oder Beschreibung...",
+    "noEntries": "Keine Buchungssätze gefunden.",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "columns": {
+      "entryDate": "Datum",
+      "entryNumber": "Nummer",
+      "description": "Beschreibung",
+      "sourceType": "Quelle",
+      "status": "Status",
+      "documentRef": "Belegnr."
+    },
+    "status": {
+      "draft": "Entwurf",
+      "posted": "Gebucht",
+      "reversed": "Storniert"
+    },
+    "actions": {
+      "post": "Buchen",
+      "reverse": "Stornieren",
+      "view": "Details"
+    },
+    "postConfirmTitle": "Buchungssatz buchen?",
+    "postConfirmDescription": "Der Buchungssatz wird mit einem GoBD-konformen SHA-256-Hash gesichert und kann nicht mehr verändert werden.",
+    "postConfirm": "Jetzt buchen"
+  },
+  "fiscalPeriods": {
+    "title": "Buchungsperioden",
+    "newPeriod": "Neue Periode",
+    "noEntries": "Keine Buchungsperioden gefunden.",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "columns": {
+      "year": "Jahr",
+      "month": "Monat",
+      "status": "Status",
+      "exportCount": "Exporte"
+    },
+    "status": {
+      "open": "Offen",
+      "soft_close": "Weich geschlossen",
+      "exported": "Exportiert",
+      "hard_closed": "Endgültig geschlossen"
+    },
+    "actions": {
+      "close": "Schließen",
+      "reopen": "Öffnen"
+    }
+  },
+  "datevExports": {
+    "title": "DATEV-Exporte",
+    "generate": "Export erstellen",
+    "noEntries": "Keine Exporte vorhanden.",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "columns": {
+      "exportType": "Typ",
+      "fiscalPeriod": "Periode",
+      "status": "Status",
+      "recordCount": "Datensätze",
+      "createdAt": "Erstellt",
+      "completedAt": "Abgeschlossen"
+    },
+    "status": {
+      "Pending": "Ausstehend",
+      "Generating": "Wird erstellt...",
+      "Ready": "Fertig",
+      "Failed": "Fehlgeschlagen"
+    },
+    "exportType": {
+      "Buchungsstapel": "Buchungsstapel",
+      "Stammdaten": "Stammdaten"
+    },
+    "dialogTitle": "Neuen DATEV-Export erstellen",
+    "fiscalPeriodLabel": "Buchungsperiode",
+    "exportTypeLabel": "Export-Typ",
+    "download": "Herunterladen",
+    "travelSync": "Reisekosten synchronisieren",
+    "travelSyncDialogTitle": "HR-Reisekosten synchronisieren",
+    "travelSyncFromDate": "Von",
+    "travelSyncToDate": "Bis",
+    "travelSyncButton": "Synchronisieren"
+  },
+  "costCenters": {
+    "title": "Kostenstellen",
+    "newCostCenter": "Neue Kostenstelle",
+    "noEntries": "Keine Kostenstellen gefunden.",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "columns": {
+      "code": "Code",
+      "shortName": "Bezeichnung",
+      "type": "Typ",
+      "isActive": "Aktiv"
+    },
+    "type": {
+      "Department": "Abteilung",
+      "Project": "Projekt",
+      "Employee": "Mitarbeiter",
+      "Other": "Sonstige"
+    },
+    "fields": {
+      "code": "Code",
+      "shortName": "Bezeichnung",
+      "description": "Beschreibung",
+      "type": "Typ"
+    },
+    "placeholders": {
+      "code": "z.B. K100",
+      "shortName": "z.B. Vertrieb",
+      "description": "Optionale Beschreibung"
+    },
+    "dialogTitle": "Neue Kostenstelle anlegen"
+  },
+  "accountingScenarios": {
+    "title": "Planungsszenarien",
+    "newScenario": "Neues Szenario",
+    "noEntries": "Keine Szenarien gefunden.",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "columns": {
+      "name": "Name",
+      "scenarioType": "Typ",
+      "year": "Jahr",
+      "isLocked": "Gesperrt",
+      "isBaseline": "Baseline"
+    },
+    "type": {
+      "Budget": "Budget",
+      "Forecast": "Prognose",
+      "Custom": "Benutzerdefiniert"
+    },
+    "fields": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "type": "Typ",
+      "year": "Jahr"
+    },
+    "placeholders": {
+      "name": "z.B. Budget 2026",
+      "description": "Optionale Beschreibung"
+    },
+    "dialogTitle": "Neues Planungsszenario anlegen"
+  },
+  "trialBalance": {
+    "title": "Saldenliste",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "noEntries": "Keine Konten mit Salden gefunden.",
+    "totals": "Summen",
+    "columns": {
+      "accountNumber": "Konto",
+      "accountName": "Bezeichnung",
+      "accountType": "Typ",
+      "accountClass": "Klasse",
+      "debit": "Soll",
+      "credit": "Haben",
+      "balance": "Saldo"
+    }
+  },
+  "balanceSheet": {
+    "title": "Bilanz",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "assets": "AKTIVA",
+    "liabilitiesAndEquity": "PASSIVA",
+    "totalAssets": "Bilanzsumme Aktiva",
+    "totalLiabilitiesAndEquity": "Bilanzsumme Passiva",
+    "compareWith": "Vergleich mit",
+    "amount": "Betrag",
+    "priorAmount": "Vorperiode",
+    "balanced": "Ausgeglichen",
+    "imbalanced": "Nicht ausgeglichen"
+  },
+  "profitAndLoss": {
+    "title": "Gewinn- und Verlustrechnung",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "netIncome": "Jahresüberschuss",
+    "compareWith": "Vergleich mit",
+    "amount": "Betrag",
+    "priorAmount": "Vorperiode",
+    "position": "Position",
+    "subtotal": "Zwischensumme"
+  },
+  "vatReconciliation": {
+    "title": "USt-Abgleich",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "periodStart": "Zeitraum von",
+    "periodEnd": "Zeitraum bis",
+    "outputVat19": "Umsatzsteuer 19%",
+    "outputVat7": "Umsatzsteuer 7%",
+    "outputVat0": "Steuerfreie Umsätze",
+    "inputVat": "Vorsteuer",
+    "reverseCharge": "Reverse Charge",
+    "intraEu": "Innergemeinschaftliche Erwerbe",
+    "netAmount": "Nettobetrag",
+    "vatAmount": "USt-Betrag",
+    "totalOutputVat": "USt gesamt",
+    "totalInputVat": "Vorsteuer gesamt",
+    "netPayable": "Zahllast",
+    "lineDetails": "Detailaufstellung",
+    "noData": "Keine USt-Daten für diesen Zeitraum.",
+    "columns": {
+      "accountNumber": "Konto",
+      "accountName": "Bezeichnung",
+      "vatCode": "USt-Schlüssel",
+      "vatRate": "Satz",
+      "vatType": "Typ",
+      "netAmount": "Netto",
+      "vatAmount": "USt"
+    }
+  },
+  "journalEntryDetail": {
+    "title": "Buchungssatz",
+    "backToList": "Zurück zu Buchungssätzen",
+    "entryNumber": "Buchungsnummer",
+    "entryDate": "Buchungsdatum",
+    "postingDate": "Belegdatum",
+    "description": "Beschreibung",
+    "status": "Status",
+    "sourceType": "Herkunft",
+    "sourceRef": "Herkunftsreferenz",
+    "hash": "Hash",
+    "createdAt": "Erstellt am",
+    "createdBy": "Erstellt von",
+    "isReversal": "Dieser Buchungssatz ist eine Stornierung von Buchung {{number}}",
+    "lines": "Buchungszeilen",
+    "reverseConfirmTitle": "Buchungssatz stornieren?",
+    "reverseConfirmDescription": "Es wird ein neuer Storno-Buchungssatz erstellt. Bitte geben Sie einen Grund an.",
+    "reverseReasonLabel": "Grund",
+    "reverseConfirm": "Stornieren",
+    "columns": {
+      "lineNumber": "#",
+      "accountNumber": "Konto",
+      "accountName": "Bezeichnung",
+      "debit": "Soll",
+      "credit": "Haben",
+      "currency": "Währ.",
+      "vatAmount": "USt",
+      "vatCode": "USt-Schlüssel",
+      "costCenter": "Kostenstelle",
+      "description": "Beschreibung"
+    }
+  },
+  "journalEntryCreate": {
+    "title": "Neuer Buchungssatz",
+    "entryDate": "Buchungsdatum",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "z.B. Monatliche Mietzahlung",
+    "lines": "Buchungszeilen",
+    "addLine": "Zeile hinzufügen",
+    "account": "Konto",
+    "selectAccount": "Konto auswählen...",
+    "debit": "Soll",
+    "credit": "Haben",
+    "vatCode": "USt-Schlüssel",
+    "vatAmount": "USt-Betrag",
+    "costCenter": "Kostenstelle",
+    "lineDescription": "Beschreibung",
+    "removeLine": "Entfernen",
+    "totalDebit": "Summe Soll",
+    "totalCredit": "Summe Haben",
+    "difference": "Differenz",
+    "balanced": "Ausgeglichen",
+    "unbalanced": "Nicht ausgeglichen",
+    "submit": "Buchungssatz erstellen",
+    "validation": {
+      "descriptionRequired": "Beschreibung ist erforderlich",
+      "bothDebitAndCredit": "Eine Zeile kann nicht gleichzeitig Soll und Haben haben"
+    }
+  },
+  "toast": {
+    "journalEntryCreated": "Buchungssatz erstellt",
+    "journalEntryCreateError": "Fehler beim Erstellen des Buchungssatzes",
+    "journalEntryPosted": "Buchungssatz gebucht",
+    "journalEntryPostError": "Fehler beim Buchen des Buchungssatzes",
+    "journalEntryReversed": "Buchungssatz storniert",
+    "journalEntryReverseError": "Fehler beim Stornieren des Buchungssatzes",
+    "costCenterCreated": "Kostenstelle erstellt",
+    "costCenterCreateError": "Fehler beim Erstellen der Kostenstelle",
+    "datevExportGenerated": "DATEV-Export wurde gestartet",
+    "datevExportError": "Fehler beim Erstellen des DATEV-Exports",
+    "scenarioCreated": "Planungsszenario erstellt",
+    "scenarioCreateError": "Fehler beim Erstellen des Planungsszenarios",
+    "travelSynced": "{{count}} Reisekostenabrechnungen synchronisiert ({{skipped}} übersprungen)",
+    "travelSyncError": "Fehler bei der Synchronisierung der Reisekosten",
+    "fiscalPeriodCreated": "Buchungsperiode erstellt",
+    "fiscalPeriodCreateError": "Fehler beim Erstellen der Buchungsperiode",
+    "fiscalPeriodClosed": "Buchungsperiode geschlossen",
+    "fiscalPeriodCloseError": "Fehler beim Schließen der Buchungsperiode"
+  }
+}

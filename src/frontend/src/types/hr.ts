@@ -28,6 +28,8 @@ export interface EmployeeDetail {
   managerName?: string;
   departmentId?: string;
   departmentName?: string;
+  iban?: string;
+  bic?: string;
   entityId: string;
   createdAt: string;
 }
@@ -95,6 +97,9 @@ export interface UpdateEmployeeRequest {
   taxId: string;
   managerId?: string;
   departmentId?: string;
+  iban?: string;
+  bic?: string;
+  entityId?: string;
 }
 
 export interface TerminateEmployeeRequest {
@@ -414,4 +419,54 @@ export interface SalaryBands {
   avgSalaryCents: number | null;
   medianSalaryCents: number | null;
   bands: SalaryBandDto[];
+}
+
+// Onboarding Checklists
+
+export interface OnboardingChecklistSummary {
+  id: string;
+  title: string;
+  status: string; // 'InProgress' | 'Completed'
+  totalTasks: number;
+  completedTasks: number;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface OnboardingTask {
+  id: string;
+  title: string;
+  description?: string;
+  isCompleted: boolean;
+  completedAt?: string;
+  dueDate?: string;
+  sortOrder: number;
+}
+
+export interface OnboardingChecklistDetail {
+  id: string;
+  employeeId: string;
+  title: string;
+  status: string;
+  createdAt: string;
+  completedAt?: string;
+  tasks: OnboardingTask[];
+}
+
+export interface CreateOnboardingChecklistRequest {
+  employeeId: string;
+  title: string;
+  tasks?: Array<{
+    title: string;
+    description?: string;
+    dueDate?: string;
+    sortOrder: number;
+  }>;
+}
+
+export interface AddOnboardingTaskRequest {
+  title: string;
+  description?: string;
+  dueDate?: string;
+  sortOrder: number;
 }

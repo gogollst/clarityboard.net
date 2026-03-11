@@ -2,9 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import i18n from '@/i18n';
 import type { ApiResponse, PaginatedResponse } from '@/types/api';
 import type {
+  Account,
   JournalEntry,
+  JournalEntryDetail,
+  JournalEntryListItem,
   CreateJournalEntryRequest,
   TrialBalance,
   ProfitAndLoss,
@@ -16,14 +20,32 @@ import type {
 } from '@/types/accounting';
 
 // ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+export function useAccounts(entityId: string | null, accountType?: string, activeOnly = true) {
+  return useQuery({
+    queryKey: [...queryKeys.accounting.accounts(entityId ?? ''), accountType, activeOnly],
+    queryFn: async () => {
+      const { data } = await api.get<Account[]>('/accounting/accounts', {
+        params: { accountType, activeOnly },
+      });
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Journal Entries
 // ---------------------------------------------------------------------------
 
 interface JournalEntryParams {
   page?: number;
   pageSize?: number;
-  startDate?: string;
-  endDate?: string;
+  year?: number;
+  month?: number;
+  status?: string;
 }
 
 export function useJournalEntries(
@@ -34,7 +56,7 @@ export function useJournalEntries(
     queryKey: [...queryKeys.accounting.journalEntries(entityId ?? ''), params],
     queryFn: async () => {
       const { data } = await api.get<
-        ApiResponse<PaginatedResponse<JournalEntry>>
+        ApiResponse<PaginatedResponse<JournalEntryListItem>>
       >('/accounting/journal-entries', {
         params: { entityId, ...params },
       });
@@ -44,16 +66,17 @@ export function useJournalEntries(
   });
 }
 
-export function useJournalEntry(id: string | null) {
+export function useJournalEntry(id: string | null, entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.accounting.journalEntry(id ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<JournalEntry>>(
+      const { data } = await api.get<ApiResponse<JournalEntryDetail>>(
         `/accounting/journal-entries/${id}`,
+        { params: { entityId } },
       );
       return data.data;
     },
-    enabled: !!id,
+    enabled: !!id && !!entityId,
   });
 }
 
@@ -69,7 +92,7 @@ export function useCreateJournalEntry() {
       return data.data;
     },
     onSuccess: (_data, variables) => {
-      toast.success('Journal entry created');
+      toast.success(i18n.t('accounting:toast.journalEntryCreated'));
       queryClient.invalidateQueries({
         queryKey: queryKeys.accounting.journalEntries(variables.entityId),
       });
@@ -78,7 +101,7 @@ export function useCreateJournalEntry() {
       });
     },
     onError: () => {
-      toast.error('Failed to create journal entry');
+      toast.error(i18n.t('accounting:toast.journalEntryCreateError'));
     },
   });
 }
@@ -90,17 +113,21 @@ export function useReverseJournalEntry() {
     mutationFn: async ({
       id,
       entityId,
+      reason,
     }: {
       id: string;
       entityId: string;
+      reason: string;
     }) => {
-      const { data } = await api.post<ApiResponse<JournalEntry>>(
+      const { data } = await api.post<ApiResponse<string>>(
         `/accounting/journal-entries/${id}/reverse`,
+        { reason },
+        { params: { entityId } },
       );
-      return { entry: data.data, entityId };
+      return { reversalId: data.data, entityId };
     },
     onSuccess: ({ entityId }) => {
-      toast.success('Journal entry reversed');
+      toast.success(i18n.t('accounting:toast.journalEntryReversed'));
       queryClient.invalidateQueries({
         queryKey: queryKeys.accounting.journalEntries(entityId),
       });
@@ -109,7 +136,7 @@ export function useReverseJournalEntry() {
       });
     },
     onError: () => {
-      toast.error('Failed to reverse journal entry');
+      toast.error(i18n.t('accounting:toast.journalEntryReverseError'));
     },
   });
 }
@@ -118,53 +145,73 @@ export function useReverseJournalEntry() {
 // Financial Reports
 // ---------------------------------------------------------------------------
 
-export function useTrialBalance(entityId: string | null, date?: string) {
+export function useTrialBalance(
+  entityId: string | null,
+  year?: number,
+  month?: number,
+) {
   return useQuery({
-    queryKey: [...queryKeys.accounting.trialBalance(entityId ?? ''), date],
+    queryKey: [...queryKeys.accounting.trialBalance(entityId ?? ''), year, month],
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<TrialBalance>>(
         '/accounting/trial-balance',
-        { params: { entityId, date } },
+        { params: { entityId, year, month } },
       );
       return data.data;
     },
-    enabled: !!entityId,
+    enabled: !!entityId && !!year && !!month,
   });
 }
 
 export function useProfitAndLoss(
   entityId: string | null,
-  startDate?: string,
-  endDate?: string,
+  year?: number,
+  month?: number,
+  compareYear?: number,
+  compareMonth?: number,
 ) {
   return useQuery({
     queryKey: [
       ...queryKeys.accounting.profitAndLoss(entityId ?? ''),
-      startDate,
-      endDate,
+      year,
+      month,
+      compareYear,
+      compareMonth,
     ],
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<ProfitAndLoss>>(
-        '/accounting/profit-loss',
-        { params: { entityId, startDate, endDate } },
+        '/accounting/pnl',
+        { params: { entityId, year, month, compareYear, compareMonth } },
       );
       return data.data;
     },
-    enabled: !!entityId && !!startDate && !!endDate,
+    enabled: !!entityId && !!year && !!month,
   });
 }
 
-export function useBalanceSheet(entityId: string | null, date?: string) {
+export function useBalanceSheet(
+  entityId: string | null,
+  year?: number,
+  month?: number,
+  compareYear?: number,
+  compareMonth?: number,
+) {
   return useQuery({
-    queryKey: [...queryKeys.accounting.balanceSheet(entityId ?? ''), date],
+    queryKey: [
+      ...queryKeys.accounting.balanceSheet(entityId ?? ''),
+      year,
+      month,
+      compareYear,
+      compareMonth,
+    ],
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<BalanceSheet>>(
         '/accounting/balance-sheet',
-        { params: { entityId, date } },
+        { params: { entityId, year, month, compareYear, compareMonth } },
       );
       return data.data;
     },
-    enabled: !!entityId,
+    enabled: !!entityId && !!year && !!month,
   });
 }
 
@@ -198,13 +245,13 @@ export function useCreateFiscalPeriod() {
       return data.data;
     },
     onSuccess: (_data, variables) => {
-      toast.success('Fiscal period created');
+      toast.success(i18n.t('accounting:toast.fiscalPeriodCreated'));
       queryClient.invalidateQueries({
         queryKey: queryKeys.accounting.fiscalPeriods(variables.entityId),
       });
     },
     onError: () => {
-      toast.error('Failed to create fiscal period');
+      toast.error(i18n.t('accounting:toast.fiscalPeriodCreateError'));
     },
   });
 }
@@ -225,13 +272,13 @@ export function useUpdateFiscalPeriodStatus() {
       return { period: data.data, entityId };
     },
     onSuccess: ({ entityId }) => {
-      toast.success('Fiscal period status updated');
+      toast.success(i18n.t('accounting:toast.fiscalPeriodClosed'));
       queryClient.invalidateQueries({
         queryKey: queryKeys.accounting.fiscalPeriods(entityId),
       });
     },
     onError: () => {
-      toast.error('Failed to update fiscal period status');
+      toast.error(i18n.t('accounting:toast.fiscalPeriodCloseError'));
     },
   });
 }
@@ -242,22 +289,266 @@ export function useUpdateFiscalPeriodStatus() {
 
 export function useVatReconciliation(
   entityId: string | null,
-  startDate?: string,
-  endDate?: string,
+  periodStart?: string,
+  periodEnd?: string,
 ) {
   return useQuery({
     queryKey: [
       ...queryKeys.accounting.vatReconciliation(entityId ?? ''),
-      startDate,
-      endDate,
+      periodStart,
+      periodEnd,
     ],
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<VatReconciliation>>(
         '/accounting/vat-reconciliation',
-        { params: { entityId, startDate, endDate } },
+        { params: { entityId, periodStart, periodEnd } },
       );
       return data.data;
     },
-    enabled: !!entityId && !!startDate && !!endDate,
+    enabled: !!entityId && !!periodStart && !!periodEnd,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Post Journal Entry (GoBD hash chaining)
+// ---------------------------------------------------------------------------
+
+export function usePostJournalEntry() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, entityId }: { id: string; entityId: string }) => {
+      const { data } = await api.post<ApiResponse<{ entryNumber: number; hash: string }>>(
+        `/accounting/journal-entries/${id}/post`,
+      );
+      return { result: data.data, entityId };
+    },
+    onSuccess: ({ entityId }) => {
+      toast.success(i18n.t('accounting:toast.journalEntryPosted'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.journalEntries(entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:toast.journalEntryPostError'));
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Cost Centers
+// ---------------------------------------------------------------------------
+
+export interface CostCenter {
+  id: string;
+  code: string;
+  shortName: string;
+  description?: string;
+  type: string;
+  hrEmployeeId?: string;
+  hrDepartmentId?: string;
+  isActive: boolean;
+}
+
+export interface CreateCostCenterRequest {
+  code: string;
+  shortName: string;
+  description?: string;
+  type?: string;
+  hrEmployeeId?: string;
+  hrDepartmentId?: string;
+  parentId?: string;
+}
+
+export function useCostCenters(entityId: string | null, activeOnly = true) {
+  return useQuery({
+    queryKey: queryKeys.accounting.costCenters(entityId ?? ''),
+    queryFn: async () => {
+      const { data } = await api.get<CostCenter[]>('/accounting/cost-centers', {
+        params: { entityId, activeOnly },
+      });
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function useCreateCostCenter() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ entityId, ...body }: CreateCostCenterRequest & { entityId: string }) => {
+      const { data } = await api.post<string>('/accounting/cost-centers', body);
+      return { id: data, entityId };
+    },
+    onSuccess: ({ entityId }) => {
+      toast.success(i18n.t('accounting:toast.costCenterCreated'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.costCenters(entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:toast.costCenterCreateError'));
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// DATEV Exports
+// ---------------------------------------------------------------------------
+
+export interface DatevExportRecord {
+  id: string;
+  fiscalPeriodId: string;
+  exportType: string;
+  status: string;
+  fileCount?: number;
+  recordCount?: number;
+  errorDetails?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export function useDatevExports(entityId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.accounting.datevExports(entityId ?? ''),
+    queryFn: async () => {
+      const { data } = await api.get<DatevExportRecord[]>('/accounting/datev/exports', {
+        params: { entityId },
+      });
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function useGenerateDatevExport() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      entityId,
+      fiscalPeriodId,
+      exportType = 'Buchungsstapel',
+    }: {
+      entityId: string;
+      fiscalPeriodId: string;
+      exportType?: string;
+    }) => {
+      const { data } = await api.post<string>('/accounting/datev/exports', {
+        fiscalPeriodId,
+        exportType,
+      });
+      return { id: data, entityId };
+    },
+    onSuccess: ({ entityId }) => {
+      toast.success(i18n.t('accounting:toast.datevExportGenerated'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.datevExports(entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:toast.datevExportError'));
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Accounting Scenarios
+// ---------------------------------------------------------------------------
+
+export interface AccountingScenario {
+  id: string;
+  name: string;
+  description?: string;
+  scenarioType: string;
+  year: number;
+  isLocked: boolean;
+  isBaseline: boolean;
+  createdAt: string;
+}
+
+export function useAccountingScenarios(entityId: string | null, year?: number) {
+  return useQuery({
+    queryKey: [...queryKeys.accounting.accountingScenarios(entityId ?? ''), year],
+    queryFn: async () => {
+      const { data } = await api.get<AccountingScenario[]>('/accounting/scenarios', {
+        params: { entityId, year },
+      });
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function useCreateAccountingScenario() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      entityId,
+      name,
+      description,
+      scenarioType = 'Budget',
+      year,
+    }: {
+      entityId: string;
+      name: string;
+      description?: string;
+      scenarioType?: string;
+      year: number;
+    }) => {
+      const { data } = await api.post<string>('/accounting/scenarios', {
+        name,
+        description,
+        scenarioType,
+        year,
+      });
+      return { id: data, entityId };
+    },
+    onSuccess: ({ entityId }) => {
+      toast.success(i18n.t('accounting:toast.scenarioCreated'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.accountingScenarios(entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:toast.scenarioCreateError'));
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Travel Costs Sync
+// ---------------------------------------------------------------------------
+
+export interface SyncTravelCostsRequest {
+  entityId: string;
+  fromDate: string;
+  toDate: string;
+}
+
+export interface SyncTravelCostsResult {
+  syncedCount: number;
+  skippedCount: number;
+  journalEntryIds: string[];
+  errors: string[];
+}
+
+export function useSyncTravelCosts() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: SyncTravelCostsRequest) => {
+      const { data } = await api.post<SyncTravelCostsResult>(
+        '/accounting/travel-costs/sync',
+        request,
+      );
+      return { result: data, entityId: request.entityId };
+    },
+    onSuccess: ({ result, entityId }) => {
+      toast.success(
+        i18n.t('accounting:toast.travelSynced', {
+          count: result.syncedCount,
+          skipped: result.skippedCount,
+        }),
+      );
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.journalEntries(entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:toast.travelSyncError'));
+    },
   });
 }

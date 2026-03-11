@@ -11,6 +11,9 @@ public class Employee
     public DateOnly DateOfBirth { get; private set; }
     public string TaxId { get; private set; } = string.Empty;
     public string? SocialSecurityNumber { get; private set; }
+    public string? Iban { get; private set; }
+    public string? Bic { get; private set; }
+    public Guid? UserId { get; private set; }
     public EmployeeStatus Status { get; private set; }
     public DateOnly HireDate { get; private set; }
     public DateOnly? TerminationDate { get; private set; }
@@ -57,7 +60,7 @@ public class Employee
     public string FullName => $"{FirstName} {LastName}";
 
     public void UpdateBasicInfo(string firstName, string lastName, DateOnly dateOfBirth, string taxId,
-        Guid? managerId, Guid? departmentId)
+        Guid? managerId, Guid? departmentId, string? iban = null, string? bic = null, Guid? entityId = null)
     {
         FirstName    = firstName;
         LastName     = lastName;
@@ -65,6 +68,10 @@ public class Employee
         TaxId        = taxId;
         ManagerId    = managerId;
         DepartmentId = departmentId;
+        Iban         = iban;
+        Bic          = bic;
+        if (entityId.HasValue)
+            EntityId = entityId.Value;
         UpdatedAt    = DateTime.UtcNow;
     }
 

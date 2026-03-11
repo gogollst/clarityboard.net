@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEntities, useCreateEntity, useUpdateEntity, useSetEntityActive } from '@/hooks/useEntity';
+import { useEntities, useCreateEntity, useUpdateEntity, useSetEntityActive, useEntityDepartments, useCreateEntityDepartment, useUpdateEntityDepartment, useDeleteEntityDepartment } from '@/hooks/useEntity';
 import { useUsers } from '@/hooks/useAdmin';
-import type { LegalEntity } from '@/types/entity';
+import type { LegalEntity, DepartmentNode } from '@/types/entity';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,8 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building2, Plus, Loader2, MapPin, Pencil, PowerOff, Power } from 'lucide-react';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Building2, Plus, Loader2, MapPin, Pencil, PowerOff, Power, ChevronDown, Trash2 } from 'lucide-react';
 
 interface FormState {
   name: string;
@@ -108,6 +109,7 @@ export function Component() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<LegalEntity | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [templateEntityId, setTemplateEntityId] = useState<string>('');
 
   const users = usersData?.items ?? [];
 
@@ -165,12 +167,16 @@ export function Component() {
   });
 
   const handleCreate = () => {
-    createEntity.mutate(buildRequestBody(), {
-      onSuccess: () => {
-        setIsAddOpen(false);
-        resetForm();
+    createEntity.mutate(
+      { ...buildRequestBody(), templateDepartmentEntityId: templateEntityId || undefined },
+      {
+        onSuccess: () => {
+          setIsAddOpen(false);
+          resetForm();
+          setTemplateEntityId('');
+        },
       },
-    });
+    );
   };
 
   const handleEdit = () => {
@@ -278,7 +284,7 @@ export function Component() {
       </Dialog>
 
       {/* Add Entity Dialog */}
-      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+      <Dialog open={isAddOpen} onOpenChange={(open) => { if (!open) { setIsAddOpen(false); resetForm(); setTemplateEntityId(''); } else { setIsAddOpen(true); } }}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('entities.dialogs.create.title')}</DialogTitle>
@@ -289,8 +295,27 @@ export function Component() {
             entities={entities ?? []}
             users={users}
           />
+          <div className="space-y-1.5">
+            <Label>{t('departments.templateLabel')}</Label>
+            <Select
+              value={templateEntityId || 'none'}
+              onValueChange={(v) => setTemplateEntityId(v === 'none' ? '' : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('departments.templatePlaceholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{t('departments.noTemplate')}</SelectItem>
+                {(entities ?? []).map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddOpen(false)}>
+            <Button variant="outline" onClick={() => { setIsAddOpen(false); resetForm(); setTemplateEntityId(''); }}>
               {t('common:buttons.cancel', { ns: 'common' })}
             </Button>
             <Button onClick={handleCreate} disabled={createEntity.isPending || !canSubmit}>
@@ -455,6 +480,240 @@ function EntityFormFields({ form, updateField, entities, users, excludeEntityId 
   );
 }
 
+function countNodes(nodes: DepartmentNode[]): number {
+  return nodes.reduce((acc, n) => acc + 1 + countNodes(n.children), 0);
+}
+
+function DepartmentTreeItem({
+  node,
+  entityId,
+  depth = 0,
+}: {
+  node: DepartmentNode;
+  entityId: string;
+  depth?: number;
+}) {
+  const { t } = useTranslation('admin');
+  const [editing, setEditing] = useState(false);
+  const [addingChild, setAddingChild] = useState(false);
+  const [editName, setEditName] = useState(node.name);
+  const [editCode, setEditCode] = useState(node.code);
+  const [editDescription, setEditDescription] = useState(node.description ?? '');
+  const updateDept = useUpdateEntityDepartment(entityId);
+  const deleteDept = useDeleteEntityDepartment(entityId);
+  const createDept = useCreateEntityDepartment(entityId);
+  const [newChildName, setNewChildName] = useState('');
+  const [newChildCode, setNewChildCode] = useState('');
+
+  const handleSave = () => {
+    updateDept.mutate(
+      { departmentId: node.id, name: editName, code: editCode, description: editDescription || undefined },
+      { onSuccess: () => setEditing(false) },
+    );
+  };
+
+  const handleDelete = () => {
+    if (confirm(t('departments.confirmDelete', { name: node.name })))
+      deleteDept.mutate(node.id);
+  };
+
+  const handleAddChild = () => {
+    createDept.mutate(
+      { name: newChildName, code: newChildCode, parentDepartmentId: node.id },
+      {
+        onSuccess: () => {
+          setAddingChild(false);
+          setNewChildName('');
+          setNewChildCode('');
+        },
+      },
+    );
+  };
+
+  return (
+    <div style={{ marginLeft: depth * 16 }} className="border-l border-border pl-3 my-1">
+      {editing ? (
+        <div className="flex gap-2 items-center flex-wrap py-1">
+          <Input
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            className="h-7 text-sm w-40"
+            placeholder={t('departments.namePlaceholder')}
+          />
+          <Input
+            value={editCode}
+            onChange={(e) => setEditCode(e.target.value)}
+            className="h-7 text-sm w-24"
+            placeholder={t('departments.codePlaceholder')}
+          />
+          <Input
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+            className="h-7 text-sm w-48"
+            placeholder={t('departments.descriptionPlaceholder')}
+          />
+          <Button size="sm" variant="default" onClick={handleSave} disabled={updateDept.isPending}>
+            {t('common:buttons.save')}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>
+            {t('common:buttons.cancel')}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex gap-2 items-center py-1 group">
+          <span className="font-medium text-sm">{node.name}</span>
+          <span className="text-xs text-muted-foreground">{node.code}</span>
+          {node.description && (
+            <span className="text-xs text-muted-foreground italic">{node.description}</span>
+          )}
+          <div className="ml-auto hidden group-hover:flex gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-1.5"
+              onClick={() => setAddingChild(true)}
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-1.5"
+              onClick={() => {
+                setEditName(node.name);
+                setEditCode(node.code);
+                setEditDescription(node.description ?? '');
+                setEditing(true);
+              }}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-1.5 text-destructive hover:text-destructive"
+              onClick={handleDelete}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      )}
+      {addingChild && (
+        <div className="flex gap-2 items-center flex-wrap py-1 ml-4">
+          <Input
+            value={newChildName}
+            onChange={(e) => setNewChildName(e.target.value)}
+            className="h-7 text-sm w-40"
+            placeholder={t('departments.namePlaceholder')}
+          />
+          <Input
+            value={newChildCode}
+            onChange={(e) => setNewChildCode(e.target.value)}
+            className="h-7 text-sm w-24"
+            placeholder={t('departments.codePlaceholder')}
+          />
+          <Button
+            size="sm"
+            onClick={handleAddChild}
+            disabled={!newChildName || !newChildCode || createDept.isPending}
+          >
+            {t('common:buttons.add')}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setAddingChild(false)}>
+            {t('common:buttons.cancel')}
+          </Button>
+        </div>
+      )}
+      {node.children.map((child) => (
+        <DepartmentTreeItem key={child.id} node={child} entityId={entityId} depth={depth + 1} />
+      ))}
+    </div>
+  );
+}
+
+function EntityDepartmentsSection({ entityId }: { entityId: string }) {
+  const { t } = useTranslation('admin');
+  const { data: tree = [] } = useEntityDepartments(entityId);
+  const createDept = useCreateEntityDepartment(entityId);
+  const [open, setOpen] = useState(false);
+  const [addingRoot, setAddingRoot] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newCode, setNewCode] = useState('');
+
+  const handleAddRoot = () => {
+    createDept.mutate(
+      { name: newName, code: newCode },
+      {
+        onSuccess: () => {
+          setAddingRoot(false);
+          setNewName('');
+          setNewCode('');
+        },
+      },
+    );
+  };
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger asChild>
+        <Button variant="ghost" size="sm" className="w-full justify-between text-xs mt-2">
+          {t('departments.title')} ({countNodes(tree)})
+          <ChevronDown
+            className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`}
+          />
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-2">
+          {tree.map((node) => (
+            <DepartmentTreeItem key={node.id} node={node} entityId={entityId} />
+          ))}
+          {tree.length === 0 && (
+            <p className="text-xs text-muted-foreground py-1">{t('departments.empty')}</p>
+          )}
+          {addingRoot ? (
+            <div className="flex gap-2 items-center flex-wrap py-1">
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="h-7 text-sm w-40"
+                placeholder={t('departments.namePlaceholder')}
+              />
+              <Input
+                value={newCode}
+                onChange={(e) => setNewCode(e.target.value)}
+                className="h-7 text-sm w-24"
+                placeholder={t('departments.codePlaceholder')}
+              />
+              <Button
+                size="sm"
+                onClick={handleAddRoot}
+                disabled={!newName || !newCode || createDept.isPending}
+              >
+                {t('common:buttons.add')}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setAddingRoot(false)}>
+                {t('common:buttons.cancel')}
+              </Button>
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-1 h-7 text-xs"
+              onClick={() => setAddingRoot(true)}
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              {t('departments.addRoot')}
+            </Button>
+          )}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 function EntityCard({
   entity,
   allEntities,
@@ -553,6 +812,9 @@ function EntityCard({
             <DetailRow label={t('entities.card.parentEntity')} value={parentName} />
           )}
         </div>
+
+        <Separator />
+        <EntityDepartmentsSection entityId={entity.id} />
       </CardContent>
     </Card>
   );

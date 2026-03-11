@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useEntity } from '@/hooks/useEntity';
+import { useEntities } from '@/hooks/useEntity';
 import {
   useUsers,
   useCreateUser,
@@ -64,7 +64,7 @@ function useDebounced<T>(value: T, delay: number): T {
 
 export function Component() {
   const { t, i18n } = useTranslation('admin');
-  const { entities } = useEntity();
+  const { data: entities = [] } = useEntities();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounced(search, 300);

@@ -47,7 +47,7 @@ export function Component() {
   // Headcount trend history
   const { data: headcountHistory } = useKpiHistory(
     selectedEntityId,
-    'headcount',
+    'hr.headcount',
     startDate,
     endDate,
   );
@@ -55,7 +55,7 @@ export function Component() {
   // Turnover trend history
   const { data: turnoverHistory } = useKpiHistory(
     selectedEntityId,
-    'turnover_rate',
+    'hr.turnover_rate',
     startDate,
     endDate,
   );
@@ -63,7 +63,7 @@ export function Component() {
   // Retention trend history
   const { data: retentionHistory } = useKpiHistory(
     selectedEntityId,
-    'retention_rate',
+    'hr.retention_rate',
     startDate,
     endDate,
   );

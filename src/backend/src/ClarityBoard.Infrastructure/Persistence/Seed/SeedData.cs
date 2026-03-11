@@ -111,10 +111,15 @@ public static class SeedData
 
     private static async Task SeedAiPromptsAsync(ClarityBoardContext context, ILogger logger)
     {
-        if (await context.AiPrompts.AnyAsync())
-            return;
+        var existingKeys = await context.AiPrompts
+            .Select(p => p.PromptKey)
+            .ToListAsync();
 
-        var prompts = AiPromptsSeed.All.Select(p => AiPrompt.Create(
+        var existingKeySet = existingKeys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var prompts = AiPromptsSeed.All
+            .Where(p => !existingKeySet.Contains(p.Key))
+            .Select(p => AiPrompt.Create(
             promptKey:           p.Key,
             name:                p.Name,
             description:         p.Description,
@@ -128,11 +133,15 @@ public static class SeedData
             fallbackModel:       p.FallbackModel,
             temperature:         p.Temp,
             maxTokens:           p.MaxTok,
-            isSystemPrompt:      true)).ToList();
+            isSystemPrompt:      true))
+            .ToList();
+
+        if (prompts.Count == 0)
+            return;
 
         context.AiPrompts.AddRange(prompts);
         await context.SaveChangesAsync();
-        logger.LogInformation("Seeded {Count} AI prompts", prompts.Count);
+        logger.LogInformation("Seeded {Count} new AI prompts", prompts.Count);
     }
 
     private static async Task SeedPermissionsAsync(ClarityBoardContext context, ILogger logger)

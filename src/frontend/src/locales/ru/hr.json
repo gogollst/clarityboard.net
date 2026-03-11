@@ -42,7 +42,8 @@
       "dateOfBirth": "Дата рождения",
       "taxId": "ИНН",
       "department": "Отдел",
-      "status": "Статус"
+      "status": "Статус",
+      "entity": "Филиал / Юрлицо"
     },
     "placeholders": {
       "firstName": "Иван",
@@ -51,7 +52,8 @@
       "taxId": "12345678901",
       "selectType": "Выберите тип занятости",
       "selectDepartment": "Выберите отдел (необязательно)",
-      "noDepartment": "Без отдела"
+      "noDepartment": "Без отдела",
+      "selectEntity": "Выберите филиал / юрлицо"
     },
     "validation": {
       "firstNameRequired": "Имя обязательно",
@@ -62,12 +64,22 @@
       "hireDateRequired": "Дата приёма обязательна",
       "dateOfBirthRequired": "Дата рождения обязательна",
       "taxIdRequired": "ИНН обязателен",
-      "taxIdMaxLength": "ИНН не должен превышать 50 символов"
+      "taxIdMaxLength": "ИНН не должен превышать 50 символов",
+      "entityRequired": "Филиал / юрлицо обязательно"
     },
     "tabs": {
       "profile": "Профиль",
       "salary": "Зарплата",
-      "contracts": "Договоры"
+      "contracts": "Договоры",
+      "bank": "Банковские реквизиты"
+    },
+    "bankDetails": {
+      "title": "Банковские реквизиты",
+      "iban": "IBAN",
+      "bic": "BIC / SWIFT",
+      "saved": "Банковские данные сохранены",
+      "ibanPlaceholder": "DE89 3704 0044 0532 0130 00",
+      "bicPlaceholder": "DEUTDEDB"
     },
     "profile": {
       "terminationDialogTitle": "Увольнение сотрудника",
@@ -85,7 +97,12 @@
       "current": "Текущий",
       "typeMonthly": "Ежемесячно",
       "typeHourly": "Почасово",
-      "typeDailyRate": "Дневная ставка"
+      "typeDailyRate": "Дневная ставка",
+      "addButton": "Добавить зарплату",
+      "dialogTitle": "Новая запись о зарплате",
+      "grossAmountEur": "Брутто (EUR)",
+      "grossAmountPlaceholder": "напр. 5000",
+      "changeReasonPlaceholder": "напр. Ежегодное повышение 2026"
     },
     "contracts": {
       "noEntries": "Записи о договорах отсутствуют.",
@@ -423,5 +440,48 @@
     "documentUploadError": "Не удалось загрузить документ",
     "deletionScheduled": "Удаление запланировано",
     "deletionScheduleError": "Не удалось запланировать удаление"
+  },
+  "mySelf": {
+    "title": "Мой профиль",
+    "notLinked": "Профиль сотрудника не привязан",
+    "notLinkedDescription": "Ваш аккаунт ещё не привязан к профилю сотрудника. Обратитесь к HR-администратору.",
+    "personalInfo": "Личные данные",
+    "employment": "Данные о трудоустройстве",
+    "employeeNumber": "Табельный номер",
+    "department": "Отдел",
+    "manager": "Руководитель",
+    "hireDate": "Дата приёма",
+    "employeeType": "Вид трудоустройства",
+    "status": "Статус",
+    "myLeaveRequests": "Мои заявки на отпуск",
+    "myTravelExpenses": "Мои командировочные расходы",
+    "myWorktime": "Моё рабочее время",
+    "quickActions": "Быстрые действия",
+    "requestLeave": "Подать заявку на отпуск",
+    "logWorkTime": "Отметить рабочее время",
+    "newTravelExpense": "Подать командировочные расходы"
+  },
+  "onboarding": {
+    "title": "Адаптация",
+    "newChecklist": "Создать чеклист",
+    "checklistTitle": "Название чеклиста",
+    "addTask": "Добавить задачу",
+    "taskTitle": "Название задачи",
+    "taskDescription": "Описание",
+    "dueDate": "Срок выполнения",
+    "status": {
+      "InProgress": "В процессе",
+      "Completed": "Завершено"
+    },
+    "progress": "{{completed}} из {{total}} задач выполнено",
+    "created": "Чеклист адаптации создан",
+    "createError": "Ошибка при создании чеклиста",
+    "taskError": "Ошибка при обновлении задачи",
+    "noChecklists": "Чеклисты адаптации отсутствуют.",
+    "completeTask": "Отметить задачу выполненной",
+    "reopenTask": "Возобновить задачу",
+    "createChecklist": "Новый чеклист",
+    "employeeLabel": "Сотрудник",
+    "back": "Назад к списку"
   }
 }

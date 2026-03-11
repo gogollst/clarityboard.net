@@ -2,6 +2,7 @@ using ClarityBoard.Application.Common.Models;
 using ClarityBoard.Application.Features.Admin.Commands;
 using ClarityBoard.Application.Features.Admin.DTOs;
 using ClarityBoard.Application.Features.Admin.Queries;
+using AuthConfigResponse = ClarityBoard.Application.Features.Admin.Queries.AuthConfigResponse;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -160,6 +161,24 @@ public class AdminController : ControllerBase
             EntityId = request.EntityId,
             RoleId = request.RoleId,
         }, ct);
+        return NoContent();
+    }
+
+    // ── Auth Config ───────────────────────────────────────────────────
+
+    [HttpGet("auth-config")]
+    [ProducesResponseType(typeof(AuthConfigResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AuthConfigResponse>> GetAuthConfig(CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetAuthConfigQuery(), ct);
+        return Ok(result);
+    }
+
+    [HttpPut("auth-config")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> UpsertAuthConfig([FromBody] UpsertAuthConfigCommand command, CancellationToken ct)
+    {
+        await _mediator.Send(command, ct);
         return NoContent();
     }
 

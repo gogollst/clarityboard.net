@@ -44,8 +44,8 @@ export function useKpiHistory(
     ],
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<KpiSnapshot[]>>(
-        '/kpi/history',
-        { params: { entityId, kpiId, startDate, endDate } },
+        `/kpi/${kpiId}/history`,
+        { params: { from: startDate, to: endDate } },
       );
       return data.data;
     },

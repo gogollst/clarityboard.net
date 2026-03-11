@@ -23,6 +23,7 @@ const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'de
   uploaded: 'info',
   processing: 'warning',
   extracted: 'success',
+  review: 'warning',
   booked: 'success',
   failed: 'destructive',
 };
@@ -134,6 +135,7 @@ export function Component() {
             <SelectItem value="uploaded">{t('statuses.uploaded')}</SelectItem>
             <SelectItem value="processing">{t('statuses.processing')}</SelectItem>
             <SelectItem value="extracted">{t('statuses.extracted')}</SelectItem>
+            <SelectItem value="review">{t('statuses.review')}</SelectItem>
             <SelectItem value="booked">{t('statuses.booked')}</SelectItem>
             <SelectItem value="failed">{t('statuses.failed')}</SelectItem>
           </SelectContent>

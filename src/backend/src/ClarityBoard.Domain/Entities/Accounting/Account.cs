@@ -14,6 +14,8 @@ public class Account
     public string? DatevAuto { get; private set; }
     public string? CostCenterDefault { get; private set; }
     public bool IsSystemAccount { get; private set; }
+    public string? BwaLine { get; private set; }      // BWA position (e.g. "1020")
+    public bool IsAutoPosting { get; private set; }   // automatic posting allowed
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 

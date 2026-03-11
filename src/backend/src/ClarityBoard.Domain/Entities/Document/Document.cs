@@ -9,7 +9,7 @@ public class Document
     public long FileSize { get; private set; }
     public string StoragePath { get; private set; } = default!; // MinIO object key
     public string DocumentType { get; private set; } = default!; // invoice, receipt, bank_statement, contract
-    public string Status { get; private set; } = "uploaded"; // uploaded, processing, extracted, review, booked, archived
+    public string Status { get; private set; } = "uploaded"; // uploaded, processing, extracted, review, booked, archived, failed
     public string? OcrText { get; private set; }
     public string? ExtractedData { get; private set; } // JSON: structured fields from AI extraction
     public decimal? Confidence { get; private set; } // AI extraction confidence 0-1
@@ -70,7 +70,11 @@ public class Document
         Status = "booked";
     }
 
+    public void MarkReview() => Status = "review";
+
     public void MarkFailed() => Status = "failed";
+
+    public void UpdateExtractedData(string extractedData) => ExtractedData = extractedData;
 
     public void AddField(DocumentField field) => _fields.Add(field);
 }

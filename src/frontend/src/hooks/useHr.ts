@@ -38,6 +38,10 @@ import type {
   HeadcountStats,
   TurnoverStats,
   SalaryBands,
+  OnboardingChecklistSummary,
+  OnboardingChecklistDetail,
+  CreateOnboardingChecklistRequest,
+  AddOnboardingTaskRequest,
 } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
@@ -65,6 +69,17 @@ export function useEmployee(id: string) {
       return data;
     },
     enabled: !!id,
+  });
+}
+
+export function useMyEmployee() {
+  return useQuery({
+    queryKey: [...queryKeys.hr.all, 'me'],
+    queryFn: async () => {
+      const { data } = await api.get<EmployeeDetail>('/hr/employees/me');
+      return data;
+    },
+    retry: false,
   });
 }
 
@@ -670,5 +685,90 @@ export function useSalaryBands(entityId: string) {
       return data;
     },
     enabled: !!entityId,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Onboarding Checklists
+// ---------------------------------------------------------------------------
+
+export function useOnboardingChecklists(employeeId: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.onboardingChecklists(employeeId),
+    queryFn: async () => {
+      const { data } = await api.get<OnboardingChecklistSummary[]>('/hr/onboarding', {
+        params: { employeeId },
+      });
+      return data;
+    },
+    enabled: !!employeeId,
+  });
+}
+
+export function useOnboardingChecklist(id: string) {
+  return useQuery({
+    queryKey: queryKeys.hr.onboardingChecklist(id),
+    queryFn: async () => {
+      const { data } = await api.get<OnboardingChecklistDetail>(`/hr/onboarding/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useCreateOnboardingChecklist() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: CreateOnboardingChecklistRequest) => {
+      const { data } = await api.post<{ id: string }>('/hr/onboarding', body);
+      return data.id;
+    },
+    onSuccess: (_, variables) => {
+      toast.success(i18n.t('hr:onboarding.created'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.onboardingChecklists(variables.employeeId) });
+    },
+    onError: () => toast.error(i18n.t('hr:onboarding.createError')),
+  });
+}
+
+export function useAddOnboardingTask(checklistId: string, employeeId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: AddOnboardingTaskRequest) => {
+      await api.post(`/hr/onboarding/${checklistId}/tasks`, body);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.onboardingChecklist(checklistId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.onboardingChecklists(employeeId) });
+    },
+    onError: () => toast.error(i18n.t('hr:onboarding.taskError')),
+  });
+}
+
+export function useCompleteOnboardingTask(checklistId: string, employeeId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      await api.put(`/hr/onboarding/${checklistId}/tasks/${taskId}/complete`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.onboardingChecklist(checklistId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.onboardingChecklists(employeeId) });
+    },
+    onError: () => toast.error(i18n.t('hr:onboarding.taskError')),
+  });
+}
+
+export function useReopenOnboardingTask(checklistId: string, employeeId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      await api.put(`/hr/onboarding/${checklistId}/tasks/${taskId}/reopen`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.onboardingChecklist(checklistId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.onboardingChecklists(employeeId) });
+    },
+    onError: () => toast.error(i18n.t('hr:onboarding.taskError')),
   });
 }

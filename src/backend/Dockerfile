@@ -15,6 +15,9 @@ RUN dotnet publish src/ClarityBoard.API -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /app
 
+# Native dependencies for Docnet.Core (PDFium wrapper for PDF rasterization)
+RUN apk add --no-cache libstdc++ libgcc
+
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 

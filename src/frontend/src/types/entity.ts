@@ -38,6 +38,7 @@ export interface CreateEntityRequest {
   datevClientNumber?: string;
   datevConsultantNumber?: string;
   managingDirectorId?: string | null;
+  templateDepartmentEntityId?: string;
 }
 
 export interface UpdateEntityRequest {
@@ -72,4 +73,16 @@ export interface EntityRelationship {
   ownershipPct: number;
   consolidationType: 'full' | 'proportional' | 'equity' | 'none';
   hasProfitTransferAgreement: boolean;
+}
+
+export interface DepartmentNode {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+  parentDepartmentId?: string;
+  managerId?: string;
+  managerName?: string;
+  isActive: boolean;
+  children: DepartmentNode[];
 }

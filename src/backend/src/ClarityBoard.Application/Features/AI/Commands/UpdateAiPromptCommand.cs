@@ -63,7 +63,11 @@ public class UpdateAiPromptCommandHandler : IRequestHandler<UpdateAiPromptComman
             prompt.SystemPrompt,
             prompt.UserPromptTemplate,
             prompt.PrimaryProvider,
+            prompt.PrimaryModel,
             prompt.FallbackProvider,
+            prompt.FallbackModel,
+            prompt.Temperature,
+            prompt.MaxTokens,
             request.ChangeSummary,
             _currentUser.UserId);
 

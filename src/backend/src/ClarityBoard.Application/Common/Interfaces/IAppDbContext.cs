@@ -25,6 +25,12 @@ public interface IAppDbContext
     DbSet<FiscalPeriod> FiscalPeriods { get; }
     DbSet<RecurringEntry> RecurringEntries { get; }
     DbSet<VatRecord> VatRecords { get; }
+    DbSet<LegalEntityExtension> LegalEntityExtensions { get; }
+    DbSet<CostCenter> CostCenters { get; }
+    DbSet<AccountingDocument> AccountingDocuments { get; }
+    DbSet<AccountingScenario> AccountingScenarios { get; }
+    DbSet<AccountingPlanEntry> AccountingPlanEntries { get; }
+    DbSet<DatevExport> DatevExports { get; }
 
     // Entity
     DbSet<LegalEntity> LegalEntities { get; }
@@ -103,6 +109,8 @@ public interface IAppDbContext
     DbSet<DataAccessLog> DataAccessLogs { get; }
     DbSet<DeletionRequest> DeletionRequests { get; }
     DbSet<PublicHoliday> PublicHolidays { get; }
+    DbSet<OnboardingChecklist> OnboardingChecklists { get; }
+    DbSet<OnboardingTask> OnboardingTasks { get; }
 
     // Identity
     DbSet<User> Users { get; }

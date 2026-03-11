@@ -89,7 +89,21 @@ export const router = createBrowserRouter([
       { path: 'admin/ai/prompts/:promptKey', lazy: () => import('@/features/admin/AiPromptDetail') },
       { path: 'admin/ai/logs', lazy: () => import('@/features/admin/AiCallLogs') },
 
+      // Accounting
+      { path: 'accounting/journal-entries', lazy: () => import('@/features/accounting/JournalEntryList') },
+      { path: 'accounting/journal-entries/new', lazy: () => import('@/features/accounting/JournalEntryCreate') },
+      { path: 'accounting/journal-entries/:id', lazy: () => import('@/features/accounting/JournalEntryDetail') },
+      { path: 'accounting/trial-balance', lazy: () => import('@/features/accounting/TrialBalance') },
+      { path: 'accounting/balance-sheet', lazy: () => import('@/features/accounting/BalanceSheet') },
+      { path: 'accounting/profit-loss', lazy: () => import('@/features/accounting/ProfitAndLoss') },
+      { path: 'accounting/vat', lazy: () => import('@/features/accounting/VatReconciliation') },
+      { path: 'accounting/fiscal-periods', lazy: () => import('@/features/accounting/FiscalPeriods') },
+      { path: 'accounting/datev/exports', lazy: () => import('@/features/accounting/DatevExports') },
+      { path: 'accounting/cost-centers', lazy: () => import('@/features/accounting/CostCenters') },
+      { path: 'accounting/scenarios', lazy: () => import('@/features/accounting/AccountingScenarios') },
+
       // HR
+      { path: 'hr/me', lazy: () => import('@/features/hr/self/MySelf') },
       { path: 'hr/employees', lazy: () => import('@/features/hr/employees/EmployeeList') },
       { path: 'hr/employees/new', lazy: () => import('@/features/hr/employees/EmployeeCreate') },
       { path: 'hr/employees/:id', lazy: () => import('@/features/hr/employees/EmployeeDetail') },
@@ -104,6 +118,8 @@ export const router = createBrowserRouter([
       { path: 'hr/employees/:employeeId/documents', lazy: () => import('@/features/hr/documents/EmployeeDocuments') },
       { path: 'hr/admin/deletions', lazy: () => import('@/features/hr/admin/DeletionRequests') },
       { path: 'hr/stats', lazy: () => import('@/features/hr/stats/HrDashboard') },
+      { path: 'hr/onboarding', lazy: () => import('@/features/hr/onboarding/OnboardingList') },
+      { path: 'hr/onboarding/:id', lazy: () => import('@/features/hr/onboarding/OnboardingDetail') },
     ],
   },
 ]);
