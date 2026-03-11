@@ -424,7 +424,7 @@ public sealed class PromptAiService : IPromptAiService
 
     private static string GetDefaultModel(AiProvider provider) => provider switch
     {
-        AiProvider.Anthropic => "claude-haiku-4-20250514",
+        AiProvider.Anthropic => "claude-haiku-4-5-20251001",
         AiProvider.OpenAI    => "gpt-4o-mini",
         AiProvider.Grok      => "grok-3-mini",
         AiProvider.Gemini    => "gemini-2.5-flash",

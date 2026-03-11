@@ -48,7 +48,7 @@ Current user template (may be empty):
 Please return the improved system prompt:
 """,
             Primary: AiProvider.Anthropic, PrimaryModel: "claude-sonnet-4-20250514",
-            Fallback: AiProvider.Anthropic, FallbackModel: "claude-haiku-4-20250514",
+            Fallback: AiProvider.Anthropic, FallbackModel: "claude-haiku-4-5-20251001",
             Temp: 0.4m, MaxTok: 2048),
 
         new(
