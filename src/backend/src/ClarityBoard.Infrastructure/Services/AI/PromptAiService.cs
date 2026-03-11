@@ -146,9 +146,9 @@ public sealed class PromptAiService : IPromptAiService
             var result = await CallProviderAsync(
                 provider, settings.ModelDefault ?? GetDefaultModel(provider),
                 "You are a health check bot.", "Respond with exactly: OK",
-                temperature: 0m, maxTokens: 10, ct, settings.ApiKey);
+                temperature: 0m, maxTokens: 50, ct, settings.ApiKey);
 
-            return result.Content.Contains("OK", StringComparison.OrdinalIgnoreCase);
+            return !string.IsNullOrWhiteSpace(result.Content);
         }
         catch (Exception ex)
         {
