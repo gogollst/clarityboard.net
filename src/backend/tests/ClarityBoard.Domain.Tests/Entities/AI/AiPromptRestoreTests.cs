@@ -18,7 +18,7 @@ public class AiPromptRestoreTests
             AiProvider.Anthropic,
             "claude-sonnet-4-20250514",
             AiProvider.Gemini,
-            "gemini-2.0-flash",
+            "gemini-2.5-flash",
             0.1m,
             2048,
             true);

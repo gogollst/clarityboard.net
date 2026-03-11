@@ -73,7 +73,7 @@ Rules:
 """,
             UserTemplate: "Extract all accounting-relevant fields from this document (MIME: {{mime_type}}). Return only JSON.\n\n{{document_text}}",
             Primary: AiProvider.Anthropic, PrimaryModel: "claude-sonnet-4-20250514",
-            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.0-flash",
+            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.5-flash",
             Temp: 0.1m, MaxTok: 4096),
 
         new(
@@ -98,7 +98,7 @@ Rules:
 """,
             UserTemplate: "Extract all accounting-relevant fields from this document (MIME: {{mime_type}}). Return only JSON.\n\n{{document_text}}",
             Primary: AiProvider.Anthropic, PrimaryModel: "claude-sonnet-4-20250514",
-            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.0-flash",
+            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.5-flash",
             Temp: 0.1m, MaxTok: 4096),
 
         new(
@@ -138,7 +138,7 @@ Output format — return ONLY valid JSON:
 }
 """,
             UserTemplate: null,
-            Primary: AiProvider.Gemini, PrimaryModel: "gemini-2.0-flash",
+            Primary: AiProvider.Gemini, PrimaryModel: "gemini-2.5-flash",
             Fallback: AiProvider.OpenAI, FallbackModel: "gpt-4o",
             Temp: 0.0m, MaxTok: 8192),
 
@@ -186,7 +186,7 @@ Return a structured pattern description with confidence score.
 """,
             UserTemplate: "Vendor: {{vendor_name}}\n\nTransaction history:\n{{transaction_history}}",
             Primary: AiProvider.Anthropic, PrimaryModel: "claude-sonnet-4-20250514",
-            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.0-flash",
+            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.5-flash",
             Temp: 0.2m, MaxTok: 2048),
 
         new(
@@ -278,7 +278,7 @@ Max 350 words; executive summary format.
 """,
             UserTemplate: "KPI: {{kpi_name}}\nPeriod: {{period_range}}\n\nTrend data:\n{{trend_data_json}}",
             Primary: AiProvider.Anthropic, PrimaryModel: "claude-sonnet-4-20250514",
-            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.0-flash",
+            Fallback: AiProvider.Gemini, FallbackModel: "gemini-2.5-flash",
             Temp: 0.4m, MaxTok: 1500),
 
         new(

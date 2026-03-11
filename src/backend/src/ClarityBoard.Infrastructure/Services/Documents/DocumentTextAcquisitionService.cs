@@ -118,6 +118,8 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
             "Document {DocumentId} has unsupported type {ContentType} for Vision OCR",
             documentId, contentType);
 
+        reviewReasons.Add("unsupported_content_type_for_vision");
+
         return new DocumentTextAcquisitionResult
         {
             Text = nativeText?.Trim() ?? string.Empty,
@@ -162,14 +164,15 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
         catch (Exception ex)
         {
             _logger.LogError(ex, "Vision OCR failed for image document {DocumentId}", documentId);
-            reviewReasons.Add("vision_ocr_failed");
+            var failureCode = ClassifyVisionFailure(ex);
+            reviewReasons.Add(failureCode);
 
             return new DocumentTextAcquisitionResult
             {
                 Text = string.Empty,
                 Source = "vision",
                 Confidence = 0m,
-                Warnings = ["vision_ocr_failed"],
+                Warnings = [failureCode],
                 UsedVision = true,
                 NativeTextLength = 0,
                 ReviewReasons = reviewReasons,
@@ -254,7 +257,8 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
         catch (Exception ex)
         {
             _logger.LogError(ex, "Vision OCR failed for PDF document {DocumentId}", documentId);
-            reviewReasons.Add("vision_ocr_failed");
+            var failureCode = ClassifyVisionFailure(ex);
+            reviewReasons.Add(failureCode);
 
             // Fall back to native text
             return new DocumentTextAcquisitionResult
@@ -262,7 +266,7 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
                 Text = nativeText?.Trim() ?? string.Empty,
                 Source = "native",
                 Confidence = 0.2m,
-                Warnings = ["vision_ocr_failed"],
+                Warnings = [failureCode],
                 UsedVision = true,
                 NativeTextLength = nativeLength,
                 ReviewReasons = reviewReasons,
@@ -290,6 +294,14 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
             finalText = nativeText?.Trim() ?? string.Empty;
         }
 
+        var effectiveSource = string.IsNullOrWhiteSpace(ocrResult.FullText) && !string.IsNullOrWhiteSpace(nativeText)
+            ? "native_fallback_after_vision"
+            : ocrResult.Source;
+
+        var effectiveConfidence = string.IsNullOrWhiteSpace(finalText)
+            ? 0m
+            : ocrResult.Confidence;
+
         if (ocrResult.Confidence < 0.5m)
             reviewReasons.Add("vision_ocr_low_confidence");
 
@@ -305,8 +317,8 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
         return new DocumentTextAcquisitionResult
         {
             Text = finalText,
-            Source = ocrResult.Source,
-            Confidence = ocrResult.Confidence,
+            Source = effectiveSource,
+            Confidence = effectiveConfidence,
             Warnings = warnings,
             UsedVision = true,
             UsedProvider = ocrResult.UsedProvider,
@@ -315,6 +327,11 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
             ReviewReasons = reviewReasons,
         };
     }
+
+    private static string ClassifyVisionFailure(Exception ex)
+        => ex is TimeoutException || ex is TaskCanceledException || ex.InnerException is TimeoutException
+            ? "vision_ocr_timeout"
+            : "vision_ocr_failed";
 
     private static bool IsImageType(string contentType)
         => ImageMimeTypes.Contains(contentType);

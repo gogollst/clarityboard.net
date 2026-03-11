@@ -129,7 +129,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             StoreDocumentFields(document, extraction);
 
             // 6. Update Document entity with extracted metadata
-            var extractedJson = DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons);
+            var extractedJson = DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons, textResult);
             document.SetExtraction(
                 ocrText: documentText,
                 extractedData: extractedJson,
@@ -161,7 +161,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             if (!bookingSuggestionCreated)
                 reviewReasons.Add("booking_suggestion_unresolved_accounts");
 
-            document.UpdateExtractedData(DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons));
+            document.UpdateExtractedData(DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons, textResult));
 
             if (reviewReasons.Count > 0)
                 document.MarkReview();

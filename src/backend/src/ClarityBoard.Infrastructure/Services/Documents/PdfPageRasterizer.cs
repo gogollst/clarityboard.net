@@ -51,19 +51,19 @@ public sealed class PdfPageRasterizer : IDocumentPageRasterizer
                 continue;
             }
 
-            // Docnet returns raw BGRA pixels — encode to JPEG
-            var jpegBytes = EncodeRawBgraToJpeg(rawBytes, width, height);
+            // Docnet returns raw BGRA pixels — encode to BMP for broad API compatibility
+            var bmpBytes = EncodeRawBgraToBmp(rawBytes, width, height);
 
             pages.Add(new RasterizedPage(
                 PageNumber: i + 1,
-                ImageBytes: jpegBytes,
-                MimeType: "image/jpeg",
+                ImageBytes: bmpBytes,
+                MimeType: "image/bmp",
                 Width: width,
                 Height: height));
 
             _logger.LogDebug(
                 "Rasterized page {PageNumber}: {Width}x{Height}, {Size} bytes",
-                i + 1, width, height, jpegBytes.Length);
+                i + 1, width, height, bmpBytes.Length);
         }
 
         if (pageCount > maxPages)
@@ -77,19 +77,13 @@ public sealed class PdfPageRasterizer : IDocumentPageRasterizer
     }
 
     /// <summary>
-    /// Encodes raw BGRA pixel data to a JPEG byte array using a simple BMP→JPEG pipeline.
-    /// Uses the built-in System.Drawing-free approach via raw BMP construction.
+    /// Encodes raw BGRA pixel data to a BMP byte array using a System.Drawing-free approach.
     /// </summary>
-    private static byte[] EncodeRawBgraToJpeg(byte[] bgraPixels, int width, int height)
+    private static byte[] EncodeRawBgraToBmp(byte[] bgraPixels, int width, int height)
     {
-        // Build a minimal BMP in memory from BGRA data, then return as-is.
-        // Since we can't use System.Drawing on Alpine without extra deps,
-        // we encode a minimal uncompressed BMP which vision APIs accept.
-        // Actually, vision APIs prefer JPEG/PNG. We'll produce a BMP and
-        // note that both Gemini and OpenAI accept BMP via data URI.
-        //
-        // For maximum compatibility, we produce a raw BMP (uncompressed).
-        // The BGRA data from Docnet is bottom-up, which matches BMP layout.
+        // Build a minimal BMP in memory from BGRA data.
+        // We intentionally avoid System.Drawing-based transcoding so the rasterizer
+        // stays portable in containerized Linux environments.
 
         var rowStride = width * 4; // BGRA = 4 bytes per pixel
         var imageSize = rowStride * height;

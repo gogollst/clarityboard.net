@@ -5,7 +5,10 @@ namespace ClarityBoard.Infrastructure.Services.Documents;
 
 public static class DocumentExtractedDataSerializer
 {
-    public static string Serialize(DocumentExtractionResult extraction, IReadOnlyCollection<string> reviewReasons)
+    public static string Serialize(
+        DocumentExtractionResult extraction,
+        IReadOnlyCollection<string> reviewReasons,
+        DocumentTextAcquisitionResult? textAcquisition = null)
     {
         var payload = new
         {
@@ -23,6 +26,22 @@ public static class DocumentExtractedDataSerializer
                 .Distinct(StringComparer.Ordinal)
                 .OrderBy(reason => reason, StringComparer.Ordinal)
                 .ToArray(),
+            OcrMetadata = textAcquisition is null
+                ? null
+                : new
+                {
+                    textAcquisition.Source,
+                    textAcquisition.Confidence,
+                    Warnings = textAcquisition.Warnings
+                        .Where(warning => !string.IsNullOrWhiteSpace(warning))
+                        .Distinct(StringComparer.Ordinal)
+                        .OrderBy(warning => warning, StringComparer.Ordinal)
+                        .ToArray(),
+                    textAcquisition.UsedVision,
+                    textAcquisition.UsedProvider,
+                    textAcquisition.NativeTextLength,
+                    textAcquisition.VisionTextLength,
+                },
         };
 
         return JsonSerializer.Serialize(payload);

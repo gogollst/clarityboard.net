@@ -40,7 +40,7 @@ public sealed class PromptAiService : IPromptAiService
     private const string GrokUrl = "https://api.x.ai/v1/chat/completions";
     private const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
     private const string GeminiRelativePath = "v1beta/openai/chat/completions";
-    private const string ZaiUrl = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+    private const string ZaiUrl = "https://api.z.ai/api/paas/v4/chat/completions";
     private const string ZaiRelativePath = "api/paas/v4/chat/completions";
     private const string ManusUrl = "https://api.manus.im/v1/chat/completions";
 
@@ -427,8 +427,8 @@ public sealed class PromptAiService : IPromptAiService
         AiProvider.Anthropic => "claude-haiku-4-20250514",
         AiProvider.OpenAI    => "gpt-4o-mini",
         AiProvider.Grok      => "grok-3-mini",
-        AiProvider.Gemini    => "gemini-2.0-flash",
-        AiProvider.ZAI       => "glm-4-flash",
+        AiProvider.Gemini    => "gemini-2.5-flash",
+        AiProvider.ZAI       => "glm-5",
         AiProvider.Manus     => "manus-default",
         _                    => "unknown",
     };

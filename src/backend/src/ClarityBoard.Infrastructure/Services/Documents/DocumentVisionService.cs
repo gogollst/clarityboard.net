@@ -104,14 +104,14 @@ public sealed class DocumentVisionService : IDocumentVisionService
                     prompt.FallbackProvider, request.DocumentId);
                 sw.Stop();
                 await WriteLogAsync(prompt.Id, prompt.FallbackProvider, true, 0, 0,
-                    (int)sw.ElapsedMilliseconds, false, fallbackEx.Message, ct);
+                    (int)sw.ElapsedMilliseconds, false, fallbackEx.Message, request.EntityId, ct);
                 throw;
             }
         }
 
         sw.Stop();
         await WriteLogAsync(prompt.Id, usedFallback ? prompt.FallbackProvider : prompt.PrimaryProvider,
-            usedFallback, result.InputTokens, result.OutputTokens, (int)sw.ElapsedMilliseconds, true, null, ct);
+            usedFallback, result.InputTokens, result.OutputTokens, (int)sw.ElapsedMilliseconds, true, null, request.EntityId, ct);
 
         // Parse the JSON OCR result
         var ocrResult = ParseOcrResponse(result.Content, usedProviderName, usedFallback, (int)sw.ElapsedMilliseconds);
@@ -140,10 +140,10 @@ public sealed class DocumentVisionService : IDocumentVisionService
             ? settings.ModelDefault ?? GetDefaultModel(provider)
             : model;
 
-        var (url, useBearer) = provider switch
+        var url = provider switch
         {
-            AiProvider.Gemini => (ResolveEndpoint(settings.BaseUrl, GeminiUrl, GeminiRelativePath), true),
-            AiProvider.OpenAI => (ResolveEndpoint(settings.BaseUrl, OpenAiUrl, OpenAiRelativePath), true),
+            AiProvider.Gemini => ResolveEndpoint(settings.BaseUrl, GeminiUrl, GeminiRelativePath),
+            AiProvider.OpenAI => ResolveEndpoint(settings.BaseUrl, OpenAiUrl, OpenAiRelativePath),
             _ => throw new NotSupportedException($"Vision provider {provider} is not supported. Use Gemini or OpenAI."),
         };
 
@@ -165,7 +165,7 @@ public sealed class DocumentVisionService : IDocumentVisionService
         // Build multimodal user content: text instruction + page images
         var userContent = new List<object>
         {
-            new { type = "text", text = BuildUserPrompt(pages.Count) },
+            new { type = "text", text = BuildUserPrompt(pages) },
         };
 
         foreach (var page in pages)
@@ -211,11 +211,14 @@ public sealed class DocumentVisionService : IDocumentVisionService
         return new VisionCallResult(text, inputTok, outputTok);
     }
 
-    private static string BuildUserPrompt(int pageCount)
+    private static string BuildUserPrompt(IReadOnlyList<VisionPageInput> pages)
     {
+        var pageCount = pages.Count;
+        var pageLabels = string.Join(", ", pages.Select(page => $"page {page.PageNumber} ({page.MimeType})"));
+
         return pageCount == 1
-            ? "Extract all visible text from this document image. Return the result as JSON."
-            : $"Extract all visible text from these {pageCount} document pages. Return the result as JSON with per-page text.";
+            ? $"Extract all visible text from this accounting document image ({pageLabels}). Return only valid JSON."
+            : $"Extract all visible text from these {pageCount} accounting document pages ({pageLabels}). Return only valid JSON with page-level text.";
     }
 
     // ── Response Parsing ────────────────────────────────────────────────────
@@ -367,7 +370,7 @@ public sealed class DocumentVisionService : IDocumentVisionService
     private async Task WriteLogAsync(
         Guid promptId, AiProvider provider, bool usedFallback,
         int inputTokens, int outputTokens, int durationMs,
-        bool isSuccess, string? errorMessage, CancellationToken ct)
+        bool isSuccess, string? errorMessage, Guid entityId, CancellationToken ct)
     {
         try
         {
@@ -378,7 +381,7 @@ public sealed class DocumentVisionService : IDocumentVisionService
                 promptId, provider, usedFallback,
                 inputTokens, outputTokens, durationMs,
                 isSuccess, errorMessage,
-                null, null); // background context — no user/entity
+                null, entityId); // background context — no user
 
             db.AiCallLogs.Add(log);
             await db.SaveChangesAsync(ct);
@@ -405,7 +408,6 @@ public sealed class DocumentVisionService : IDocumentVisionService
 
     private static string? ExtractJson(string content)
     {
-        // Try to find JSON in markdown code blocks
         var trimmed = content.Trim();
         if (trimmed.StartsWith("```"))
         {
@@ -418,9 +420,13 @@ public sealed class DocumentVisionService : IDocumentVisionService
             }
         }
 
-        // Check if it's valid JSON
         if (trimmed.StartsWith('{') && trimmed.EndsWith('}'))
             return trimmed;
+
+        var firstBrace = trimmed.IndexOf('{');
+        var lastBrace = trimmed.LastIndexOf('}');
+        if (firstBrace >= 0 && lastBrace > firstBrace)
+            return trimmed[firstBrace..(lastBrace + 1)];
 
         return null;
     }
@@ -448,15 +454,48 @@ public sealed class DocumentVisionService : IDocumentVisionService
         if (string.IsNullOrWhiteSpace(configuredBaseUrl))
             return defaultUrl;
 
-        var trimmed = configuredBaseUrl.TrimEnd('/');
-        return Uri.TryCreate(trimmed, UriKind.Absolute, out _)
-            ? trimmed
-            : defaultUrl;
+        var trimmedBaseUrl = configuredBaseUrl.TrimEnd('/');
+        var relativeSegments = relativePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (!Uri.TryCreate(trimmedBaseUrl, UriKind.Absolute, out var configuredUri))
+            return trimmedBaseUrl;
+
+        var baseSegments = configuredUri.AbsolutePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var overlap = GetPathOverlap(baseSegments, relativeSegments);
+        var remainder = string.Join('/', relativeSegments.Skip(overlap));
+
+        return string.IsNullOrWhiteSpace(remainder)
+            ? trimmedBaseUrl
+            : $"{trimmedBaseUrl}/{remainder}";
+    }
+
+    private static int GetPathOverlap(string[] baseSegments, string[] relativeSegments)
+    {
+        for (var count = Math.Min(baseSegments.Length, relativeSegments.Length); count > 0; count--)
+        {
+            var matches = true;
+            for (var i = 0; i < count; i++)
+            {
+                if (!string.Equals(
+                        baseSegments[baseSegments.Length - count + i],
+                        relativeSegments[i],
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    matches = false;
+                    break;
+                }
+            }
+
+            if (matches)
+                return count;
+        }
+
+        return 0;
     }
 
     private static string GetDefaultModel(AiProvider provider) => provider switch
     {
-        AiProvider.Gemini => "gemini-2.0-flash",
+        AiProvider.Gemini => "gemini-2.5-flash",
         AiProvider.OpenAI => "gpt-4o-mini",
         _ => "unknown",
     };
