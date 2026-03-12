@@ -15,7 +15,8 @@ public class DeepLTranslationService : ITranslationService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<DeepLTranslationService> _logger;
 
-    private const string DefaultBaseUrl = "https://api-free.deepl.com";
+    private const string FreeBaseUrl = "https://api-free.deepl.com";
+    private const string ProBaseUrl  = "https://api.deepl.com";
 
     private static readonly Dictionary<string, string> LangMap = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -111,9 +112,10 @@ public class DeepLTranslationService : ITranslationService
         if (config is null)
             return null;
 
-        return new DeepLSettings(
-            _encryption.Decrypt(config.EncryptedApiKey),
-            config.BaseUrl ?? DefaultBaseUrl);
+        var apiKey = _encryption.Decrypt(config.EncryptedApiKey);
+        // DeepL Free keys end with ":fx", Pro keys don't
+        var defaultUrl = apiKey.EndsWith(":fx", StringComparison.Ordinal) ? FreeBaseUrl : ProBaseUrl;
+        return new DeepLSettings(apiKey, config.BaseUrl ?? defaultUrl);
     }
 
     private sealed record DeepLSettings(string ApiKey, string BaseUrl);
