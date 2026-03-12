@@ -80,6 +80,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     Locale = user.Locale,
+                    AvatarUrl = user.AvatarPath is not null ? $"/api/avatars/{user.Id}" : null,
                 },
             };
         }
@@ -158,6 +159,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Locale = user.Locale,
+                AvatarUrl = user.AvatarPath is not null ? $"/api/avatars/{user.Id}" : null,
                 Entities = entityAccess,
                 Roles = roleNames,
                 Permissions = permissions,

@@ -14,6 +14,7 @@ export interface User {
   lastName: string;
   locale: string;
   timezone: string;
+  avatarUrl: string | null;
   twoFactorEnabled: boolean;
   entities: EntityAccess[];
   roles: string[];

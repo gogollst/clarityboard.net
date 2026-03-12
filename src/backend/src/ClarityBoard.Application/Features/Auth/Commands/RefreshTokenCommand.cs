@@ -116,6 +116,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, A
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Locale = user.Locale,
+                AvatarUrl = user.AvatarPath is not null ? $"/api/avatars/{user.Id}" : null,
                 Entities = entityAccess,
             },
         };

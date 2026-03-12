@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
+import { storeUser, getStoredRememberMe } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 import i18n from '@/i18n';
 import type {
   UserProfile,
@@ -49,9 +51,16 @@ export function useUploadAvatar() {
       });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success(i18n.t('settings:avatar.toast.uploadSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.profile() });
+      // Update auth store so Header avatar updates immediately
+      const user = useAuthStore.getState().user;
+      if (user) {
+        const updated = { ...user, avatarUrl: data.avatarUrl };
+        useAuthStore.getState().setUser(updated);
+        storeUser(updated, getStoredRememberMe());
+      }
     },
     onError: () => {
       toast.error(i18n.t('settings:avatar.toast.uploadError'));
@@ -69,6 +78,13 @@ export function useDeleteAvatar() {
     onSuccess: () => {
       toast.success(i18n.t('settings:avatar.toast.deleteSuccess'));
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.profile() });
+      // Update auth store so Header avatar updates immediately
+      const user = useAuthStore.getState().user;
+      if (user) {
+        const updated = { ...user, avatarUrl: null };
+        useAuthStore.getState().setUser(updated);
+        storeUser(updated, getStoredRememberMe());
+      }
     },
     onError: () => {
       toast.error(i18n.t('settings:avatar.toast.deleteError'));

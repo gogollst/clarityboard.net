@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useProfitAndLoss } from '@/hooks/useAccounting';
@@ -15,15 +15,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const MONTHS = [
-  { value: 1, label: 'Jan' }, { value: 2, label: 'Feb' }, { value: 3, label: 'Mär' },
-  { value: 4, label: 'Apr' }, { value: 5, label: 'Mai' }, { value: 6, label: 'Jun' },
-  { value: 7, label: 'Jul' }, { value: 8, label: 'Aug' }, { value: 9, label: 'Sep' },
-  { value: 10, label: 'Okt' }, { value: 11, label: 'Nov' }, { value: 12, label: 'Dez' },
-];
+function buildMonths(locale: string) {
+  const fmt = new Intl.DateTimeFormat(locale, { month: 'short' });
+  return Array.from({ length: 12 }, (_, i) => ({
+    value: i + 1,
+    label: fmt.format(new Date(2024, i, 1)),
+  }));
+}
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('de-DE', {
+function formatCurrency(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2,
@@ -35,8 +36,10 @@ const currentYear = now.getFullYear();
 const currentMonth = now.getMonth() + 1;
 
 export function Component() {
-  const { t } = useTranslation(['accounting', 'common']);
+  const { t, i18n } = useTranslation(['accounting', 'common']);
   const { selectedEntityId } = useEntity();
+  const months = useMemo(() => buildMonths(i18n.language), [i18n.language]);
+  const fmtCurrency = (value: number) => formatCurrency(value, i18n.language);
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
   const [compare, setCompare] = useState(false);
@@ -80,7 +83,7 @@ export function Component() {
             <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
               <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
               <SelectContent>
-                {MONTHS.map((m) => (
+                {months.map((m) => (
                   <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
                 ))}
               </SelectContent>
@@ -106,7 +109,7 @@ export function Component() {
                 <Select value={String(compareMonth)} onValueChange={(v) => setCompareMonth(Number(v))}>
                   <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {MONTHS.map((m) => (
+                    {months.map((m) => (
                       <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -147,11 +150,11 @@ export function Component() {
                       <tr key={item.label} className="border-b border-border/50">
                         <td className="py-1.5">{item.label}</td>
                         <td className={`py-1.5 text-right tabular-nums ${item.amount < 0 ? 'text-destructive' : ''}`}>
-                          {formatCurrency(item.amount)}
+                          {fmtCurrency(item.amount)}
                         </td>
                         {showPrior && (
                           <td className={`py-1.5 text-right tabular-nums ${(item.priorAmount ?? 0) < 0 ? 'text-destructive' : ''}`}>
-                            {item.priorAmount != null ? formatCurrency(item.priorAmount) : '–'}
+                            {item.priorAmount != null ? fmtCurrency(item.priorAmount) : '–'}
                           </td>
                         )}
                       </tr>
@@ -159,11 +162,11 @@ export function Component() {
                     <tr className="font-semibold">
                       <td className="py-2">{t('accounting:profitAndLoss.subtotal')}</td>
                       <td className={`py-2 text-right tabular-nums ${section.subtotal < 0 ? 'text-destructive' : ''}`}>
-                        {formatCurrency(section.subtotal)}
+                        {fmtCurrency(section.subtotal)}
                       </td>
                       {showPrior && (
                         <td className={`py-2 text-right tabular-nums ${(section.priorSubtotal ?? 0) < 0 ? 'text-destructive' : ''}`}>
-                          {section.priorSubtotal != null ? formatCurrency(section.priorSubtotal) : '–'}
+                          {section.priorSubtotal != null ? fmtCurrency(section.priorSubtotal) : '–'}
                         </td>
                       )}
                     </tr>
@@ -178,11 +181,11 @@ export function Component() {
               <span className="text-lg font-bold">{t('accounting:profitAndLoss.netIncome')}</span>
               <div className="flex gap-8">
                 <span className={`text-lg font-bold tabular-nums ${data.netIncome < 0 ? 'text-destructive' : ''}`}>
-                  {formatCurrency(data.netIncome)}
+                  {fmtCurrency(data.netIncome)}
                 </span>
                 {showPrior && data.priorNetIncome != null && (
                   <span className={`text-lg tabular-nums text-muted-foreground ${data.priorNetIncome < 0 ? 'text-destructive' : ''}`}>
-                    {formatCurrency(data.priorNetIncome)}
+                    {fmtCurrency(data.priorNetIncome)}
                   </span>
                 )}
               </div>

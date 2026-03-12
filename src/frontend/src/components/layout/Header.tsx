@@ -154,9 +154,17 @@ export default function Header() {
             className="flex items-center gap-2 rounded-lg px-2 py-1.5"
             onClick={() => setUserMenuOpen(!userMenuOpen)}
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20">
-              <User className="h-3.5 w-3.5 text-primary" />
-            </div>
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt=""
+                className="h-7 w-7 rounded-full object-cover ring-1 ring-primary/20"
+              />
+            ) : (
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20">
+                <User className="h-3.5 w-3.5 text-primary" />
+              </div>
+            )}
             <span className="hidden text-sm font-medium md:inline-block">
               {user ? `${user.firstName} ${user.lastName}` : 'User'}
             </span>
