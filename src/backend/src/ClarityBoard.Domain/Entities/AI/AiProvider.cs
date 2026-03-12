@@ -11,5 +11,6 @@ public enum AiProvider
     Gemini    = 4,
     ZAI       = 5,
     Manus     = 6,
+    DeepL     = 7,
 }
 

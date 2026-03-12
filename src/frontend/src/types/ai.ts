@@ -1,6 +1,6 @@
-export type AiProvider = 'Anthropic' | 'OpenAI' | 'Grok' | 'Gemini' | 'ZAI' | 'Manus';
+export type AiProvider = 'Anthropic' | 'OpenAI' | 'Grok' | 'Gemini' | 'ZAI' | 'Manus' | 'DeepL';
 
-export const AI_PROVIDERS: AiProvider[] = ['Anthropic', 'OpenAI', 'Grok', 'Gemini', 'ZAI', 'Manus'];
+export const AI_PROVIDERS: AiProvider[] = ['Anthropic', 'OpenAI', 'Grok', 'Gemini', 'ZAI', 'Manus', 'DeepL'];
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 

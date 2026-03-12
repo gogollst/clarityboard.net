@@ -31,17 +31,20 @@ public class UpsertAiProviderCommandHandler
     private readonly IEncryptionService _encryption;
     private readonly ICurrentUser _currentUser;
     private readonly IPromptAiService _aiService;
+    private readonly ITranslationService _translationService;
 
     public UpsertAiProviderCommandHandler(
         IAppDbContext db,
         IEncryptionService encryption,
         ICurrentUser currentUser,
-        IPromptAiService aiService)
+        IPromptAiService aiService,
+        ITranslationService translationService)
     {
         _db         = db;
         _encryption = encryption;
         _currentUser = currentUser;
         _aiService  = aiService;
+        _translationService = translationService;
     }
 
     public async Task<AiProviderConfigDto> Handle(
@@ -71,7 +74,18 @@ public class UpsertAiProviderCommandHandler
         await _db.SaveChangesAsync(cancellationToken);
 
         // Run connectivity test after saving
-        var isHealthy = await _aiService.TestProviderAsync(request.Provider, cancellationToken);
+        bool isHealthy;
+        if (request.Provider == AiProvider.DeepL)
+        {
+            // DeepL health check: translate a test word
+            var result = await _translationService.TranslateAsync("Test", "en", ["de"], cancellationToken);
+            isHealthy = result.Count > 0;
+        }
+        else
+        {
+            isHealthy = await _aiService.TestProviderAsync(request.Provider, cancellationToken);
+        }
+
         existing.SetHealthStatus(isHealthy);
         await _db.SaveChangesAsync(cancellationToken);
 

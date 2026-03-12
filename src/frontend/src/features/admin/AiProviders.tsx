@@ -22,6 +22,7 @@ const PROVIDER_COLORS: Record<string, string> = {
   Gemini:    'bg-purple-50 border-purple-200',
   ZAI:       'bg-secondary border-border',
   Manus:     'bg-rose-50 border-rose-200',
+  DeepL:     'bg-sky-50 border-sky-200',
 };
 
 function HealthBadge({ isHealthy, lastTestedAt }: Pick<AiProviderConfig, 'isHealthy' | 'lastTestedAt'>) {

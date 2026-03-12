@@ -23,6 +23,7 @@ const PROVIDER_BADGE_CLASS: Record<AiProvider, string> = {
   Gemini:    'bg-purple-100 text-purple-800',
   ZAI:       'bg-secondary text-secondary-foreground',
   Manus:     'bg-rose-100 text-rose-800',
+  DeepL:     'bg-sky-100 text-sky-800',
 };
 
 function ProviderBadge({ provider }: { provider: AiProvider }) {

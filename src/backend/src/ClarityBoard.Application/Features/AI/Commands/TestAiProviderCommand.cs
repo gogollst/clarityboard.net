@@ -16,11 +16,13 @@ public class TestAiProviderCommandHandler
 {
     private readonly IAppDbContext _db;
     private readonly IPromptAiService _aiService;
+    private readonly ITranslationService _translationService;
 
-    public TestAiProviderCommandHandler(IAppDbContext db, IPromptAiService aiService)
+    public TestAiProviderCommandHandler(IAppDbContext db, IPromptAiService aiService, ITranslationService translationService)
     {
         _db        = db;
         _aiService = aiService;
+        _translationService = translationService;
     }
 
     public async Task<ProviderTestResultDto> Handle(
@@ -32,7 +34,15 @@ public class TestAiProviderCommandHandler
 
         try
         {
-            healthy = await _aiService.TestProviderAsync(request.Provider, cancellationToken);
+            if (request.Provider == AiProvider.DeepL)
+            {
+                var result = await _translationService.TranslateAsync("Test", "en", ["de"], cancellationToken);
+                healthy = result.Count > 0;
+            }
+            else
+            {
+                healthy = await _aiService.TestProviderAsync(request.Provider, cancellationToken);
+            }
         }
         catch (Exception ex)
         {
