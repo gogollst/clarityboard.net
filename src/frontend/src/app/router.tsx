@@ -68,6 +68,7 @@ export const router = createBrowserRouter([
       { path: 'scenarios/:id', lazy: () => import('@/features/scenarios/ScenarioDetail') },
       { path: 'documents', lazy: () => import('@/features/documents/DocumentArchive') },
       { path: 'documents/upload', lazy: () => import('@/features/documents/DocumentUpload') },
+      { path: 'documents/:id', lazy: () => import('@/features/documents/DocumentDetail') },
       { path: 'budget', lazy: () => import('@/features/budget/BudgetOverview') },
       { path: 'assets', lazy: () => import('@/features/assets/AssetRegister') },
       { path: 'datev', lazy: () => import('@/features/datev/DatevExportPage') },
