@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.Application.Features.Accounting.Commands;
 
-[RequirePermission("accounting.manage")]
+[RequirePermission("accounting.plan")]
 public record CreateAccountCommand : IRequest<Guid>
 {
     public required string AccountNumber { get; init; }

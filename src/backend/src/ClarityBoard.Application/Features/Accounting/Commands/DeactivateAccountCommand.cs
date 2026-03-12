@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.Application.Features.Accounting.Commands;
 
-[RequirePermission("accounting.manage")]
+[RequirePermission("accounting.plan")]
 public record DeactivateAccountCommand(Guid Id) : IRequest;
 
 public class DeactivateAccountCommandHandler : IRequestHandler<DeactivateAccountCommand>

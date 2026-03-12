@@ -121,10 +121,14 @@ public static class SeedData
             .Select(e => new { e.Id, e.ChartOfAccounts, e.Name })
             .ToListAsync();
 
+        logger.LogInformation("Found {Count} entities without accounts", entitiesWithoutAccounts.Count);
+
         foreach (var entity in entitiesWithoutAccounts)
         {
             if (entity.ChartOfAccounts == "SKR03")
                 await SeedSkr03AccountsAsync(context, entity.Id, logger);
+            else
+                logger.LogInformation("Entity {Name} uses {Chart}, skipping (only SKR03 supported)", entity.Name, entity.ChartOfAccounts);
         }
     }
 

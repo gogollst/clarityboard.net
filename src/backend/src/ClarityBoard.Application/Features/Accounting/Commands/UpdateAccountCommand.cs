@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClarityBoard.Application.Features.Accounting.Commands;
 
-[RequirePermission("accounting.manage")]
+[RequirePermission("accounting.plan")]
 public record UpdateAccountCommand : IRequest
 {
     public required Guid Id { get; init; }
