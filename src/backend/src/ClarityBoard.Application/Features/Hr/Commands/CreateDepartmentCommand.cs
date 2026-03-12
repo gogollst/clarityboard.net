@@ -39,10 +39,23 @@ public class CreateDepartmentCommandHandler : IRequestHandler<CreateDepartmentCo
 
     public async Task<Guid> Handle(CreateDepartmentCommand request, CancellationToken cancellationToken)
     {
-        var exists = await _db.Departments
+        var codeExists = await _db.Departments
             .AnyAsync(d => d.EntityId == request.EntityId && d.Code == request.Code, cancellationToken);
-        if (exists)
+        if (codeExists)
             throw new InvalidOperationException($"A department with code '{request.Code}' already exists in this entity.");
+
+        var nameExists = await _db.Departments
+            .AnyAsync(d => d.EntityId == request.EntityId && d.Name == request.Name, cancellationToken);
+        if (nameExists)
+            throw new InvalidOperationException($"A department with name '{request.Name}' already exists in this entity.");
+
+        if (request.ManagerId.HasValue)
+        {
+            var managerBelongsToEntity = await _db.Employees
+                .AnyAsync(e => e.Id == request.ManagerId.Value && e.EntityId == request.EntityId, cancellationToken);
+            if (!managerBelongsToEntity)
+                throw new InvalidOperationException("The specified manager does not belong to this entity.");
+        }
 
         var department = Department.Create(
             entityId: request.EntityId,

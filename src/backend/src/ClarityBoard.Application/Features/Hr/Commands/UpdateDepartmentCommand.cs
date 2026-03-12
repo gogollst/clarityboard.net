@@ -49,6 +49,24 @@ public class UpdateDepartmentCommandHandler : IRequestHandler<UpdateDepartmentCo
         if (request.ParentDepartmentId == request.DepartmentId)
             throw new InvalidOperationException("A department cannot be its own parent.");
 
+        var codeExists = await _db.Departments
+            .AnyAsync(d => d.EntityId == request.EntityId && d.Code == request.Code && d.Id != request.DepartmentId, cancellationToken);
+        if (codeExists)
+            throw new InvalidOperationException($"A department with code '{request.Code}' already exists in this entity.");
+
+        var nameExists = await _db.Departments
+            .AnyAsync(d => d.EntityId == request.EntityId && d.Name == request.Name && d.Id != request.DepartmentId, cancellationToken);
+        if (nameExists)
+            throw new InvalidOperationException($"A department with name '{request.Name}' already exists in this entity.");
+
+        if (request.ManagerId.HasValue)
+        {
+            var managerBelongsToEntity = await _db.Employees
+                .AnyAsync(e => e.Id == request.ManagerId.Value && e.EntityId == request.EntityId, cancellationToken);
+            if (!managerBelongsToEntity)
+                throw new InvalidOperationException("The specified manager does not belong to this entity.");
+        }
+
         department.Update(
             name: request.Name,
             code: request.Code,

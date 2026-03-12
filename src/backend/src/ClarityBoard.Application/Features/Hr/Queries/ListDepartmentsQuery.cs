@@ -13,10 +13,12 @@ public record DepartmentDto
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Code { get; init; } = string.Empty;
+    public string? Description { get; init; }
     public Guid? ParentDepartmentId { get; init; }
     public Guid? ManagerId { get; init; }
     public string? ManagerName { get; init; }
     public bool IsActive { get; init; }
+    public int EmployeeCount { get; init; }
 }
 
 public class ListDepartmentsQueryHandler : IRequestHandler<ListDepartmentsQuery, List<DepartmentDto>>
@@ -38,6 +40,7 @@ public class ListDepartmentsQueryHandler : IRequestHandler<ListDepartmentsQuery,
                 d.Id,
                 d.Name,
                 d.Code,
+                d.Description,
                 d.ParentDepartmentId,
                 d.ManagerId,
                 d.IsActive,
@@ -58,15 +61,25 @@ public class ListDepartmentsQueryHandler : IRequestHandler<ListDepartmentsQuery,
                 .ToDictionaryAsync(e => e.Id, e => $"{e.FirstName} {e.LastName}", cancellationToken)
             : new Dictionary<Guid, string>();
 
+        // Resolve employee counts per department
+        var departmentIds = departments.Select(d => d.Id).ToList();
+        var employeeCounts = await _db.Employees
+            .Where(e => e.DepartmentId.HasValue && departmentIds.Contains(e.DepartmentId.Value))
+            .GroupBy(e => e.DepartmentId!.Value)
+            .Select(g => new { DepartmentId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(g => g.DepartmentId, g => g.Count, cancellationToken);
+
         return departments.Select(d => new DepartmentDto
         {
             Id                 = d.Id,
             Name               = d.Name,
             Code               = d.Code,
+            Description        = d.Description,
             ParentDepartmentId = d.ParentDepartmentId,
             ManagerId          = d.ManagerId,
             ManagerName        = d.ManagerId.HasValue && managerNames.TryGetValue(d.ManagerId.Value, out var name) ? name : null,
             IsActive           = d.IsActive,
+            EmployeeCount      = employeeCounts.TryGetValue(d.Id, out var count) ? count : 0,
         }).ToList();
     }
 }

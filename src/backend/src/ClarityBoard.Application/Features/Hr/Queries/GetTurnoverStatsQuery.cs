@@ -7,7 +7,10 @@ using Microsoft.EntityFrameworkCore;
 namespace ClarityBoard.Application.Features.Hr.Queries;
 
 [RequirePermission("hr.view")]
-public record GetTurnoverStatsQuery(Guid EntityId) : IRequest<TurnoverStatsDto>, IEntityScoped;
+public record GetTurnoverStatsQuery(Guid EntityId) : IRequest<TurnoverStatsDto>, IEntityScoped
+{
+    public Guid? DepartmentId { get; init; }
+}
 
 public record TurnoverStatsDto
 {

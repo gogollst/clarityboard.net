@@ -77,6 +77,14 @@ public class AccountingController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("accounts/batch-translate")]
+    [ProducesResponseType(typeof(BatchTranslateResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<BatchTranslateResult>> BatchTranslateAccountNames(CancellationToken ct)
+    {
+        var result = await _mediator.Send(new BatchTranslateAccountNamesCommand(), ct);
+        return Ok(result);
+    }
+
     [HttpPost("accounts/{id:guid}/deactivate")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

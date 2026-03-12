@@ -254,6 +254,20 @@ public class HrController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("departments/{id:guid}/deactivate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeactivateDepartment(
+        Guid id, [FromQuery] Guid entityId, CancellationToken ct)
+    {
+        await _mediator.Send(new DeactivateDepartmentCommand
+        {
+            DepartmentId = id,
+            EntityId     = entityId,
+        }, ct);
+        return NoContent();
+    }
+
     [HttpDelete("departments/{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -705,30 +719,30 @@ public class HrController : ControllerBase
     [HttpGet("stats/headcount")]
     [ProducesResponseType(typeof(HeadcountStatsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetHeadcountStats([FromQuery] Guid? entityId, CancellationToken ct)
+    public async Task<IActionResult> GetHeadcountStats([FromQuery] Guid? entityId, [FromQuery] Guid? departmentId, CancellationToken ct)
     {
         var effectiveEntityId = entityId ?? _currentUser.EntityId;
-        var result = await _mediator.Send(new GetHeadcountStatsQuery(effectiveEntityId), ct);
+        var result = await _mediator.Send(new GetHeadcountStatsQuery(effectiveEntityId) { DepartmentId = departmentId }, ct);
         return Ok(result);
     }
 
     [HttpGet("stats/turnover")]
     [ProducesResponseType(typeof(TurnoverStatsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetTurnoverStats([FromQuery] Guid? entityId, CancellationToken ct)
+    public async Task<IActionResult> GetTurnoverStats([FromQuery] Guid? entityId, [FromQuery] Guid? departmentId, CancellationToken ct)
     {
         var effectiveEntityId = entityId ?? _currentUser.EntityId;
-        var result = await _mediator.Send(new GetTurnoverStatsQuery(effectiveEntityId), ct);
+        var result = await _mediator.Send(new GetTurnoverStatsQuery(effectiveEntityId) { DepartmentId = departmentId }, ct);
         return Ok(result);
     }
 
     [HttpGet("stats/salary-bands")]
     [ProducesResponseType(typeof(SalaryBandsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetSalaryBands([FromQuery] Guid? entityId, CancellationToken ct)
+    public async Task<IActionResult> GetSalaryBands([FromQuery] Guid? entityId, [FromQuery] Guid? departmentId, CancellationToken ct)
     {
         var effectiveEntityId = entityId ?? _currentUser.EntityId;
-        var result = await _mediator.Send(new GetSalaryBandsQuery(effectiveEntityId), ct);
+        var result = await _mediator.Send(new GetSalaryBandsQuery(effectiveEntityId) { DepartmentId = departmentId }, ct);
         return Ok(result);
     }
 
