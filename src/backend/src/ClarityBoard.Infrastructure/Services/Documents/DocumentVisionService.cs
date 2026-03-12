@@ -26,6 +26,8 @@ public sealed class DocumentVisionService : IDocumentVisionService
     private const string GeminiRelativePath = "v1beta/openai/chat/completions";
     private const string OpenAiUrl = "https://api.openai.com/v1/chat/completions";
     private const string OpenAiRelativePath = "v1/chat/completions";
+    private const string ZaiUrl = "https://api.z.ai/api/paas/v4/chat/completions";
+    private const string ZaiRelativePath = "api/paas/v4/chat/completions";
 
     private static readonly TimeSpan PromptCacheTtl = TimeSpan.FromMinutes(5);
 
@@ -144,7 +146,8 @@ public sealed class DocumentVisionService : IDocumentVisionService
         {
             AiProvider.Gemini => ResolveEndpoint(settings.BaseUrl, GeminiUrl, GeminiRelativePath),
             AiProvider.OpenAI => ResolveEndpoint(settings.BaseUrl, OpenAiUrl, OpenAiRelativePath),
-            _ => throw new NotSupportedException($"Vision provider {provider} is not supported. Use Gemini or OpenAI."),
+            AiProvider.ZAI    => ResolveEndpoint(settings.BaseUrl, ZaiUrl, ZaiRelativePath),
+            _ => throw new NotSupportedException($"Vision provider {provider} is not supported. Use Gemini, OpenAI, or ZAI."),
         };
 
         return await CallOpenAiCompatibleVisionAsync(
@@ -497,6 +500,7 @@ public sealed class DocumentVisionService : IDocumentVisionService
     {
         AiProvider.Gemini => "gemini-2.5-flash",
         AiProvider.OpenAI => "gpt-4o-mini",
+        AiProvider.ZAI    => "glm-4.6v-flash",
         _ => "unknown",
     };
 
