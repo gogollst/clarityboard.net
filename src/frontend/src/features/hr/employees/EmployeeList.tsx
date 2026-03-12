@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useEmployees } from '@/hooks/useHr';
+import { useEmployees, useDepartments } from '@/hooks/useHr';
 import { useEntity } from '@/hooks/useEntity';
 import { useDebounced } from '@/hooks/useDebounced';
 import type { EmployeeListItem } from '@/types/hr';
@@ -28,12 +28,15 @@ export function Component() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [employeeType, setEmployeeType] = useState('');
+  const [departmentId, setDepartmentId] = useState('');
   const debouncedSearch = useDebounced(search, 300);
+
+  const { data: departmentsData } = useDepartments(selectedEntityId ?? undefined);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, status, employeeType]);
+  }, [debouncedSearch, status, employeeType, departmentId]);
 
   const { data, isLoading } = useEmployees({
     page,
@@ -41,6 +44,7 @@ export function Component() {
     search: debouncedSearch || undefined,
     status: status || undefined,
     employeeType: employeeType || undefined,
+    departmentId: departmentId || undefined,
     entityId: selectedEntityId ?? undefined,
   });
 
@@ -189,6 +193,21 @@ export function Component() {
             <SelectItem value="all">{t('employees.allTypes')}</SelectItem>
             <SelectItem value="Employee">{t('employees.type.Employee')}</SelectItem>
             <SelectItem value="Contractor">{t('employees.type.Contractor')}</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={departmentId || 'all'}
+          onValueChange={(v) => setDepartmentId(v === 'all' ? '' : v)}
+        >
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder={t('employees.filterDepartment')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('employees.allDepartments')}</SelectItem>
+            {(departmentsData ?? []).filter(d => d.isActive).map((dept) => (
+              <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

@@ -32,8 +32,10 @@
     },
     "allStatuses": "All Statuses",
     "allTypes": "All Types",
+    "allDepartments": "All Departments",
     "filterStatus": "Status",
     "filterType": "Employment Type",
+    "filterDepartment": "Department",
     "fields": {
       "firstName": "First Name",
       "lastName": "Last Name",
@@ -425,7 +427,9 @@
     "salaryMedian": "Median",
     "chartHires": "New Hires",
     "chartTerminations": "Terminations",
-    "chartEmployees": "Employees"
+    "chartEmployees": "Employees",
+    "filterByDepartment": "Filter by Department",
+    "allDepartments": "All Departments"
   },
   "toast": {
     "employeeCreated": "Employee created",
@@ -444,6 +448,8 @@
     "departmentUpdateError": "Failed to update department",
     "departmentDeleted": "Department deleted",
     "departmentDeleteError": "Failed to delete department",
+    "departmentDeactivated": "Department deactivated",
+    "departmentDeactivatedError": "Failed to deactivate department",
     "leaveTypeCreated": "Leave type created",
     "leaveTypeCreateError": "Failed to create leave type",
     "leaveSubmitted": "Leave request submitted",
@@ -526,10 +532,14 @@
     "editTitle": "Edit Department",
     "deleteTitle": "Delete Department",
     "deleteDescription": "Are you sure you want to delete the department \"{{name}}\"? This action cannot be undone.",
+    "deactivateTitle": "Deactivate Department",
+    "deactivateDescription": "Are you sure you want to deactivate the department \"{{name}}\"? It will no longer appear as active.",
     "columns": {
       "code": "Code",
       "name": "Name",
       "manager": "Manager",
+      "employeeCount": "Employees",
+      "description": "Description",
       "status": "Status"
     },
     "fields": {

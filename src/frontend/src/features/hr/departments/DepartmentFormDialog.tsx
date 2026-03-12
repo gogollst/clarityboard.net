@@ -73,7 +73,7 @@ export default function DepartmentFormDialog({
     defaultValues: {
       name: department?.name ?? '',
       code: department?.code ?? '',
-      description: '',
+      description: department?.description ?? '',
       parentDepartmentId: department?.parentDepartmentId ?? '',
       managerId: department?.managerId ?? '',
     },

@@ -86,6 +86,7 @@ export interface Department {
   managerId?: string;
   managerName?: string;
   isActive: boolean;
+  employeeCount: number;
 }
 
 // Create/Update request types

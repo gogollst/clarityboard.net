@@ -294,6 +294,23 @@ export function useDeleteDepartment() {
   });
 }
 
+export function useDeactivateDepartment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, entityId }: { id: string; entityId: string }) => {
+      await api.post(`/hr/departments/${id}/deactivate`, null, { params: { entityId } });
+    },
+    onSuccess: () => {
+      toast.success(i18n.t('hr:toast.departmentDeactivated'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.departments() });
+    },
+    onError: () => {
+      toast.error(i18n.t('hr:toast.departmentDeactivatedError'));
+    },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Leave Types
 // ---------------------------------------------------------------------------
@@ -687,12 +704,12 @@ export function useScheduleDeletion() {
 // HR Statistics
 // ---------------------------------------------------------------------------
 
-export function useHeadcountStats(entityId: string) {
+export function useHeadcountStats(entityId: string, departmentId?: string) {
   return useQuery({
-    queryKey: queryKeys.hr.headcountStats(entityId),
+    queryKey: [...queryKeys.hr.headcountStats(entityId), departmentId ?? ''],
     queryFn: async () => {
       const { data } = await api.get<HeadcountStats>('/hr/stats/headcount', {
-        params: { entityId },
+        params: { entityId, departmentId: departmentId || undefined },
       });
       return data;
     },
@@ -700,12 +717,12 @@ export function useHeadcountStats(entityId: string) {
   });
 }
 
-export function useTurnoverStats(entityId: string) {
+export function useTurnoverStats(entityId: string, departmentId?: string) {
   return useQuery({
-    queryKey: queryKeys.hr.turnoverStats(entityId),
+    queryKey: [...queryKeys.hr.turnoverStats(entityId), departmentId ?? ''],
     queryFn: async () => {
       const { data } = await api.get<TurnoverStats>('/hr/stats/turnover', {
-        params: { entityId },
+        params: { entityId, departmentId: departmentId || undefined },
       });
       return data;
     },
@@ -713,12 +730,12 @@ export function useTurnoverStats(entityId: string) {
   });
 }
 
-export function useSalaryBands(entityId: string) {
+export function useSalaryBands(entityId: string, departmentId?: string) {
   return useQuery({
-    queryKey: queryKeys.hr.salaryBands(entityId),
+    queryKey: [...queryKeys.hr.salaryBands(entityId), departmentId ?? ''],
     queryFn: async () => {
       const { data } = await api.get<SalaryBands>('/hr/stats/salary-bands', {
-        params: { entityId },
+        params: { entityId, departmentId: departmentId || undefined },
       });
       return data;
     },

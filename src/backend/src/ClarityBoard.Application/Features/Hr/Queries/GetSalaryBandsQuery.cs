@@ -7,7 +7,10 @@ using Microsoft.EntityFrameworkCore;
 namespace ClarityBoard.Application.Features.Hr.Queries;
 
 [RequirePermission("hr.salary.view")]
-public record GetSalaryBandsQuery(Guid EntityId) : IRequest<SalaryBandsDto>, IEntityScoped;
+public record GetSalaryBandsQuery(Guid EntityId) : IRequest<SalaryBandsDto>, IEntityScoped
+{
+    public Guid? DepartmentId { get; init; }
+}
 
 public record SalaryBandsDto
 {
@@ -37,7 +40,8 @@ public class GetSalaryBandsQueryHandler : IRequestHandler<GetSalaryBandsQuery, S
             .Where(s => s.ValidTo == null
                      && _db.Employees.Any(e => e.Id == s.EmployeeId
                                             && e.EntityId == request.EntityId
-                                            && e.Status != EmployeeStatus.Terminated))
+                                            && e.Status != EmployeeStatus.Terminated
+                                            && (!request.DepartmentId.HasValue || e.DepartmentId == request.DepartmentId.Value)))
             .OrderBy(s => s.GrossAmountCents)
             .Select(s => s.GrossAmountCents)
             .ToListAsync(cancellationToken);

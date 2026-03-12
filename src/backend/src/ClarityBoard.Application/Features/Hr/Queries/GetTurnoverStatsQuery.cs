@@ -33,8 +33,11 @@ public class GetTurnoverStatsQueryHandler : IRequestHandler<GetTurnoverStatsQuer
 
     public async Task<TurnoverStatsDto> Handle(GetTurnoverStatsQuery request, CancellationToken cancellationToken)
     {
-        var employees = await _db.Employees
-            .Where(e => e.EntityId == request.EntityId)
+        var query = _db.Employees.Where(e => e.EntityId == request.EntityId);
+        if (request.DepartmentId.HasValue)
+            query = query.Where(e => e.DepartmentId == request.DepartmentId.Value);
+
+        var employees = await query
             .Select(e => new
             {
                 e.HireDate,

@@ -1,9 +1,17 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
-import { useHeadcountStats, useTurnoverStats, useSalaryBands } from '@/hooks/useHr';
+import { useHeadcountStats, useTurnoverStats, useSalaryBands, useDepartments } from '@/hooks/useHr';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   ResponsiveContainer,
   LineChart,
@@ -21,10 +29,12 @@ export function Component() {
   const { t, i18n } = useTranslation('hr');
   const { selectedEntityId } = useEntity();
   const entityId = selectedEntityId ?? '';
+  const [departmentId, setDepartmentId] = useState('');
 
-  const { data: headcount, isLoading: hcLoading } = useHeadcountStats(entityId);
-  const { data: turnover, isLoading: toLoading } = useTurnoverStats(entityId);
-  const { data: salaryBands, isLoading: sbLoading } = useSalaryBands(entityId);
+  const { data: departments } = useDepartments(entityId || undefined);
+  const { data: headcount, isLoading: hcLoading } = useHeadcountStats(entityId, departmentId || undefined);
+  const { data: turnover, isLoading: toLoading } = useTurnoverStats(entityId, departmentId || undefined);
+  const { data: salaryBands, isLoading: sbLoading } = useSalaryBands(entityId, departmentId || undefined);
 
   function formatCents(cents: number | null | undefined): string {
     if (cents == null) return '—';
@@ -42,6 +52,24 @@ export function Component() {
   return (
     <div>
       <PageHeader title={t('stats.title')} />
+
+      {/* Department filter */}
+      <div className="mb-4">
+        <Select
+          value={departmentId || 'all'}
+          onValueChange={(v) => setDepartmentId(v === 'all' ? '' : v)}
+        >
+          <SelectTrigger className="w-60">
+            <SelectValue placeholder={t('stats.filterByDepartment')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('stats.allDepartments')}</SelectItem>
+            {(departments ?? []).filter(d => d.isActive).map((dept) => (
+              <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* KPI cards */}
       <div className="mb-6 grid grid-cols-3 gap-4">

@@ -32,8 +32,10 @@
     },
     "allStatuses": "Все статусы",
     "allTypes": "Все типы",
+    "allDepartments": "Все отделы",
     "filterStatus": "Статус",
     "filterType": "Тип занятости",
+    "filterDepartment": "Отдел",
     "fields": {
       "firstName": "Имя",
       "lastName": "Фамилия",
@@ -425,7 +427,9 @@
     "salaryMedian": "Медиана",
     "chartHires": "Принятые",
     "chartTerminations": "Уволенные",
-    "chartEmployees": "Сотрудники"
+    "chartEmployees": "Сотрудники",
+    "filterByDepartment": "Фильтр по отделу",
+    "allDepartments": "Все отделы"
   },
   "toast": {
     "employeeCreated": "Сотрудник создан",
@@ -444,6 +448,8 @@
     "departmentUpdateError": "Не удалось обновить отдел",
     "departmentDeleted": "Отдел удалён",
     "departmentDeleteError": "Не удалось удалить отдел",
+    "departmentDeactivated": "Отдел деактивирован",
+    "departmentDeactivatedError": "Не удалось деактивировать отдел",
     "leaveTypeCreated": "Тип отпуска создан",
     "leaveTypeCreateError": "Не удалось создать тип отпуска",
     "leaveSubmitted": "Заявка на отпуск отправлена",
@@ -526,10 +532,14 @@
     "editTitle": "Редактировать отдел",
     "deleteTitle": "Удалить отдел",
     "deleteDescription": "Вы уверены, что хотите удалить отдел «{{name}}»? Это действие нельзя отменить.",
+    "deactivateTitle": "Деактивировать отдел",
+    "deactivateDescription": "Вы уверены, что хотите деактивировать отдел «{{name}}»? Он больше не будет отображаться как активный.",
     "columns": {
       "code": "Код",
       "name": "Название",
       "manager": "Руководитель",
+      "employeeCount": "Сотрудники",
+      "description": "Описание",
       "status": "Статус"
     },
     "fields": {

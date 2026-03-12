@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDepartments, useDeleteDepartment, useEmployees } from '@/hooks/useHr';
+import { useDepartments, useDeleteDepartment, useDeactivateDepartment, useEmployees } from '@/hooks/useHr';
 import { useEntity } from '@/hooks/useEntity';
 import { useAuth } from '@/hooks/useAuth';
 import type { Department } from '@/types/hr';
@@ -24,7 +24,13 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Plus, Pencil, Trash2, Archive, Loader2 } from 'lucide-react';
 import DepartmentFormDialog from './DepartmentFormDialog';
 
 export function Component() {
@@ -34,10 +40,12 @@ export function Component() {
   const { data: departments, isLoading } = useDepartments(selectedEntityId ?? undefined);
   const { data: employeesData } = useEmployees({ entityId: selectedEntityId ?? undefined, pageSize: 100 });
   const deleteDepartment = useDeleteDepartment();
+  const deactivateDepartment = useDeactivateDepartment();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editDepartment, setEditDepartment] = useState<Department | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<Department | null>(null);
 
   const canManage = hasPermission('entity.manage');
   const employees = employeesData?.items ?? [];
@@ -55,6 +63,14 @@ export function Component() {
     deleteDepartment.mutate(
       { id: deleteTarget.id, entityId: selectedEntityId },
       { onSuccess: () => setDeleteTarget(null) },
+    );
+  };
+
+  const handleDeactivate = () => {
+    if (!deactivateTarget) return;
+    deactivateDepartment.mutate(
+      { id: deactivateTarget.id, entityId: selectedEntityId },
+      { onSuccess: () => setDeactivateTarget(null) },
     );
   };
 
@@ -89,18 +105,27 @@ export function Component() {
               <TableHead>{t('departments.columns.code')}</TableHead>
               <TableHead>{t('departments.columns.name')}</TableHead>
               <TableHead>{t('departments.columns.manager')}</TableHead>
+              <TableHead className="text-right">{t('departments.columns.employeeCount')}</TableHead>
               <TableHead>{t('departments.columns.status')}</TableHead>
-              {canManage && <TableHead className="w-24" />}
+              {canManage && <TableHead className="w-32" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {departments.map((dept) => (
               <TableRow key={dept.id}>
                 <TableCell className="font-mono text-sm">{dept.code}</TableCell>
-                <TableCell className="font-medium">{dept.name}</TableCell>
+                <TableCell>
+                  <div>
+                    <span className="font-medium">{dept.name}</span>
+                    {dept.description && (
+                      <p className="text-xs text-muted-foreground truncate max-w-xs">{dept.description}</p>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {dept.managerName ?? '—'}
                 </TableCell>
+                <TableCell className="text-right text-sm">{dept.employeeCount}</TableCell>
                 <TableCell>
                   {dept.isActive ? (
                     <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
@@ -120,6 +145,22 @@ export function Component() {
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
+                      {dept.isActive && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeactivateTarget(dept)}
+                              >
+                                <Archive className="h-4 w-4 text-amber-600" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{t('departments.deactivateTitle')}</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -158,6 +199,30 @@ export function Component() {
           employees={employees}
         />
       )}
+
+      {/* Deactivate Confirmation */}
+      <Dialog open={!!deactivateTarget} onOpenChange={(v) => { if (!v) setDeactivateTarget(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('departments.deactivateTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('departments.deactivateDescription', { name: deactivateTarget?.name })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeactivateTarget(null)}>
+              {t('common:buttons.cancel')}
+            </Button>
+            <Button
+              onClick={handleDeactivate}
+              disabled={deactivateDepartment.isPending}
+            >
+              {deactivateDepartment.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              {t('common:buttons.confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation */}
       <Dialog open={!!deleteTarget} onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}>

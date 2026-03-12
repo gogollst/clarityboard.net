@@ -32,8 +32,10 @@
     },
     "allStatuses": "Alle Status",
     "allTypes": "Alle Typen",
+    "allDepartments": "Alle Abteilungen",
     "filterStatus": "Status",
     "filterType": "Anstellungsart",
+    "filterDepartment": "Abteilung",
     "fields": {
       "firstName": "Vorname",
       "lastName": "Nachname",
@@ -425,7 +427,9 @@
     "salaryMedian": "Median",
     "chartHires": "Einstellungen",
     "chartTerminations": "Kündigungen",
-    "chartEmployees": "Mitarbeiter"
+    "chartEmployees": "Mitarbeiter",
+    "filterByDepartment": "Nach Abteilung filtern",
+    "allDepartments": "Alle Abteilungen"
   },
   "toast": {
     "employeeCreated": "Mitarbeiter angelegt",
@@ -444,6 +448,8 @@
     "departmentUpdateError": "Fehler beim Aktualisieren der Abteilung",
     "departmentDeleted": "Abteilung gelöscht",
     "departmentDeleteError": "Fehler beim Löschen der Abteilung",
+    "departmentDeactivated": "Abteilung deaktiviert",
+    "departmentDeactivatedError": "Fehler beim Deaktivieren der Abteilung",
     "leaveTypeCreated": "Urlaubstyp erstellt",
     "leaveTypeCreateError": "Fehler beim Erstellen des Urlaubstyps",
     "leaveSubmitted": "Urlaubsantrag eingereicht",
@@ -526,10 +532,14 @@
     "editTitle": "Abteilung bearbeiten",
     "deleteTitle": "Abteilung löschen",
     "deleteDescription": "Möchten Sie die Abteilung \"{{name}}\" wirklich löschen? Dies kann nicht rückgängig gemacht werden.",
+    "deactivateTitle": "Abteilung deaktivieren",
+    "deactivateDescription": "Möchten Sie die Abteilung \"{{name}}\" wirklich deaktivieren? Sie wird nicht mehr als aktiv angezeigt.",
     "columns": {
       "code": "Code",
       "name": "Name",
       "manager": "Leitung",
+      "employeeCount": "Mitarbeiter",
+      "description": "Beschreibung",
       "status": "Status"
     },
     "fields": {
