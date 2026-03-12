@@ -23,7 +23,47 @@
   },
   "actions": {
     "view": "View",
-    "download": "Download"
+    "download": "Download",
+    "approveBooking": "Approve Booking",
+    "assignPartner": "Assign Partner",
+    "confirmPartner": "Confirm Partner",
+    "createNewPartner": "Create New Partner"
+  },
+  "detail": {
+    "title": "Document Detail",
+    "backToArchive": "Back to Archive",
+    "notFound": "Document not found.",
+    "fields": {
+      "fileName": "File Name",
+      "contentType": "Content Type",
+      "fileSize": "File Size",
+      "status": "Status",
+      "vendorName": "Vendor",
+      "invoiceNumber": "Invoice Number",
+      "invoiceDate": "Invoice Date",
+      "totalAmount": "Total Amount",
+      "currency": "Currency",
+      "createdAt": "Uploaded At",
+      "businessPartner": "Business Partner",
+      "suggestedPartner": "Suggested Partner",
+      "reviewReasons": "Review Reasons"
+    },
+    "bookingSuggestion": {
+      "title": "AI Booking Suggestion",
+      "debitAccount": "Debit Account",
+      "creditAccount": "Credit Account",
+      "amount": "Amount",
+      "description": "Description",
+      "confidence": "Confidence"
+    },
+    "partnerAssignment": {
+      "title": "Partner Assignment",
+      "search": "Search partners...",
+      "noPartnerAssigned": "No business partner assigned",
+      "fuzzyMatchHint": "AI suggests this partner based on a fuzzy match. Please confirm or select a different one.",
+      "assigned": "Partner assigned successfully",
+      "confirmed": "Partner match confirmed"
+    }
   },
   "uploadPage": {
     "title": "Upload Document",

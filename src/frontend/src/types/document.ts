@@ -12,6 +12,13 @@ export interface Document {
   invoiceDate?: string;
   totalAmount?: number;
   currency?: string;
+  businessPartnerId?: string;
+  businessPartnerName?: string;
+  businessPartnerNumber?: string;
+  suggestedBusinessPartnerId?: string;
+  suggestedBusinessPartnerName?: string;
+  suggestedBusinessPartnerNumber?: string;
+  reviewReasons?: string[];
   bookingSuggestion?: BookingSuggestion;
   createdAt: string;
 }

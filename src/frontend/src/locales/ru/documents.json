@@ -23,7 +23,47 @@
   },
   "actions": {
     "view": "Просмотр",
-    "download": "Скачать"
+    "download": "Скачать",
+    "approveBooking": "Утвердить проводку",
+    "assignPartner": "Назначить контрагента",
+    "confirmPartner": "Подтвердить контрагента",
+    "createNewPartner": "Создать нового контрагента"
+  },
+  "detail": {
+    "title": "Детали документа",
+    "backToArchive": "Назад к архиву",
+    "notFound": "Документ не найден.",
+    "fields": {
+      "fileName": "Имя файла",
+      "contentType": "Тип файла",
+      "fileSize": "Размер файла",
+      "status": "Статус",
+      "vendorName": "Поставщик",
+      "invoiceNumber": "Номер счёта",
+      "invoiceDate": "Дата счёта",
+      "totalAmount": "Общая сумма",
+      "currency": "Валюта",
+      "createdAt": "Загружен",
+      "businessPartner": "Контрагент",
+      "suggestedPartner": "Предложенный контрагент",
+      "reviewReasons": "Причины проверки"
+    },
+    "bookingSuggestion": {
+      "title": "ИИ-предложение проводки",
+      "debitAccount": "Дебет-счёт",
+      "creditAccount": "Кредит-счёт",
+      "amount": "Сумма",
+      "description": "Описание",
+      "confidence": "Уверенность"
+    },
+    "partnerAssignment": {
+      "title": "Назначение контрагента",
+      "search": "Поиск контрагентов...",
+      "noPartnerAssigned": "Контрагент не назначен",
+      "fuzzyMatchHint": "ИИ предлагает этого контрагента на основе нечёткого совпадения. Подтвердите или выберите другого.",
+      "assigned": "Контрагент успешно назначен",
+      "confirmed": "Предложение контрагента подтверждено"
+    }
   },
   "uploadPage": {
     "title": "Загрузка документа",

@@ -93,6 +93,47 @@ export function useDocumentDownloadUrl(id: string | null) {
 // Approve AI Booking Suggestion
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Confirm Partner Match (fuzzy match confirmation)
+// ---------------------------------------------------------------------------
+
+export function useConfirmPartnerMatch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      documentId,
+      businessPartnerId,
+      entityId,
+    }: {
+      documentId: string;
+      businessPartnerId: string;
+      entityId: string;
+    }) => {
+      await api.post(`/accounting/documents/${documentId}/confirm-partner`, {
+        businessPartnerId,
+      });
+      return { documentId, entityId };
+    },
+    onSuccess: ({ documentId, entityId }) => {
+      toast.success('Business partner confirmed');
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documents.detail(documentId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documents.list(entityId),
+      });
+    },
+    onError: () => {
+      toast.error('Failed to confirm business partner');
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Approve AI Booking Suggestion
+// ---------------------------------------------------------------------------
+
 export function useApproveBooking() {
   const queryClient = useQueryClient();
 

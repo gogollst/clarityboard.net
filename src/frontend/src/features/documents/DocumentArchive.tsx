@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useDocuments } from '@/hooks/useDocuments';
@@ -30,6 +30,7 @@ const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'de
 
 export function Component() {
   const { t } = useTranslation('documents');
+  const navigate = useNavigate();
   const { selectedEntityId } = useEntity();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<DocumentStatus | 'all'>('all');
@@ -91,9 +92,14 @@ export function Component() {
     {
       key: 'actions',
       header: t('columns.actions'),
-      render: (_item: Record<string, unknown>) => (
+      render: (item: Record<string, unknown>) => (
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" title={t('actions.view')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            title={t('actions.view')}
+            onClick={() => navigate(`/documents/${String(item.id ?? '')}`)}
+          >
             <Eye className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="sm" title={t('actions.download')}>

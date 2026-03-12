@@ -23,7 +23,47 @@
   },
   "actions": {
     "view": "Anzeigen",
-    "download": "Herunterladen"
+    "download": "Herunterladen",
+    "approveBooking": "Buchung freigeben",
+    "assignPartner": "Partner zuordnen",
+    "confirmPartner": "Partner bestätigen",
+    "createNewPartner": "Neuen Partner anlegen"
+  },
+  "detail": {
+    "title": "Dokumentdetail",
+    "backToArchive": "Zurück zum Archiv",
+    "notFound": "Dokument nicht gefunden.",
+    "fields": {
+      "fileName": "Dateiname",
+      "contentType": "Dateityp",
+      "fileSize": "Dateigröße",
+      "status": "Status",
+      "vendorName": "Lieferant",
+      "invoiceNumber": "Rechnungsnummer",
+      "invoiceDate": "Rechnungsdatum",
+      "totalAmount": "Gesamtbetrag",
+      "currency": "Währung",
+      "createdAt": "Hochgeladen am",
+      "businessPartner": "Geschäftspartner",
+      "suggestedPartner": "Vorgeschlagener Partner",
+      "reviewReasons": "Prüfgründe"
+    },
+    "bookingSuggestion": {
+      "title": "KI-Buchungsvorschlag",
+      "debitAccount": "Soll-Konto",
+      "creditAccount": "Haben-Konto",
+      "amount": "Betrag",
+      "description": "Beschreibung",
+      "confidence": "Konfidenz"
+    },
+    "partnerAssignment": {
+      "title": "Partnerzuordnung",
+      "search": "Partner suchen...",
+      "noPartnerAssigned": "Kein Geschäftspartner zugeordnet",
+      "fuzzyMatchHint": "Die KI schlägt diesen Partner aufgrund einer Ähnlichkeitssuche vor. Bitte bestätigen Sie oder wählen Sie einen anderen.",
+      "assigned": "Partner erfolgreich zugeordnet",
+      "confirmed": "Partnervorschlag bestätigt"
+    }
   },
   "uploadPage": {
     "title": "Dokument hochladen",
