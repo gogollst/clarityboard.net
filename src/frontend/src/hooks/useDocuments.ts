@@ -53,12 +53,12 @@ export function useUploadDocument() {
       formData.append('file', request.file);
       formData.append('entityId', request.entityId);
 
-      const { data } = await api.post<ApiResponse<Document>>(
+      const { data } = await api.post<{ documentId: string }>(
         '/documents/upload',
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } },
       );
-      return data.data;
+      return { id: data.documentId, status: 'uploaded' as const };
     },
     onSuccess: (_data, variables) => {
       toast.success('Document uploaded successfully');
