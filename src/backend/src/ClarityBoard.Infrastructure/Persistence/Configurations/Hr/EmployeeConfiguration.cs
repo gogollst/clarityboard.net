@@ -23,6 +23,14 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.HasIndex(e => e.UserId).IsUnique().HasFilter("\"UserId\" IS NOT NULL");
         builder.Property(e => e.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(e => e.TerminationReason).HasMaxLength(500);
+        builder.Property(e => e.Gender).HasConversion<string>().HasMaxLength(20).HasDefaultValue(Gender.NotSpecified);
+        builder.Property(e => e.Nationality).HasMaxLength(100);
+        builder.Property(e => e.Position).HasMaxLength(200);
+        builder.Property(e => e.EmploymentType).HasConversion<string>().HasMaxLength(20);
+        builder.Property(e => e.WorkEmail).HasMaxLength(254);
+        builder.Property(e => e.PersonalEmail).HasMaxLength(254);
+        builder.Property(e => e.PersonalPhone).HasMaxLength(50);
+        builder.Property(e => e.CostCenterId);
         builder.Ignore(e => e.FullName);
         builder.HasIndex(e => new { e.EntityId, e.EmployeeNumber }).IsUnique();
         builder.HasMany(e => e.SalaryHistories).WithOne().HasForeignKey(s => s.EmployeeId);

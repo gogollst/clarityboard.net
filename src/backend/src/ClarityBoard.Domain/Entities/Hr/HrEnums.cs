@@ -14,3 +14,5 @@ public enum DocumentType { Contract, Certificate, IdCopy, Payslip, Other }
 public enum DeletionRequestStatus { Pending, Completed, Blocked }
 public enum RespondentType { Self, Peer, Manager, DirectReport }
 public enum ExpenseType { Accommodation, Transport, Meal, Other }
+public enum Gender { Male, Female, Diverse, NotSpecified }
+public enum EmploymentType { FullTime, PartTime, WorkingStudent, MiniJob, Internship }

@@ -9,6 +9,7 @@
     "createCardTitle": "Данные сотрудника",
     "createCardDescription": "Заполните все обязательные поля для создания нового сотрудника.",
     "createButton": "Создать сотрудника",
+    "editTitle": "Редактировать сотрудника",
     "terminateButton": "Уволить сотрудника",
     "noEntitySelected": "Пожалуйста, сначала выберите организацию.",
     "columns": {
@@ -43,7 +44,15 @@
       "taxId": "ИНН",
       "department": "Отдел",
       "status": "Статус",
-      "entity": "Филиал / Юрлицо"
+      "entity": "Филиал / Юрлицо",
+      "gender": "Пол",
+      "nationality": "Гражданство",
+      "position": "Должность",
+      "employmentType": "Тип занятости",
+      "workEmail": "Рабочий email",
+      "personalEmail": "Личный email",
+      "personalPhone": "Личный телефон",
+      "socialSecurityNumber": "Номер социального страхования"
     },
     "placeholders": {
       "firstName": "Иван",
@@ -53,7 +62,9 @@
       "selectType": "Выберите тип занятости",
       "selectDepartment": "Выберите отдел (необязательно)",
       "noDepartment": "Без отдела",
-      "selectEntity": "Выберите филиал / юрлицо"
+      "selectEntity": "Выберите филиал / юрлицо",
+      "position": "напр. Разработчик",
+      "nationality": "напр. Немецкое"
     },
     "validation": {
       "firstNameRequired": "Имя обязательно",
@@ -103,6 +114,25 @@
       "grossAmountEur": "Брутто (EUR)",
       "grossAmountPlaceholder": "напр. 5000",
       "changeReasonPlaceholder": "напр. Ежегодное повышение 2026"
+    },
+    "gender": {
+      "Male": "Мужской",
+      "Female": "Женский",
+      "Diverse": "Другой",
+      "NotSpecified": "Не указан"
+    },
+    "employmentType": {
+      "FullTime": "Полная занятость",
+      "PartTime": "Частичная занятость",
+      "WorkingStudent": "Студент-практикант",
+      "MiniJob": "Мини-работа",
+      "Internship": "Стажировка"
+    },
+    "sections": {
+      "personal": "Личные данные",
+      "contact": "Контакт",
+      "employment": "Трудоустройство",
+      "finance": "Финансы"
     },
     "contracts": {
       "noEntries": "Записи о договорах отсутствуют.",
@@ -410,6 +440,10 @@
     "contractCreateError": "Не удалось создать договор",
     "departmentCreated": "Отдел создан",
     "departmentCreateError": "Не удалось создать отдел",
+    "departmentUpdated": "Отдел обновлён",
+    "departmentUpdateError": "Не удалось обновить отдел",
+    "departmentDeleted": "Отдел удалён",
+    "departmentDeleteError": "Не удалось удалить отдел",
     "leaveTypeCreated": "Тип отпуска создан",
     "leaveTypeCreateError": "Не удалось создать тип отпуска",
     "leaveSubmitted": "Заявка на отпуск отправлена",
@@ -483,5 +517,35 @@
     "createChecklist": "Новый чеклист",
     "employeeLabel": "Сотрудник",
     "back": "Назад к списку"
+  },
+  "departments": {
+    "title": "Отделы",
+    "newDepartment": "Новый отдел",
+    "noDepartments": "Отделы не найдены.",
+    "createTitle": "Создать отдел",
+    "editTitle": "Редактировать отдел",
+    "deleteTitle": "Удалить отдел",
+    "deleteDescription": "Вы уверены, что хотите удалить отдел «{{name}}»? Это действие нельзя отменить.",
+    "columns": {
+      "code": "Код",
+      "name": "Название",
+      "manager": "Руководитель",
+      "status": "Статус"
+    },
+    "fields": {
+      "name": "Название",
+      "code": "Код",
+      "description": "Описание",
+      "parentDepartment": "Родительский отдел",
+      "manager": "Руководитель"
+    },
+    "status": {
+      "active": "Активен",
+      "inactive": "Неактивен"
+    },
+    "validation": {
+      "nameRequired": "Название обязательно",
+      "codeRequired": "Код обязателен"
+    }
   }
 }

@@ -7,6 +7,7 @@ export interface EmployeeListItem {
   status: string;         // "Active" | "OnLeave" | "Terminated"
   departmentName?: string;
   managerName?: string;
+  position?: string;
   hireDate: string;       // ISO date "YYYY-MM-DD"
   entityId: string;
 }
@@ -21,6 +22,7 @@ export interface EmployeeDetail {
   status: string;
   dateOfBirth: string;
   taxId: string;
+  socialSecurityNumber?: string;
   hireDate: string;
   terminationDate?: string;
   terminationReason?: string;
@@ -30,6 +32,15 @@ export interface EmployeeDetail {
   departmentName?: string;
   iban?: string;
   bic?: string;
+  gender: string;
+  nationality?: string;
+  position?: string;
+  employmentType?: string;
+  workEmail?: string;
+  personalEmail?: string;
+  personalPhone?: string;
+  costCenterId?: string;
+  costCenterName?: string;
   entityId: string;
   createdAt: string;
 }
@@ -70,6 +81,7 @@ export interface Department {
   id: string;
   name: string;
   code: string;
+  description?: string;
   parentDepartmentId?: string;
   managerId?: string;
   managerName?: string;
@@ -88,6 +100,13 @@ export interface CreateEmployeeRequest {
   hireDate: string;
   managerId?: string;
   departmentId?: string;
+  gender?: string;
+  nationality?: string;
+  position?: string;
+  employmentType?: string;
+  workEmail?: string;
+  personalEmail?: string;
+  personalPhone?: string;
 }
 
 export interface UpdateEmployeeRequest {
@@ -100,6 +119,14 @@ export interface UpdateEmployeeRequest {
   iban?: string;
   bic?: string;
   entityId?: string;
+  socialSecurityNumber?: string;
+  gender?: string;
+  nationality?: string;
+  position?: string;
+  employmentType?: string;
+  workEmail?: string;
+  personalEmail?: string;
+  personalPhone?: string;
 }
 
 export interface TerminateEmployeeRequest {
@@ -134,6 +161,16 @@ export interface CreateDepartmentRequest {
   entityId: string;
   name: string;
   code: string;
+  description?: string;
+  parentDepartmentId?: string;
+  managerId?: string;
+}
+
+export interface UpdateDepartmentRequest {
+  entityId: string;
+  name: string;
+  code: string;
+  description?: string;
   parentDepartmentId?: string;
   managerId?: string;
 }

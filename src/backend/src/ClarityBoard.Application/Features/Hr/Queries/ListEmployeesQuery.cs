@@ -29,6 +29,7 @@ public record EmployeeListDto
     public string Status { get; init; } = string.Empty;
     public string? DepartmentName { get; init; }
     public string? ManagerName { get; init; }
+    public string? Position { get; init; }
     public DateOnly HireDate { get; init; }
     public Guid EntityId { get; init; }
 }
@@ -98,6 +99,7 @@ public class ListEmployeesQueryHandler : IRequestHandler<ListEmployeesQuery, Pag
                 e.Status,
                 e.DepartmentId,
                 e.ManagerId,
+                e.Position,
                 e.HireDate,
                 e.EntityId,
             })
@@ -140,6 +142,7 @@ public class ListEmployeesQueryHandler : IRequestHandler<ListEmployeesQuery, Pag
             Status         = e.Status.ToString(),
             DepartmentName = e.DepartmentId.HasValue && departmentNames.TryGetValue(e.DepartmentId.Value, out var dName) ? dName : null,
             ManagerName    = e.ManagerId.HasValue && managerNames.TryGetValue(e.ManagerId.Value, out var mName) ? mName : null,
+            Position       = e.Position,
             HireDate       = e.HireDate,
             EntityId       = e.EntityId,
         }).ToList();

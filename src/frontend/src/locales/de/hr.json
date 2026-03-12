@@ -9,6 +9,7 @@
     "createCardTitle": "Mitarbeiterdaten",
     "createCardDescription": "Füllen Sie alle Pflichtfelder aus, um einen neuen Mitarbeiter anzulegen.",
     "createButton": "Mitarbeiter anlegen",
+    "editTitle": "Mitarbeiter bearbeiten",
     "terminateButton": "Mitarbeiter kündigen",
     "noEntitySelected": "Bitte wählen Sie zuerst eine Organisation aus.",
     "columns": {
@@ -43,7 +44,15 @@
       "taxId": "Steuer-ID",
       "department": "Abteilung",
       "status": "Status",
-      "entity": "Niederlassung"
+      "entity": "Niederlassung",
+      "gender": "Geschlecht",
+      "nationality": "Staatsangehörigkeit",
+      "position": "Position",
+      "employmentType": "Beschäftigungsart",
+      "workEmail": "Berufliche E-Mail",
+      "personalEmail": "Private E-Mail",
+      "personalPhone": "Private Telefonnummer",
+      "socialSecurityNumber": "Sozialversicherungsnummer"
     },
     "placeholders": {
       "firstName": "Max",
@@ -53,7 +62,9 @@
       "selectType": "Anstellungsart wählen",
       "selectDepartment": "Abteilung wählen (optional)",
       "noDepartment": "Keine Abteilung",
-      "selectEntity": "Niederlassung wählen"
+      "selectEntity": "Niederlassung wählen",
+      "position": "z. B. Softwareentwickler",
+      "nationality": "z. B. Deutsch"
     },
     "validation": {
       "firstNameRequired": "Vorname ist erforderlich",
@@ -103,6 +114,25 @@
       "grossAmountEur": "Bruttobetrag (EUR)",
       "grossAmountPlaceholder": "z.B. 5000",
       "changeReasonPlaceholder": "z.B. Jahreserhöhung 2026"
+    },
+    "gender": {
+      "Male": "Männlich",
+      "Female": "Weiblich",
+      "Diverse": "Divers",
+      "NotSpecified": "Nicht angegeben"
+    },
+    "employmentType": {
+      "FullTime": "Vollzeit",
+      "PartTime": "Teilzeit",
+      "WorkingStudent": "Werkstudent",
+      "MiniJob": "Minijob",
+      "Internship": "Praktikum"
+    },
+    "sections": {
+      "personal": "Persönliche Daten",
+      "contact": "Kontakt",
+      "employment": "Beschäftigung",
+      "finance": "Finanzen"
     },
     "contracts": {
       "noEntries": "Keine Vertragseinträge vorhanden.",
@@ -410,6 +440,10 @@
     "contractCreateError": "Fehler beim Erstellen des Vertrags",
     "departmentCreated": "Abteilung erstellt",
     "departmentCreateError": "Fehler beim Erstellen der Abteilung",
+    "departmentUpdated": "Abteilung aktualisiert",
+    "departmentUpdateError": "Fehler beim Aktualisieren der Abteilung",
+    "departmentDeleted": "Abteilung gelöscht",
+    "departmentDeleteError": "Fehler beim Löschen der Abteilung",
     "leaveTypeCreated": "Urlaubstyp erstellt",
     "leaveTypeCreateError": "Fehler beim Erstellen des Urlaubstyps",
     "leaveSubmitted": "Urlaubsantrag eingereicht",
@@ -483,5 +517,35 @@
     "createChecklist": "Neue Checkliste",
     "employeeLabel": "Mitarbeiter",
     "back": "Zurück zur Übersicht"
+  },
+  "departments": {
+    "title": "Abteilungen",
+    "newDepartment": "Neue Abteilung",
+    "noDepartments": "Keine Abteilungen vorhanden.",
+    "createTitle": "Abteilung erstellen",
+    "editTitle": "Abteilung bearbeiten",
+    "deleteTitle": "Abteilung löschen",
+    "deleteDescription": "Möchten Sie die Abteilung \"{{name}}\" wirklich löschen? Dies kann nicht rückgängig gemacht werden.",
+    "columns": {
+      "code": "Code",
+      "name": "Name",
+      "manager": "Leitung",
+      "status": "Status"
+    },
+    "fields": {
+      "name": "Name",
+      "code": "Code",
+      "description": "Beschreibung",
+      "parentDepartment": "Übergeordnete Abteilung",
+      "manager": "Leitung"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "validation": {
+      "nameRequired": "Name ist erforderlich",
+      "codeRequired": "Code ist erforderlich"
+    }
   }
 }

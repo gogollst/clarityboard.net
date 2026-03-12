@@ -47,7 +47,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Loader2, Plus } from 'lucide-react';
+import { ArrowLeft, Loader2, Plus, Pencil } from 'lucide-react';
+import EmployeeEditDialog from './EmployeeEditDialog';
 
 // ---------------------------------------------------------------------------
 // Profile detail row helper
@@ -531,6 +532,7 @@ export function Component() {
   const { hasPermission } = useAuth();
   const { entities } = useEntity();
   const [terminateOpen, setTerminateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [editEntityId, setEditEntityId] = useState<string>('');
   const updateEmployee = useUpdateEmployee();
 
@@ -575,6 +577,12 @@ export function Component() {
         actions={
           <div className="flex items-center gap-2">
             <StatusBadge status={employee.status} />
+            {hasPermission('hr.manage') && employee.status !== 'Terminated' && (
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                <Pencil className="mr-1 h-4 w-4" />
+                {t('common:buttons.edit')}
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -626,6 +634,30 @@ export function Component() {
                   label={t('employees.fields.taxId')}
                   value={employee.taxId || '—'}
                 />
+                {employee.gender && employee.gender !== 'NotSpecified' && (
+                  <DetailRow
+                    label={t('employees.fields.gender')}
+                    value={t(`employees.gender.${employee.gender}`)}
+                  />
+                )}
+                {employee.nationality && (
+                  <DetailRow
+                    label={t('employees.fields.nationality')}
+                    value={employee.nationality}
+                  />
+                )}
+                {employee.position && (
+                  <DetailRow
+                    label={t('employees.fields.position')}
+                    value={employee.position}
+                  />
+                )}
+                {employee.employmentType && (
+                  <DetailRow
+                    label={t('employees.fields.employmentType')}
+                    value={t(`employees.employmentType.${employee.employmentType}`)}
+                  />
+                )}
                 <DetailRow
                   label={t('employees.fields.department')}
                   value={employee.departmentName ?? '—'}
@@ -634,6 +666,30 @@ export function Component() {
                   label={t('employees.columns.manager')}
                   value={employee.managerName ?? '—'}
                 />
+                {employee.workEmail && (
+                  <DetailRow
+                    label={t('employees.fields.workEmail')}
+                    value={employee.workEmail}
+                  />
+                )}
+                {employee.personalEmail && (
+                  <DetailRow
+                    label={t('employees.fields.personalEmail')}
+                    value={employee.personalEmail}
+                  />
+                )}
+                {employee.personalPhone && (
+                  <DetailRow
+                    label={t('employees.fields.personalPhone')}
+                    value={employee.personalPhone}
+                  />
+                )}
+                {employee.socialSecurityNumber && (
+                  <DetailRow
+                    label={t('employees.fields.socialSecurityNumber')}
+                    value={employee.socialSecurityNumber}
+                  />
+                )}
                 <DetailRow
                   label={t('employees.fields.entity')}
                   value={entities.find((e) => e.id === employee.entityId)?.name ?? employee.entityId}
@@ -745,6 +801,14 @@ export function Component() {
         onClose={() => setTerminateOpen(false)}
         employeeId={employee.id}
       />
+
+      {editOpen && (
+        <EmployeeEditDialog
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          employee={employee}
+        />
+      )}
     </div>
   );
 }

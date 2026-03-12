@@ -105,16 +105,24 @@ public class HrController : ControllerBase
     {
         await _mediator.Send(new UpdateEmployeeCommand
         {
-            Id           = id,
-            FirstName    = body.FirstName,
-            LastName     = body.LastName,
-            DateOfBirth  = body.DateOfBirth,
-            TaxId        = body.TaxId,
-            ManagerId    = body.ManagerId,
-            DepartmentId = body.DepartmentId,
-            Iban         = body.Iban,
-            Bic          = body.Bic,
-            EntityId     = body.EntityId,
+            Id                   = id,
+            FirstName            = body.FirstName,
+            LastName             = body.LastName,
+            DateOfBirth          = body.DateOfBirth,
+            TaxId                = body.TaxId,
+            ManagerId            = body.ManagerId,
+            DepartmentId         = body.DepartmentId,
+            Iban                 = body.Iban,
+            Bic                  = body.Bic,
+            EntityId             = body.EntityId,
+            SocialSecurityNumber = body.SocialSecurityNumber,
+            Gender               = body.Gender ?? "NotSpecified",
+            Nationality          = body.Nationality,
+            Position             = body.Position,
+            EmploymentType       = body.EmploymentType,
+            WorkEmail            = body.WorkEmail,
+            PersonalEmail        = body.PersonalEmail,
+            PersonalPhone        = body.PersonalPhone,
         }, ct);
         return NoContent();
     }
@@ -224,6 +232,41 @@ public class HrController : ControllerBase
     {
         var id = await _mediator.Send(command, ct);
         return Created(string.Empty, new { id });
+    }
+
+    [HttpPut("departments/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateDepartment(
+        Guid id, [FromBody] UpdateDepartmentRequest body, CancellationToken ct)
+    {
+        await _mediator.Send(new UpdateDepartmentCommand
+        {
+            DepartmentId       = id,
+            EntityId           = body.EntityId,
+            Name               = body.Name,
+            Code               = body.Code,
+            Description        = body.Description,
+            ParentDepartmentId = body.ParentDepartmentId,
+            ManagerId          = body.ManagerId,
+        }, ct);
+        return NoContent();
+    }
+
+    [HttpDelete("departments/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteDepartment(
+        Guid id, [FromQuery] Guid entityId, CancellationToken ct)
+    {
+        await _mediator.Send(new DeleteDepartmentCommand
+        {
+            DepartmentId = id,
+            EntityId     = entityId,
+        }, ct);
+        return NoContent();
     }
 
     // ── Leave Types ──
@@ -810,7 +853,23 @@ public record UpdateEmployeeRequest(
     Guid? DepartmentId,
     string? Iban,
     string? Bic,
-    Guid? EntityId);
+    Guid? EntityId,
+    string? SocialSecurityNumber,
+    string? Gender,
+    string? Nationality,
+    string? Position,
+    string? EmploymentType,
+    string? WorkEmail,
+    string? PersonalEmail,
+    string? PersonalPhone);
+
+public record UpdateDepartmentRequest(
+    Guid EntityId,
+    string Name,
+    string Code,
+    string? Description,
+    Guid? ParentDepartmentId,
+    Guid? ManagerId);
 
 public record TerminateEmployeeRequest(
     DateOnly TerminationDate,

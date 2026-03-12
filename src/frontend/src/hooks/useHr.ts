@@ -16,6 +16,7 @@ import type {
   UpdateSalaryRequest,
   CreateContractRequest,
   CreateDepartmentRequest,
+  UpdateDepartmentRequest,
   EmployeeListParams,
   LeaveRequestParams,
   LeaveType,
@@ -252,6 +253,43 @@ export function useCreateDepartment() {
     },
     onError: () => {
       toast.error(i18n.t('hr:toast.departmentCreateError'));
+    },
+  });
+}
+
+export function useUpdateDepartment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...request
+    }: UpdateDepartmentRequest & { id: string }) => {
+      await api.put(`/hr/departments/${id}`, request);
+    },
+    onSuccess: () => {
+      toast.success(i18n.t('hr:toast.departmentUpdated'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.departments() });
+    },
+    onError: () => {
+      toast.error(i18n.t('hr:toast.departmentUpdateError'));
+    },
+  });
+}
+
+export function useDeleteDepartment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, entityId }: { id: string; entityId: string }) => {
+      await api.delete(`/hr/departments/${id}`, { params: { entityId } });
+    },
+    onSuccess: () => {
+      toast.success(i18n.t('hr:toast.departmentDeleted'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.departments() });
+    },
+    onError: () => {
+      toast.error(i18n.t('hr:toast.departmentDeleteError'));
     },
   });
 }

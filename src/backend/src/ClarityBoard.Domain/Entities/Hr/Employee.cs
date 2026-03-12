@@ -20,6 +20,14 @@ public class Employee
     public string? TerminationReason { get; private set; }
     public Guid? ManagerId { get; private set; }
     public Guid? DepartmentId { get; private set; }
+    public Gender Gender { get; private set; } = Gender.NotSpecified;
+    public string? Nationality { get; private set; }
+    public string? Position { get; private set; }
+    public EmploymentType? EmploymentType { get; private set; }
+    public string? WorkEmail { get; private set; }
+    public string? PersonalEmail { get; private set; }
+    public string? PersonalPhone { get; private set; }
+    public Guid? CostCenterId { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -32,7 +40,10 @@ public class Employee
 
     public static Employee Create(Guid entityId, string employeeNumber, EmployeeType type,
         string firstName, string lastName, DateOnly dateOfBirth, string taxId, DateOnly hireDate,
-        Guid? managerId = null, Guid? departmentId = null)
+        Guid? managerId = null, Guid? departmentId = null,
+        Gender gender = Gender.NotSpecified, string? nationality = null,
+        string? position = null, EmploymentType? employmentType = null,
+        string? workEmail = null, string? personalEmail = null, string? personalPhone = null)
     {
         if (string.IsNullOrWhiteSpace(firstName)) throw new ArgumentException("First name is required.", nameof(firstName));
         if (string.IsNullOrWhiteSpace(lastName)) throw new ArgumentException("Last name is required.", nameof(lastName));
@@ -45,13 +56,20 @@ public class Employee
             EmployeeNumber = employeeNumber,
             EmployeeType   = type,
             FirstName      = firstName,
-            LastName       = lastName,
+            LastName        = lastName,
             DateOfBirth    = dateOfBirth,
             TaxId          = taxId,
             Status         = EmployeeStatus.Active,
             HireDate       = hireDate,
             ManagerId      = managerId,
             DepartmentId   = departmentId,
+            Gender         = gender,
+            Nationality    = nationality,
+            Position       = position,
+            EmploymentType = employmentType,
+            WorkEmail      = workEmail,
+            PersonalEmail  = personalEmail,
+            PersonalPhone  = personalPhone,
             CreatedAt      = DateTime.UtcNow,
             UpdatedAt      = DateTime.UtcNow,
         };
@@ -60,16 +78,27 @@ public class Employee
     public string FullName => $"{FirstName} {LastName}";
 
     public void UpdateBasicInfo(string firstName, string lastName, DateOnly dateOfBirth, string taxId,
-        Guid? managerId, Guid? departmentId, string? iban = null, string? bic = null, Guid? entityId = null)
+        Guid? managerId, Guid? departmentId, string? iban = null, string? bic = null, Guid? entityId = null,
+        string? socialSecurityNumber = null, Gender gender = Gender.NotSpecified,
+        string? nationality = null, string? position = null, EmploymentType? employmentType = null,
+        string? workEmail = null, string? personalEmail = null, string? personalPhone = null)
     {
-        FirstName    = firstName;
-        LastName     = lastName;
-        DateOfBirth  = dateOfBirth;
-        TaxId        = taxId;
-        ManagerId    = managerId;
-        DepartmentId = departmentId;
-        Iban         = iban;
-        Bic          = bic;
+        FirstName            = firstName;
+        LastName             = lastName;
+        DateOfBirth          = dateOfBirth;
+        TaxId                = taxId;
+        ManagerId            = managerId;
+        DepartmentId         = departmentId;
+        Iban                 = iban;
+        Bic                  = bic;
+        SocialSecurityNumber = socialSecurityNumber;
+        Gender               = gender;
+        Nationality          = nationality;
+        Position             = position;
+        EmploymentType       = employmentType;
+        WorkEmail            = workEmail;
+        PersonalEmail        = personalEmail;
+        PersonalPhone        = personalPhone;
         if (entityId.HasValue)
             EntityId = entityId.Value;
         UpdatedAt    = DateTime.UtcNow;

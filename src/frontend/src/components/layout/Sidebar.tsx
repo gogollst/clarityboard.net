@@ -123,6 +123,7 @@ export default function Sidebar() {
     items: [
       { label: t('navigation:items.mySelf'), path: '/hr/me', icon: UserCircle },
       { label: t('navigation:items.employees'), path: '/hr/employees', icon: Users },
+      { label: t('navigation:items.departments'), path: '/hr/departments', icon: Building2 },
       { label: t('navigation:items.leaveRequests'), path: '/hr/leave/requests', icon: Calendar },
       { label: t('navigation:items.worktime'), path: '/hr/worktime', icon: Clock },
       { label: t('navigation:items.travel'), path: '/hr/travel', icon: Plane },

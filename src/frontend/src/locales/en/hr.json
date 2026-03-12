@@ -9,6 +9,7 @@
     "createCardTitle": "Employee Data",
     "createCardDescription": "Fill in all required fields to create a new employee.",
     "createButton": "Create Employee",
+    "editTitle": "Edit Employee",
     "terminateButton": "Terminate Employee",
     "noEntitySelected": "Please select an organisation first.",
     "columns": {
@@ -43,7 +44,15 @@
       "taxId": "Tax ID",
       "department": "Department",
       "status": "Status",
-      "entity": "Branch / Entity"
+      "entity": "Branch / Entity",
+      "gender": "Gender",
+      "nationality": "Nationality",
+      "position": "Position",
+      "employmentType": "Employment Type",
+      "workEmail": "Work Email",
+      "personalEmail": "Personal Email",
+      "personalPhone": "Personal Phone",
+      "socialSecurityNumber": "Social Security Number"
     },
     "placeholders": {
       "firstName": "John",
@@ -53,7 +62,9 @@
       "selectType": "Select employment type",
       "selectDepartment": "Select department (optional)",
       "noDepartment": "No department",
-      "selectEntity": "Select branch / entity"
+      "selectEntity": "Select branch / entity",
+      "position": "e.g. Software Developer",
+      "nationality": "e.g. German"
     },
     "validation": {
       "firstNameRequired": "First name is required",
@@ -103,6 +114,25 @@
       "grossAmountEur": "Gross Amount (EUR)",
       "grossAmountPlaceholder": "e.g. 5000",
       "changeReasonPlaceholder": "e.g. Annual raise 2026"
+    },
+    "gender": {
+      "Male": "Male",
+      "Female": "Female",
+      "Diverse": "Diverse",
+      "NotSpecified": "Not Specified"
+    },
+    "employmentType": {
+      "FullTime": "Full-Time",
+      "PartTime": "Part-Time",
+      "WorkingStudent": "Working Student",
+      "MiniJob": "Mini Job",
+      "Internship": "Internship"
+    },
+    "sections": {
+      "personal": "Personal Data",
+      "contact": "Contact",
+      "employment": "Employment",
+      "finance": "Finance"
     },
     "contracts": {
       "noEntries": "No contract entries available.",
@@ -410,6 +440,10 @@
     "contractCreateError": "Failed to create contract",
     "departmentCreated": "Department created",
     "departmentCreateError": "Failed to create department",
+    "departmentUpdated": "Department updated",
+    "departmentUpdateError": "Failed to update department",
+    "departmentDeleted": "Department deleted",
+    "departmentDeleteError": "Failed to delete department",
     "leaveTypeCreated": "Leave type created",
     "leaveTypeCreateError": "Failed to create leave type",
     "leaveSubmitted": "Leave request submitted",
@@ -483,5 +517,35 @@
     "createChecklist": "New Checklist",
     "employeeLabel": "Employee",
     "back": "Back to list"
+  },
+  "departments": {
+    "title": "Departments",
+    "newDepartment": "New Department",
+    "noDepartments": "No departments found.",
+    "createTitle": "Create Department",
+    "editTitle": "Edit Department",
+    "deleteTitle": "Delete Department",
+    "deleteDescription": "Are you sure you want to delete the department \"{{name}}\"? This action cannot be undone.",
+    "columns": {
+      "code": "Code",
+      "name": "Name",
+      "manager": "Manager",
+      "status": "Status"
+    },
+    "fields": {
+      "name": "Name",
+      "code": "Code",
+      "description": "Description",
+      "parentDepartment": "Parent Department",
+      "manager": "Manager"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "codeRequired": "Code is required"
+    }
   }
 }

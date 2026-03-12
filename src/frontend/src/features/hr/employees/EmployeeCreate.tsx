@@ -36,6 +36,13 @@ type FormValues = {
   dateOfBirth: string;
   taxId: string;
   departmentId?: string;
+  gender?: string;
+  nationality?: string;
+  position?: string;
+  employmentType?: string;
+  workEmail?: string;
+  personalEmail?: string;
+  personalPhone?: string;
 };
 
 export function Component() {
@@ -64,6 +71,13 @@ export function Component() {
           .min(1, t('employees.validation.taxIdRequired'))
           .max(50, t('employees.validation.taxIdMaxLength')),
         departmentId: z.string().optional(),
+        gender: z.string().optional(),
+        nationality: z.string().max(100).optional().or(z.literal('')),
+        position: z.string().max(200).optional().or(z.literal('')),
+        employmentType: z.string().optional(),
+        workEmail: z.string().email().max(254).optional().or(z.literal('')),
+        personalEmail: z.string().email().max(254).optional().or(z.literal('')),
+        personalPhone: z.string().max(50).optional().or(z.literal('')),
       }),
     [t],
   );
@@ -86,12 +100,21 @@ export function Component() {
       dateOfBirth: '',
       taxId: '',
       departmentId: '',
+      gender: '',
+      nationality: '',
+      position: '',
+      employmentType: '',
+      workEmail: '',
+      personalEmail: '',
+      personalPhone: '',
     },
   });
 
   const entityId = watch('entityId');
   const employeeType = watch('employeeType');
   const departmentId = watch('departmentId');
+  const gender = watch('gender');
+  const employmentTypeVal = watch('employmentType');
 
   const onSubmit = (values: FormValues) => {
     createEmployee.mutate(
@@ -105,6 +128,13 @@ export function Component() {
         taxId: values.taxId,
         hireDate: values.hireDate,
         departmentId: values.departmentId || undefined,
+        gender: values.gender || undefined,
+        nationality: values.nationality || undefined,
+        position: values.position || undefined,
+        employmentType: values.employmentType || undefined,
+        workEmail: values.workEmail || undefined,
+        personalEmail: values.personalEmail || undefined,
+        personalPhone: values.personalPhone || undefined,
       },
       {
         onSuccess: () => {
@@ -306,6 +336,89 @@ export function Component() {
                     {errors.departmentId.message}
                   </p>
                 )}
+              </div>
+
+              {/* Optional: Gender + Employment Type */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>{t('employees.fields.gender')}</Label>
+                  <Select
+                    value={gender || 'none'}
+                    onValueChange={(v) => setValue('gender', v === 'none' ? '' : v, { shouldDirty: true })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      <SelectItem value="Male">{t('employees.gender.Male')}</SelectItem>
+                      <SelectItem value="Female">{t('employees.gender.Female')}</SelectItem>
+                      <SelectItem value="Diverse">{t('employees.gender.Diverse')}</SelectItem>
+                      <SelectItem value="NotSpecified">{t('employees.gender.NotSpecified')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t('employees.fields.employmentType')}</Label>
+                  <Select
+                    value={employmentTypeVal || 'none'}
+                    onValueChange={(v) => setValue('employmentType', v === 'none' ? '' : v, { shouldDirty: true })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">—</SelectItem>
+                      <SelectItem value="FullTime">{t('employees.employmentType.FullTime')}</SelectItem>
+                      <SelectItem value="PartTime">{t('employees.employmentType.PartTime')}</SelectItem>
+                      <SelectItem value="WorkingStudent">{t('employees.employmentType.WorkingStudent')}</SelectItem>
+                      <SelectItem value="MiniJob">{t('employees.employmentType.MiniJob')}</SelectItem>
+                      <SelectItem value="Internship">{t('employees.employmentType.Internship')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Optional: Position + Nationality */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>{t('employees.fields.position')}</Label>
+                  <Input
+                    placeholder={t('employees.placeholders.position')}
+                    maxLength={200}
+                    {...register('position')}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t('employees.fields.nationality')}</Label>
+                  <Input
+                    placeholder={t('employees.placeholders.nationality')}
+                    maxLength={100}
+                    {...register('nationality')}
+                  />
+                </div>
+              </div>
+
+              {/* Optional: Contact */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>{t('employees.fields.workEmail')}</Label>
+                  <Input
+                    type="email"
+                    maxLength={254}
+                    {...register('workEmail')}
+                  />
+                  {errors.workEmail && (
+                    <p className="text-destructive text-xs">{errors.workEmail.message}</p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t('employees.fields.personalPhone')}</Label>
+                  <Input
+                    maxLength={50}
+                    {...register('personalPhone')}
+                  />
+                </div>
               </div>
 
               {/* Actions */}

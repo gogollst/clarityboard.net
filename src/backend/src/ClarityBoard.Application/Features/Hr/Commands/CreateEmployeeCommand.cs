@@ -21,6 +21,13 @@ public record CreateEmployeeCommand : IRequest<Guid>
     public required DateOnly HireDate { get; init; }
     public Guid? ManagerId { get; init; }
     public Guid? DepartmentId { get; init; }
+    public string? Gender { get; init; }
+    public string? Nationality { get; init; }
+    public string? Position { get; init; }
+    public string? EmploymentType { get; init; }
+    public string? WorkEmail { get; init; }
+    public string? PersonalEmail { get; init; }
+    public string? PersonalPhone { get; init; }
 }
 
 public class CreateEmployeeCommandValidator : AbstractValidator<CreateEmployeeCommand>
@@ -37,6 +44,11 @@ public class CreateEmployeeCommandValidator : AbstractValidator<CreateEmployeeCo
             .NotEmpty()
             .Must(t => t == "Employee" || t == "Contractor")
             .WithMessage("EmployeeType must be 'Employee' or 'Contractor'.");
+        RuleFor(x => x.Nationality).MaximumLength(100).When(x => !string.IsNullOrWhiteSpace(x.Nationality));
+        RuleFor(x => x.Position).MaximumLength(200).When(x => !string.IsNullOrWhiteSpace(x.Position));
+        RuleFor(x => x.WorkEmail).EmailAddress().MaximumLength(254).When(x => !string.IsNullOrWhiteSpace(x.WorkEmail));
+        RuleFor(x => x.PersonalEmail).EmailAddress().MaximumLength(254).When(x => !string.IsNullOrWhiteSpace(x.PersonalEmail));
+        RuleFor(x => x.PersonalPhone).MaximumLength(50).When(x => !string.IsNullOrWhiteSpace(x.PersonalPhone));
     }
 }
 
@@ -57,7 +69,15 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
         if (exists)
             throw new InvalidOperationException($"An employee with number '{request.EmployeeNumber}' already exists in this entity.");
 
-        var employeeType = Enum.Parse<EmployeeType>(request.EmployeeType, ignoreCase: true);
+        var employeeType = Enum.Parse<Domain.Entities.Hr.EmployeeType>(request.EmployeeType, ignoreCase: true);
+        var gender = !string.IsNullOrWhiteSpace(request.Gender)
+            && Enum.TryParse<Gender>(request.Gender, ignoreCase: true, out var g)
+                ? g
+                : Gender.NotSpecified;
+        var employmentType = !string.IsNullOrWhiteSpace(request.EmploymentType)
+            && Enum.TryParse<Domain.Entities.Hr.EmploymentType>(request.EmploymentType, ignoreCase: true, out var et)
+                ? et
+                : (Domain.Entities.Hr.EmploymentType?)null;
 
         var employee = Employee.Create(
             entityId: request.EntityId,
@@ -69,7 +89,14 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
             taxId: request.TaxId,
             hireDate: request.HireDate,
             managerId: request.ManagerId,
-            departmentId: request.DepartmentId);
+            departmentId: request.DepartmentId,
+            gender: gender,
+            nationality: request.Nationality,
+            position: request.Position,
+            employmentType: employmentType,
+            workEmail: request.WorkEmail,
+            personalEmail: request.PersonalEmail,
+            personalPhone: request.PersonalPhone);
 
         _db.Employees.Add(employee);
         await _db.SaveChangesAsync(cancellationToken);
