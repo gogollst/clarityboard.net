@@ -132,7 +132,7 @@ export function Component() {
           {data.sections.map((section) => (
             <Card key={section.name}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">{section.name}</CardTitle>
+                <CardTitle className="text-base">{t(`accounting:profitAndLoss.sections.${section.name}`, section.name)}</CardTitle>
               </CardHeader>
               <CardContent>
                 <table className="w-full text-sm">
@@ -148,7 +148,7 @@ export function Component() {
                   <tbody>
                     {section.items.map((item) => (
                       <tr key={item.label} className="border-b border-border/50">
-                        <td className="py-1.5">{item.label}</td>
+                        <td className="py-1.5">{t(`accounting:profitAndLoss.items.${item.label}`, item.label)}</td>
                         <td className={`py-1.5 text-right tabular-nums ${item.amount < 0 ? 'text-destructive' : ''}`}>
                           {fmtCurrency(item.amount)}
                         </td>

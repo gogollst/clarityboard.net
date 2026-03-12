@@ -271,7 +271,30 @@
     "amount": "Amount",
     "priorAmount": "Prior Period",
     "position": "Position",
-    "subtotal": "Subtotal"
+    "subtotal": "Subtotal",
+    "sections": {
+      "Umsatzerloese": "Revenue",
+      "Bestandsveraenderungen / Eigenleistungen": "Inventory Changes / Own Work Capitalized",
+      "Sonstige betriebliche Ertraege": "Other Operating Income",
+      "Materialaufwand": "Material Expenses",
+      "Personalaufwand": "Personnel Costs",
+      "Abschreibungen": "Depreciation & Amortization",
+      "Sonstige betriebliche Aufwendungen": "Other Operating Expenses",
+      "Steuern vom Einkommen und Ertrag": "Income Taxes"
+    },
+    "items": {
+      "Umsatzerloese": "Revenue",
+      "Bestandsveraenderungen": "Inventory Changes",
+      "Sonstige betriebliche Ertraege": "Other Operating Income",
+      "Aufwendungen fuer Roh-, Hilfs- und Betriebsstoffe": "Raw Materials & Supplies",
+      "Loehne und Gehaelter": "Wages & Salaries",
+      "Soziale Abgaben und Altersversorgung": "Social Security & Pension Costs",
+      "Abschreibungen auf Sachanlagen und immaterielle VG": "Depreciation of Tangible & Intangible Assets",
+      "Sonstige betriebliche Aufwendungen": "Other Operating Expenses",
+      "Koerperschaftsteuer": "Corporate Income Tax",
+      "Solidaritaetszuschlag": "Solidarity Surcharge",
+      "Gewerbesteuer": "Trade Tax"
+    }
   },
   "vatReconciliation": {
     "title": "VAT Reconciliation",

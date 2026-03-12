@@ -271,7 +271,30 @@
     "amount": "Сумма",
     "priorAmount": "Предыдущий период",
     "position": "Позиция",
-    "subtotal": "Промежуточный итог"
+    "subtotal": "Промежуточный итог",
+    "sections": {
+      "Umsatzerloese": "Выручка",
+      "Bestandsveraenderungen / Eigenleistungen": "Изменения запасов / Собственные работы",
+      "Sonstige betriebliche Ertraege": "Прочие операционные доходы",
+      "Materialaufwand": "Материальные расходы",
+      "Personalaufwand": "Расходы на персонал",
+      "Abschreibungen": "Амортизация",
+      "Sonstige betriebliche Aufwendungen": "Прочие операционные расходы",
+      "Steuern vom Einkommen und Ertrag": "Налоги на прибыль"
+    },
+    "items": {
+      "Umsatzerloese": "Выручка",
+      "Bestandsveraenderungen": "Изменения запасов",
+      "Sonstige betriebliche Ertraege": "Прочие операционные доходы",
+      "Aufwendungen fuer Roh-, Hilfs- und Betriebsstoffe": "Сырьё, материалы и комплектующие",
+      "Loehne und Gehaelter": "Заработная плата",
+      "Soziale Abgaben und Altersversorgung": "Социальные отчисления и пенсионное обеспечение",
+      "Abschreibungen auf Sachanlagen und immaterielle VG": "Амортизация основных средств и НМА",
+      "Sonstige betriebliche Aufwendungen": "Прочие операционные расходы",
+      "Koerperschaftsteuer": "Налог на прибыль",
+      "Solidaritaetszuschlag": "Надбавка солидарности",
+      "Gewerbesteuer": "Промысловый налог"
+    }
   },
   "vatReconciliation": {
     "title": "Сверка НДС",

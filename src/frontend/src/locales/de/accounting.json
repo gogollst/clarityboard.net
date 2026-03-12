@@ -271,7 +271,30 @@
     "amount": "Betrag",
     "priorAmount": "Vorperiode",
     "position": "Position",
-    "subtotal": "Zwischensumme"
+    "subtotal": "Zwischensumme",
+    "sections": {
+      "Umsatzerloese": "Umsatzerlöse",
+      "Bestandsveraenderungen / Eigenleistungen": "Bestandsveränderungen / Eigenleistungen",
+      "Sonstige betriebliche Ertraege": "Sonstige betriebliche Erträge",
+      "Materialaufwand": "Materialaufwand",
+      "Personalaufwand": "Personalaufwand",
+      "Abschreibungen": "Abschreibungen",
+      "Sonstige betriebliche Aufwendungen": "Sonstige betriebliche Aufwendungen",
+      "Steuern vom Einkommen und Ertrag": "Steuern vom Einkommen und Ertrag"
+    },
+    "items": {
+      "Umsatzerloese": "Umsatzerlöse",
+      "Bestandsveraenderungen": "Bestandsveränderungen",
+      "Sonstige betriebliche Ertraege": "Sonstige betriebliche Erträge",
+      "Aufwendungen fuer Roh-, Hilfs- und Betriebsstoffe": "Aufwendungen für Roh-, Hilfs- und Betriebsstoffe",
+      "Loehne und Gehaelter": "Löhne und Gehälter",
+      "Soziale Abgaben und Altersversorgung": "Soziale Abgaben und Altersversorgung",
+      "Abschreibungen auf Sachanlagen und immaterielle VG": "Abschreibungen auf Sachanlagen und immaterielle Vermögensgegenstände",
+      "Sonstige betriebliche Aufwendungen": "Sonstige betriebliche Aufwendungen",
+      "Koerperschaftsteuer": "Körperschaftsteuer",
+      "Solidaritaetszuschlag": "Solidaritätszuschlag",
+      "Gewerbesteuer": "Gewerbesteuer"
+    }
   },
   "vatReconciliation": {
     "title": "USt-Abgleich",
