@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using ClarityBoard.Application.Common.Interfaces;
 using Docnet.Core;
 using Docnet.Core.Models;
@@ -51,19 +52,19 @@ public sealed class PdfPageRasterizer : IDocumentPageRasterizer
                 continue;
             }
 
-            // Docnet returns raw BGRA pixels — encode to BMP for broad API compatibility
-            var bmpBytes = EncodeRawBgraToBmp(rawBytes, width, height);
+            // Docnet returns raw BGRA pixels — encode to PNG for API compatibility
+            var pngBytes = EncodeRawBgraToPng(rawBytes, width, height);
 
             pages.Add(new RasterizedPage(
                 PageNumber: i + 1,
-                ImageBytes: bmpBytes,
-                MimeType: "image/bmp",
+                ImageBytes: pngBytes,
+                MimeType: "image/png",
                 Width: width,
                 Height: height));
 
             _logger.LogDebug(
                 "Rasterized page {PageNumber}: {Width}x{Height}, {Size} bytes",
-                i + 1, width, height, bmpBytes.Length);
+                i + 1, width, height, pngBytes.Length);
         }
 
         if (pageCount > maxPages)
@@ -77,59 +78,111 @@ public sealed class PdfPageRasterizer : IDocumentPageRasterizer
     }
 
     /// <summary>
-    /// Encodes raw BGRA pixel data to a BMP byte array using a System.Drawing-free approach.
+    /// Encodes raw BGRA pixel data to a PNG byte array (no System.Drawing dependency).
     /// </summary>
-    private static byte[] EncodeRawBgraToBmp(byte[] bgraPixels, int width, int height)
+    private static byte[] EncodeRawBgraToPng(byte[] bgraPixels, int width, int height)
     {
-        // Build a minimal BMP in memory from BGRA data.
-        // We intentionally avoid System.Drawing-based transcoding so the rasterizer
-        // stays portable in containerized Linux environments.
+        using var output = new MemoryStream();
 
-        var rowStride = width * 4; // BGRA = 4 bytes per pixel
-        var imageSize = rowStride * height;
-        var headerSize = 54; // BMP header
-        var fileSize = headerSize + imageSize;
+        // PNG Signature
+        output.Write([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
 
-        var bmp = new byte[fileSize];
+        // IHDR chunk: width, height, bit depth 8, color type 6 (RGBA)
+        WriteChunk(output, "IHDR"u8, writer =>
+        {
+            WriteBE32(writer, width);
+            WriteBE32(writer, height);
+            writer.WriteByte(8);  // bit depth
+            writer.WriteByte(6);  // color type: RGBA
+            writer.WriteByte(0);  // compression
+            writer.WriteByte(0);  // filter
+            writer.WriteByte(0);  // interlace
+        });
 
-        // BMP File Header (14 bytes)
-        bmp[0] = (byte)'B';
-        bmp[1] = (byte)'M';
-        WriteInt32LE(bmp, 2, fileSize);
-        WriteInt32LE(bmp, 10, headerSize);
-
-        // DIB Header (BITMAPINFOHEADER, 40 bytes)
-        WriteInt32LE(bmp, 14, 40); // header size
-        WriteInt32LE(bmp, 18, width);
-        WriteInt32LE(bmp, 22, height); // positive = bottom-up
-        WriteInt16LE(bmp, 26, 1); // color planes
-        WriteInt16LE(bmp, 28, 32); // bits per pixel (BGRA)
-        WriteInt32LE(bmp, 30, 0); // compression (none)
-        WriteInt32LE(bmp, 34, imageSize);
-
-        // Docnet produces top-down BGRA, BMP expects bottom-up.
-        // Flip rows while copying.
+        // IDAT chunk: zlib-compressed filtered row data
+        // Convert BGRA → RGBA and prepend filter byte (0 = None) per row
+        var rowStride = width * 4;
+        var rawImageData = new byte[height * (1 + rowStride)];
         for (var y = 0; y < height; y++)
         {
-            var srcOffset = y * rowStride;
-            var dstOffset = headerSize + (height - 1 - y) * rowStride;
-            Buffer.BlockCopy(bgraPixels, srcOffset, bmp, dstOffset, rowStride);
+            var rawOffset = y * (1 + rowStride);
+            rawImageData[rawOffset] = 0; // filter: None
+            for (var x = 0; x < width; x++)
+            {
+                var srcIdx = (y * rowStride) + (x * 4);
+                var dstIdx = rawOffset + 1 + (x * 4);
+                rawImageData[dstIdx] = bgraPixels[srcIdx + 2];     // R (was B)
+                rawImageData[dstIdx + 1] = bgraPixels[srcIdx + 1]; // G
+                rawImageData[dstIdx + 2] = bgraPixels[srcIdx];     // B (was R)
+                rawImageData[dstIdx + 3] = bgraPixels[srcIdx + 3]; // A
+            }
         }
 
-        return bmp;
+        using var compressedStream = new MemoryStream();
+        using (var zlib = new ZLibStream(compressedStream, CompressionLevel.Fastest, leaveOpen: true))
+            zlib.Write(rawImageData);
+
+        WriteChunk(output, "IDAT"u8, writer => writer.Write(compressedStream.ToArray()));
+
+        // IEND chunk
+        WriteChunk(output, "IEND"u8, _ => { });
+
+        return output.ToArray();
     }
 
-    private static void WriteInt32LE(byte[] buf, int offset, int value)
+    private static void WriteChunk(Stream output, ReadOnlySpan<byte> type, Action<MemoryStream> writeData)
     {
-        buf[offset] = (byte)(value & 0xFF);
-        buf[offset + 1] = (byte)((value >> 8) & 0xFF);
-        buf[offset + 2] = (byte)((value >> 16) & 0xFF);
-        buf[offset + 3] = (byte)((value >> 24) & 0xFF);
+        using var data = new MemoryStream();
+        writeData(data);
+        var dataBytes = data.ToArray();
+
+        // Length (4 bytes BE)
+        var lengthBytes = new byte[4];
+        WriteBE32Bytes(lengthBytes, 0, dataBytes.Length);
+        output.Write(lengthBytes);
+
+        // Type (4 bytes)
+        output.Write(type);
+
+        // Data
+        if (dataBytes.Length > 0)
+            output.Write(dataBytes);
+
+        // CRC32 over type + data
+        var crcInput = new byte[4 + dataBytes.Length];
+        type.CopyTo(crcInput);
+        Buffer.BlockCopy(dataBytes, 0, crcInput, 4, dataBytes.Length);
+        var crc = ComputeCrc32(crcInput);
+        var crcBytes = new byte[4];
+        WriteBE32Bytes(crcBytes, 0, (int)crc);
+        output.Write(crcBytes);
     }
 
-    private static void WriteInt16LE(byte[] buf, int offset, short value)
+    private static void WriteBE32(MemoryStream ms, int value)
     {
-        buf[offset] = (byte)(value & 0xFF);
-        buf[offset + 1] = (byte)((value >> 8) & 0xFF);
+        ms.WriteByte((byte)((value >> 24) & 0xFF));
+        ms.WriteByte((byte)((value >> 16) & 0xFF));
+        ms.WriteByte((byte)((value >> 8) & 0xFF));
+        ms.WriteByte((byte)(value & 0xFF));
+    }
+
+    private static void WriteBE32Bytes(byte[] buf, int offset, int value)
+    {
+        buf[offset] = (byte)((value >> 24) & 0xFF);
+        buf[offset + 1] = (byte)((value >> 16) & 0xFF);
+        buf[offset + 2] = (byte)((value >> 8) & 0xFF);
+        buf[offset + 3] = (byte)(value & 0xFF);
+    }
+
+    private static uint ComputeCrc32(byte[] data)
+    {
+        var crc = 0xFFFFFFFFu;
+        foreach (var b in data)
+        {
+            crc ^= b;
+            for (var i = 0; i < 8; i++)
+                crc = (crc & 1) != 0 ? (crc >> 1) ^ 0xEDB88320u : crc >> 1;
+        }
+        return crc ^ 0xFFFFFFFFu;
     }
 }

@@ -11,14 +11,11 @@ RUN dotnet restore src/ClarityBoard.API/ClarityBoard.API.csproj
 COPY . .
 RUN dotnet publish src/ClarityBoard.API -c Release -o /app/publish
 
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
+# Runtime stage (non-Alpine for glibc-based pdfium.so from Docnet.Core)
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# Native dependencies for Docnet.Core (PDFium wrapper for PDF rasterization)
-RUN apk add --no-cache libstdc++ libgcc
-
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 USER appuser
 
 COPY --from=build /app/publish .

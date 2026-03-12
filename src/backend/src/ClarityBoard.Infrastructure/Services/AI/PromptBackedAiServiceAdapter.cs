@@ -26,19 +26,30 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
         using var doc = JsonDocument.Parse(ExtractJsonObject(response.Content));
         var root = doc.RootElement;
 
+        // Handle nested supplier/vendor objects: { supplier: { name, address: { street, city, ... }, tax_id } }
+        var supplierObj = GetNestedObject(root, "supplier", "vendor");
+
         return new DocumentExtractionResult
         {
-            VendorName = GetString(root, "vendor_name", "vendorName", "supplier_name"),
-            VendorTaxId = GetString(root, "vendor_tax_id", "vendorTaxId", "supplier_tax_id", "ust_id_nr"),
-            VendorStreet = GetString(root, "vendor_street", "vendorStreet", "supplier_street"),
-            VendorCity = GetString(root, "vendor_city", "vendorCity", "supplier_city"),
-            VendorPostalCode = GetString(root, "vendor_postal_code", "vendorPostalCode", "supplier_postal_code"),
-            VendorCountry = GetString(root, "vendor_country", "vendorCountry", "supplier_country"),
-            VendorIban = GetString(root, "vendor_iban", "vendorIban", "supplier_iban", "iban"),
-            VendorBic = GetString(root, "vendor_bic", "vendorBic", "supplier_bic", "bic"),
+            VendorName = GetString(root, "vendor_name", "vendorName", "supplier_name")
+                         ?? GetNestedString(supplierObj, "name"),
+            VendorTaxId = GetString(root, "vendor_tax_id", "vendorTaxId", "supplier_tax_id", "ust_id_nr")
+                          ?? GetNestedString(supplierObj, "tax_id", "taxId", "ust_id_nr", "vat_id"),
+            VendorStreet = GetString(root, "vendor_street", "vendorStreet", "supplier_street")
+                           ?? GetNestedAddressField(supplierObj, "street"),
+            VendorCity = GetString(root, "vendor_city", "vendorCity", "supplier_city")
+                         ?? GetNestedAddressField(supplierObj, "city"),
+            VendorPostalCode = GetString(root, "vendor_postal_code", "vendorPostalCode", "supplier_postal_code")
+                               ?? GetNestedAddressField(supplierObj, "postal_code", "postalCode", "zip"),
+            VendorCountry = GetString(root, "vendor_country", "vendorCountry", "supplier_country")
+                            ?? GetNestedAddressField(supplierObj, "country"),
+            VendorIban = GetString(root, "vendor_iban", "vendorIban", "supplier_iban", "iban")
+                         ?? GetNestedString(supplierObj, "iban"),
+            VendorBic = GetString(root, "vendor_bic", "vendorBic", "supplier_bic", "bic")
+                        ?? GetNestedString(supplierObj, "bic"),
             InvoiceNumber = GetString(root, "invoice_number", "invoiceNumber", "document_number"),
             InvoiceDate = ParseDateOnly(GetString(root, "invoice_date", "invoiceDate", "date")),
-            TotalAmount = GetDecimal(root, "total_amount", "totalAmount", "gross_amount"),
+            TotalAmount = GetDecimal(root, "total_amount", "totalAmount", "gross_amount", "total_gross"),
             Currency = GetString(root, "currency"),
             TaxRate = GetDecimal(root, "tax_rate", "taxRate", "vat_rate"),
             LineItems = GetLineItems(root),
@@ -122,15 +133,24 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
     private static string ExtractJsonObject(string content)
     {
         var trimmed = content.Trim();
-        if (trimmed.Contains('{'))
+
+        // Strip markdown code fences if present
+        if (trimmed.StartsWith("```", StringComparison.Ordinal))
         {
-            var firstBrace = trimmed.IndexOf('{');
-            var lastBrace = trimmed.LastIndexOf('}');
-            if (firstBrace >= 0 && lastBrace > firstBrace)
-                return trimmed[firstBrace..(lastBrace + 1)];
+            var firstNewline = trimmed.IndexOf('\n');
+            if (firstNewline >= 0)
+                trimmed = trimmed[(firstNewline + 1)..];
+            if (trimmed.EndsWith("```", StringComparison.Ordinal))
+                trimmed = trimmed[..^3].TrimEnd();
         }
 
-        return trimmed;
+        var firstBrace = trimmed.IndexOf('{');
+        var lastBrace = trimmed.LastIndexOf('}');
+        if (firstBrace >= 0 && lastBrace > firstBrace)
+            return trimmed[firstBrace..(lastBrace + 1)];
+
+        throw new InvalidOperationException(
+            $"AI response does not contain a JSON object. Response starts with: '{trimmed[..Math.Min(trimmed.Length, 100)]}'");
     }
 
     private static IReadOnlyDictionary<string, string> GetRawFields(JsonElement root)
@@ -171,6 +191,31 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
 
     private static string? GetString(JsonElement element, params string[] names)
         => TryGetProperty(element, out var property, names) ? property.ToString() : null;
+
+    private static JsonElement? GetNestedObject(JsonElement root, params string[] names)
+    {
+        if (TryGetProperty(root, out var obj, names) && obj.ValueKind == JsonValueKind.Object)
+            return obj;
+        return null;
+    }
+
+    private static string? GetNestedString(JsonElement? obj, params string[] names)
+    {
+        if (obj is null) return null;
+        return GetString(obj.Value, names);
+    }
+
+    private static string? GetNestedAddressField(JsonElement? supplierObj, params string[] fieldNames)
+    {
+        if (supplierObj is null) return null;
+        // Try direct field first: supplier.street
+        var direct = GetString(supplierObj.Value, fieldNames);
+        if (direct is not null) return direct;
+        // Try nested address object: supplier.address.street
+        if (TryGetProperty(supplierObj.Value, out var addressObj, "address") && addressObj.ValueKind == JsonValueKind.Object)
+            return GetString(addressObj, fieldNames);
+        return null;
+    }
 
     private static bool TryGetProperty(JsonElement element, out JsonElement property, params string[] names)
     {

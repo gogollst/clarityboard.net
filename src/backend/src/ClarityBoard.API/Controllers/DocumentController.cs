@@ -1,3 +1,5 @@
+using ClarityBoard.Application.Common.Interfaces;
+using ClarityBoard.Application.Common.Messaging;
 using ClarityBoard.Application.Common.Models;
 using ClarityBoard.Application.Features.Document.Commands;
 using ClarityBoard.Application.Features.Document.DTOs;
@@ -21,6 +23,7 @@ public class DocumentUploadFormData
 public class DocumentController : ControllerBase
 {
     private readonly ISender _mediator;
+    private readonly IMessagePublisher _messagePublisher;
 
     private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -30,9 +33,10 @@ public class DocumentController : ControllerBase
         "image/tiff",
     };
 
-    public DocumentController(ISender mediator)
+    public DocumentController(ISender mediator, IMessagePublisher messagePublisher)
     {
         _mediator = mediator;
+        _messagePublisher = messagePublisher;
     }
 
     /// <summary>
@@ -163,6 +167,27 @@ public class DocumentController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Re-trigger document processing for a document stuck in uploaded/failed status.
+    /// </summary>
+    [HttpPost("{id:guid}/reprocess")]
+    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Reprocess(
+        Guid id, [FromQuery] Guid entityId, CancellationToken ct = default)
+    {
+        var document = await _mediator.Send(new GetDocumentDetailQuery(entityId, id), ct);
+        if (document is null)
+            return NotFound();
+
+        if (document.Status is not ("uploaded" or "failed"))
+            return BadRequest($"Cannot reprocess document in status '{document.Status}'.");
+
+        await _messagePublisher.PublishAsync(new ProcessDocument(id, entityId), ct);
+        return Accepted();
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────

@@ -340,6 +340,9 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
 
     private record TextQuality(decimal Score, bool IsAcceptable);
 
+    private static readonly string[] PdfBinaryIndicators =
+        ["endobj", "xref", "/Type", "/Length", "/Filter", "stream\r\n", "endstream", "/FlateDecode", "%PDF-"];
+
     private static TextQuality EvaluateTextQuality(string? text, string contentType)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -358,6 +361,12 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
         if (length < MinNativeTextLength)
             return new TextQuality(0.1m, false);
 
+        // Detect PDF binary content that was extracted as text
+        var pdfNoiseCount = PdfBinaryIndicators.Count(
+            indicator => trimmed.Contains(indicator, StringComparison.OrdinalIgnoreCase));
+        if (pdfNoiseCount >= 3)
+            return new TextQuality(0.1m, false);
+
         // Calculate quality score based on content characteristics
         var alphaNumCount = trimmed.Count(char.IsLetterOrDigit);
         var alphaNumRatio = (decimal)alphaNumCount / length;
@@ -365,6 +374,12 @@ public sealed class DocumentTextAcquisitionService : IDocumentTextAcquisitionSer
         // Penalize if mostly non-printable or garbage characters
         var controlCount = trimmed.Count(c => char.IsControl(c) && c != '\n' && c != '\r' && c != '\t');
         var controlRatio = (decimal)controlCount / length;
+
+        // High ratio of non-ASCII chars indicates binary content decoded as Latin1
+        var nonAsciiCount = trimmed.Count(c => c > 127);
+        var nonAsciiRatio = (decimal)nonAsciiCount / length;
+        if (nonAsciiRatio > 0.15m)
+            return new TextQuality(0.1m, false);
 
         // Look for indicators of real document content
         var hasWords = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries)

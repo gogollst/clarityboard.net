@@ -130,7 +130,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             // 5. Store DocumentFields from extraction result
             currentStage = "persist_extraction";
             var persistExtractionStopwatch = Stopwatch.StartNew();
-            StoreDocumentFields(document, extraction);
+            var storedFieldCount = StoreDocumentFields(document, extraction);
 
             // 6. Update Document entity with extracted metadata
             var extractedJson = DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons, textResult);
@@ -145,7 +145,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                 currency: extraction.Currency);
             persistExtractionStopwatch.Stop();
             LogStageInformation(currentStage, persistExtractionStopwatch.ElapsedMilliseconds, document.Status,
-                "storedFieldCount {StoredFieldCount}", document.Fields.Count);
+                "storedFieldCount {StoredFieldCount}", storedFieldCount);
 
             // 6b. Match or create business partner
             currentStage = "match_partner";
@@ -217,20 +217,36 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             // 7. Call AI for booking suggestion
             currentStage = "suggest_booking";
             var suggestBookingStopwatch = Stopwatch.StartNew();
-            var bookingSuggestion = await _aiService.SuggestBookingAsync(extraction, entityId, ct);
-            suggestBookingStopwatch.Stop();
-            LogConfidenceStage(currentStage, suggestBookingStopwatch.ElapsedMilliseconds, bookingSuggestion.Confidence,
-                "amount {Amount} debitAccount {DebitAccount} creditAccount {CreditAccount}",
-                bookingSuggestion.Amount, bookingSuggestion.DebitAccountNumber, bookingSuggestion.CreditAccountNumber);
-            if (bookingSuggestion.Confidence < LowConfidenceThreshold)
-                reviewReasons.Add("low_booking_confidence");
+            BookingSuggestionResult? bookingSuggestion = null;
+            var bookingSuggestionCreated = false;
+            try
+            {
+                bookingSuggestion = await _aiService.SuggestBookingAsync(extraction, entityId, ct);
+                suggestBookingStopwatch.Stop();
+                LogConfidenceStage(currentStage, suggestBookingStopwatch.ElapsedMilliseconds, bookingSuggestion.Confidence,
+                    "amount {Amount} debitAccount {DebitAccount} creditAccount {CreditAccount}",
+                    bookingSuggestion.Amount, bookingSuggestion.DebitAccountNumber, bookingSuggestion.CreditAccountNumber);
+                if (bookingSuggestion.Confidence < LowConfidenceThreshold)
+                    reviewReasons.Add("low_booking_confidence");
+            }
+            catch (Exception ex)
+            {
+                suggestBookingStopwatch.Stop();
+                _logger.LogWarning(ex,
+                    "Document processing stage {Stage} failed in {DurationMs}ms — document will be marked for review",
+                    currentStage, suggestBookingStopwatch.ElapsedMilliseconds);
+                reviewReasons.Add("booking_suggestion_failed");
+            }
 
             // 8. Create BookingSuggestion entity
             currentStage = "persist_results";
             var persistResultsStopwatch = Stopwatch.StartNew();
-            var bookingSuggestionCreated = await CreateBookingSuggestionAsync(document, entityId, bookingSuggestion, ct);
-            if (!bookingSuggestionCreated)
-                reviewReasons.Add("booking_suggestion_unresolved_accounts");
+            if (bookingSuggestion is not null)
+            {
+                bookingSuggestionCreated = await CreateBookingSuggestionAsync(document, entityId, bookingSuggestion, ct);
+                if (!bookingSuggestionCreated)
+                    reviewReasons.Add("booking_suggestion_unresolved_accounts");
+            }
 
             document.UpdateExtractedData(DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons, textResult));
 
@@ -242,7 +258,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             persistResultsStopwatch.Stop();
             LogStageInformation(currentStage, persistResultsStopwatch.ElapsedMilliseconds,
                 bookingSuggestionCreated ? "saved" : "saved_without_booking_suggestion",
-                "documentStatus {DocumentStatus} storedFieldCount {StoredFieldCount}", document.Status, document.Fields.Count);
+                "documentStatus {DocumentStatus} storedFieldCount {StoredFieldCount}", document.Status, storedFieldCount);
 
             if (reviewReasons.Count > 0)
             {
@@ -257,7 +273,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
 
             _logger.LogInformation(
                 "Document processing completed in {DurationMs}ms with result {Result} status {Status} extractionConfidence {ExtractionConfidence} bookingConfidence {BookingConfidence} reviewReasonCount {ReviewReasonCount}",
-                overallStopwatch.ElapsedMilliseconds, "success", document.Status, extraction.Confidence, bookingSuggestion.Confidence, reviewReasons.Count);
+                overallStopwatch.ElapsedMilliseconds, "success", document.Status, extraction.Confidence, bookingSuggestion?.Confidence, reviewReasons.Count);
         }
         catch (Exception ex)
         {
@@ -360,59 +376,51 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         return count + extraction.LineItems.Count + extraction.RawFields.Count;
     }
 
-    private static void StoreDocumentFields(Document document, DocumentExtractionResult extraction)
+    private int StoreDocumentFields(Document document, DocumentExtractionResult extraction)
     {
-        if (extraction.VendorName is not null)
-            document.AddField(DocumentField.Create(document.Id, "vendor_name", extraction.VendorName, extraction.Confidence));
+        var fields = new List<DocumentField>();
 
-        if (extraction.VendorTaxId is not null)
-            document.AddField(DocumentField.Create(document.Id, "vendor_tax_id", extraction.VendorTaxId, extraction.Confidence));
+        void Add(string name, string? value)
+        {
+            if (value is not null)
+                fields.Add(DocumentField.Create(document.Id, name, value, extraction.Confidence));
+        }
 
-        if (extraction.VendorIban is not null)
-            document.AddField(DocumentField.Create(document.Id, "vendor_iban", extraction.VendorIban, extraction.Confidence));
-
-        if (extraction.VendorStreet is not null)
-            document.AddField(DocumentField.Create(document.Id, "vendor_street", extraction.VendorStreet, extraction.Confidence));
-
-        if (extraction.VendorCity is not null)
-            document.AddField(DocumentField.Create(document.Id, "vendor_city", extraction.VendorCity, extraction.Confidence));
-
-        if (extraction.VendorPostalCode is not null)
-            document.AddField(DocumentField.Create(document.Id, "vendor_postal_code", extraction.VendorPostalCode, extraction.Confidence));
-
-        if (extraction.VendorCountry is not null)
-            document.AddField(DocumentField.Create(document.Id, "vendor_country", extraction.VendorCountry, extraction.Confidence));
-
-        if (extraction.InvoiceNumber is not null)
-            document.AddField(DocumentField.Create(document.Id, "invoice_number", extraction.InvoiceNumber, extraction.Confidence));
+        Add("vendor_name", extraction.VendorName);
+        Add("vendor_tax_id", extraction.VendorTaxId);
+        Add("vendor_iban", extraction.VendorIban);
+        Add("vendor_street", extraction.VendorStreet);
+        Add("vendor_city", extraction.VendorCity);
+        Add("vendor_postal_code", extraction.VendorPostalCode);
+        Add("vendor_country", extraction.VendorCountry);
+        Add("invoice_number", extraction.InvoiceNumber);
 
         if (extraction.InvoiceDate.HasValue)
-            document.AddField(DocumentField.Create(document.Id, "invoice_date", extraction.InvoiceDate.Value.ToString("O"), extraction.Confidence));
-
+            fields.Add(DocumentField.Create(document.Id, "invoice_date", extraction.InvoiceDate.Value.ToString("O"), extraction.Confidence));
         if (extraction.TotalAmount.HasValue)
-            document.AddField(DocumentField.Create(document.Id, "total_amount", extraction.TotalAmount.Value.ToString("F2"), extraction.Confidence));
+            fields.Add(DocumentField.Create(document.Id, "total_amount", extraction.TotalAmount.Value.ToString("F2"), extraction.Confidence));
 
-        if (extraction.Currency is not null)
-            document.AddField(DocumentField.Create(document.Id, "currency", extraction.Currency, extraction.Confidence));
+        Add("currency", extraction.Currency);
 
         if (extraction.TaxRate.HasValue)
-            document.AddField(DocumentField.Create(document.Id, "tax_rate", extraction.TaxRate.Value.ToString("F2"), extraction.Confidence));
+            fields.Add(DocumentField.Create(document.Id, "tax_rate", extraction.TaxRate.Value.ToString("F2"), extraction.Confidence));
 
-        // Store line items as individual fields
         for (var i = 0; i < extraction.LineItems.Count; i++)
         {
             var item = extraction.LineItems[i];
             if (item.Description is not null)
-                document.AddField(DocumentField.Create(document.Id, $"line_item_{i}_description", item.Description, extraction.Confidence));
+                fields.Add(DocumentField.Create(document.Id, $"line_item_{i}_description", item.Description, extraction.Confidence));
             if (item.TotalPrice.HasValue)
-                document.AddField(DocumentField.Create(document.Id, $"line_item_{i}_total", item.TotalPrice.Value.ToString("F2"), extraction.Confidence));
+                fields.Add(DocumentField.Create(document.Id, $"line_item_{i}_total", item.TotalPrice.Value.ToString("F2"), extraction.Confidence));
         }
 
-        // Store raw fields
         foreach (var (key, value) in extraction.RawFields)
-        {
-            document.AddField(DocumentField.Create(document.Id, $"raw_{key}", value, extraction.Confidence));
-        }
+            fields.Add(DocumentField.Create(document.Id, $"raw_{key}", value, extraction.Confidence));
+
+        // Add directly to DbContext to ensure EF tracks them as Added
+        // Do NOT also add to document.Fields — EF would try to insert them twice
+        _db.DocumentFields.AddRange(fields);
+        return fields.Count;
     }
 
     private async Task<bool> CreateBookingSuggestionAsync(
