@@ -63,15 +63,18 @@ public class CreateEntityCommandHandler : IRequestHandler<CreateEntityCommand, L
     private readonly IAppDbContext _db;
     private readonly ICurrentUser _currentUser;
     private readonly IAuditService _auditService;
+    private readonly IChartOfAccountsSeeder _seeder;
 
     public CreateEntityCommandHandler(
         IAppDbContext db,
         ICurrentUser currentUser,
-        IAuditService auditService)
+        IAuditService auditService,
+        IChartOfAccountsSeeder seeder)
     {
         _db = db;
         _currentUser = currentUser;
         _auditService = auditService;
+        _seeder = seeder;
     }
 
     public async Task<LegalEntityDto> Handle(CreateEntityCommand request, CancellationToken cancellationToken)
@@ -133,6 +136,9 @@ public class CreateEntityCommandHandler : IRequestHandler<CreateEntityCommand, L
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        // Seed chart of accounts for the new entity
+        await _seeder.SeedAsync(entity.Id, request.ChartOfAccounts, cancellationToken);
 
         await _auditService.LogAsync(
             entityId: entity.Id,

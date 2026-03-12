@@ -102,6 +102,9 @@ public static class DependencyInjection
             });
         });
 
+        // Chart of Accounts Seeder
+        services.AddScoped<IChartOfAccountsSeeder, Persistence.Seed.ChartOfAccountsSeeder>();
+
         // Repositories
         services.AddScoped<IAccountingRepository, Repositories.AccountingRepository>();
         services.AddScoped<IKpiRepository, Repositories.KpiRepository>();

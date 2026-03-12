@@ -1,4 +1,98 @@
 {
+  "accounts": {
+    "title": "Chart of Accounts",
+    "create": "New Account",
+    "createTitle": "Create New Account",
+    "createDescription": "Enter the details of the new account.",
+    "backToList": "Back to Chart of Accounts",
+    "searchPlaceholder": "Account number or name...",
+    "noEntries": "No accounts found.",
+    "noEntitySelected": "Please select an entity first.",
+    "notFound": "Account not found.",
+    "accountsCount": "accounts",
+    "yes": "Yes",
+    "no": "No",
+    "statistics": "Statistics",
+    "journalEntryCount": "Journal Entry Count",
+    "lastBookingDate": "Last Booking Date",
+    "confirmDeactivateTitle": "Deactivate Account?",
+    "confirmDeactivate": "Are you sure you want to deactivate this account? It can no longer be used for new journal entries.",
+    "fields": {
+      "accountNumber": "Account Number",
+      "name": "Name",
+      "accountType": "Account Type",
+      "accountClass": "Account Class",
+      "vatDefault": "Default VAT",
+      "datevAuto": "DATEV Auto",
+      "costCenterDefault": "Default Cost Center",
+      "bwaLine": "BWA Line",
+      "isActive": "Active",
+      "isAutoPosting": "Auto Posting Allowed",
+      "isSystemAccount": "System Account"
+    },
+    "placeholders": {
+      "accountNumber": "e.g. 4940",
+      "name": "e.g. Operating Supplies",
+      "vatDefault": "e.g. 19",
+      "bwaLine": "e.g. 1020",
+      "costCenterDefault": "e.g. C100"
+    },
+    "accountClasses": {
+      "0": "Fixed & Capital Assets",
+      "1": "Financial & Private Accounts",
+      "2": "Accrual Accounts",
+      "3": "Goods Receipt & Inventory",
+      "4": "Operating Expenses",
+      "5": "Free Class",
+      "6": "Free Class",
+      "7": "Inventory Changes & Own Work",
+      "8": "Revenue Accounts",
+      "9": "Carry-forward & Statistical"
+    },
+    "accountTypes": {
+      "asset": "Asset",
+      "liability": "Liability",
+      "equity": "Equity",
+      "revenue": "Revenue",
+      "expense": "Expense"
+    },
+    "filters": {
+      "all": "All",
+      "allTypes": "All Types",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "create": "Create Account",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "deactivate": "Deactivate",
+      "seedSkr03": "Import SKR03"
+    },
+    "validation": {
+      "required": "Required",
+      "digits_only": "Only digits allowed"
+    },
+    "emptyState": {
+      "noAccounts": "No Chart of Accounts",
+      "seedSkr03Description": "This entity has no chart of accounts yet. Import the SKR03 standard chart with over 200 accounts."
+    },
+    "toast": {
+      "created": "Account created",
+      "createError": "Failed to create account",
+      "updated": "Account updated",
+      "updateError": "Failed to update account",
+      "deactivated": "Account deactivated",
+      "deactivateError": "Failed to deactivate account",
+      "seeded": "{{count}} SKR03 accounts imported",
+      "seedError": "Failed to import accounts"
+    }
+  },
   "journalEntries": {
     "title": "Journal Entries",
     "newEntry": "New Journal Entry",

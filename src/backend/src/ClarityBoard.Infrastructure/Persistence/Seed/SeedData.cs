@@ -24,6 +24,7 @@ public static class SeedData
             await SeedKpiDefinitionsAsync(context, logger);
             await SeedAiPromptsAsync(context, logger);
             await SeedDevAdminAsync(context, logger);
+            await SeedMissingAccountsAsync(context, logger);
 
             logger.LogInformation("Seed data initialization completed");
         }
@@ -107,6 +108,24 @@ public static class SeedData
         logger.LogInformation(
             "Seeded dev admin user: admin@clarityboard.net (entity: {EntityName}, role: Admin)",
             entity.Name);
+    }
+
+    /// <summary>
+    /// Seeds SKR03 accounts for any entity that has zero accounts.
+    /// This handles entities created before auto-seeding was added to CreateEntityCommand.
+    /// </summary>
+    private static async Task SeedMissingAccountsAsync(ClarityBoardContext context, ILogger logger)
+    {
+        var entitiesWithoutAccounts = await context.LegalEntities
+            .Where(e => e.IsActive && !context.Accounts.Any(a => a.EntityId == e.Id))
+            .Select(e => new { e.Id, e.ChartOfAccounts, e.Name })
+            .ToListAsync();
+
+        foreach (var entity in entitiesWithoutAccounts)
+        {
+            if (entity.ChartOfAccounts == "SKR03")
+                await SeedSkr03AccountsAsync(context, entity.Id, logger);
+        }
     }
 
     private static async Task SeedAiPromptsAsync(ClarityBoardContext context, ILogger logger)

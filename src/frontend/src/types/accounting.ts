@@ -122,6 +122,40 @@ export interface Account {
   vatDefault?: string;
 }
 
+export interface AccountDetail extends Account {
+  datevAuto?: string;
+  costCenterDefault?: string;
+  bwaLine?: string;
+  isAutoPosting: boolean;
+  isSystemAccount: boolean;
+  parentId?: string;
+  journalEntryCount: number;
+  lastBookingDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAccountRequest {
+  accountNumber: string;
+  name: string;
+  accountType: string;
+  accountClass: number;
+  vatDefault?: string;
+  datevAuto?: string;
+  costCenterDefault?: string;
+  bwaLine?: string;
+  isAutoPosting?: boolean;
+}
+
+export interface UpdateAccountRequest {
+  id: string;
+  name: string;
+  vatDefault?: string;
+  costCenterDefault?: string;
+  bwaLine?: string;
+  isAutoPosting?: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Trial Balance
 // ---------------------------------------------------------------------------

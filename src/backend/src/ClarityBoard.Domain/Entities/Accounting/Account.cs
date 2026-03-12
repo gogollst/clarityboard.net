@@ -46,4 +46,25 @@ public class Account
             UpdatedAt = DateTime.UtcNow,
         };
     }
+
+    public void Update(
+        string name,
+        string? vatDefault,
+        string? costCenterDefault,
+        string? bwaLine,
+        bool isAutoPosting)
+    {
+        Name = name;
+        VatDefault = vatDefault;
+        CostCenterDefault = costCenterDefault;
+        BwaLine = bwaLine;
+        IsAutoPosting = isAutoPosting;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

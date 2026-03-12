@@ -28,14 +28,71 @@ public class AccountingController : ControllerBase
     [HttpGet("accounts")]
     [ProducesResponseType(typeof(IReadOnlyList<AccountDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<AccountDto>>> GetAccounts(
-        [FromQuery] string? accountType, [FromQuery] bool activeOnly = true, CancellationToken ct = default)
+        [FromQuery] string? accountType,
+        [FromQuery] int? accountClass = null,
+        [FromQuery] string? search = null,
+        [FromQuery] bool activeOnly = true,
+        CancellationToken ct = default)
     {
         var result = await _mediator.Send(new GetAccountsQuery
         {
             AccountType = accountType,
+            AccountClass = accountClass,
+            Search = search,
             ActiveOnly = activeOnly,
         }, ct);
         return Ok(result);
+    }
+
+    [HttpGet("accounts/{id:guid}")]
+    [ProducesResponseType(typeof(AccountDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AccountDetailDto>> GetAccountDetail(Guid id, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetAccountDetailQuery(id), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("accounts")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Guid>> CreateAccount(
+        CreateAccountCommand command, CancellationToken ct)
+    {
+        var id = await _mediator.Send(command, ct);
+        return CreatedAtAction(nameof(GetAccountDetail), new { id }, id);
+    }
+
+    [HttpPut("accounts/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateAccount(
+        Guid id, UpdateAccountCommand command, CancellationToken ct)
+    {
+        if (id != command.Id)
+            return BadRequest("Route id does not match body id.");
+
+        await _mediator.Send(command, ct);
+        return NoContent();
+    }
+
+    [HttpPost("accounts/{id:guid}/deactivate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeactivateAccount(Guid id, CancellationToken ct)
+    {
+        await _mediator.Send(new DeactivateAccountCommand(id), ct);
+        return NoContent();
+    }
+
+    [HttpPost("accounts/seed")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<int>> SeedChartOfAccounts(CancellationToken ct)
+    {
+        var count = await _mediator.Send(new SeedChartOfAccountsCommand(), ct);
+        return Ok(count);
     }
 
     // ── Trial Balance ────────────────────────────────────────────────────

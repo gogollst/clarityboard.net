@@ -1,4 +1,98 @@
 {
+  "accounts": {
+    "title": "Kontenplan",
+    "create": "Neues Konto",
+    "createTitle": "Neues Konto anlegen",
+    "createDescription": "Erfassen Sie die Daten des neuen Kontos.",
+    "backToList": "Zurück zum Kontenplan",
+    "searchPlaceholder": "Kontonummer oder Bezeichnung...",
+    "noEntries": "Keine Konten gefunden.",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "notFound": "Konto nicht gefunden.",
+    "accountsCount": "Konten",
+    "yes": "Ja",
+    "no": "Nein",
+    "statistics": "Statistik",
+    "journalEntryCount": "Anzahl Buchungen",
+    "lastBookingDate": "Letzte Buchung",
+    "confirmDeactivateTitle": "Konto deaktivieren?",
+    "confirmDeactivate": "Möchten Sie dieses Konto wirklich deaktivieren? Es kann nicht mehr für neue Buchungen verwendet werden.",
+    "fields": {
+      "accountNumber": "Kontonummer",
+      "name": "Bezeichnung",
+      "accountType": "Kontoart",
+      "accountClass": "Kontenklasse",
+      "vatDefault": "Standard-MwSt",
+      "datevAuto": "DATEV-Automatik",
+      "costCenterDefault": "Standard-Kostenstelle",
+      "bwaLine": "BWA-Zeile",
+      "isActive": "Aktiv",
+      "isAutoPosting": "Automatische Buchung erlaubt",
+      "isSystemAccount": "Systemkonto"
+    },
+    "placeholders": {
+      "accountNumber": "z.B. 4940",
+      "name": "z.B. Betriebsbedarf",
+      "vatDefault": "z.B. 19",
+      "bwaLine": "z.B. 1020",
+      "costCenterDefault": "z.B. K100"
+    },
+    "accountClasses": {
+      "0": "Anlage- und Kapitalkonten",
+      "1": "Finanz- und Privatkonten",
+      "2": "Abgrenzungskonten",
+      "3": "Wareneingangs- und Bestandskonten",
+      "4": "Betriebliche Aufwendungen",
+      "5": "Freie Klasse",
+      "6": "Freie Klasse",
+      "7": "Bestandsveränderungen und Eigenleistungen",
+      "8": "Erlöskonten",
+      "9": "Vortrags- und statistische Konten"
+    },
+    "accountTypes": {
+      "asset": "Aktiva",
+      "liability": "Passiva",
+      "equity": "Eigenkapital",
+      "revenue": "Erlöse",
+      "expense": "Aufwand"
+    },
+    "filters": {
+      "all": "Alle",
+      "allTypes": "Alle Kontoarten",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "actions": {
+      "create": "Konto anlegen",
+      "edit": "Bearbeiten",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "deactivate": "Deaktivieren",
+      "seedSkr03": "SKR03 importieren"
+    },
+    "validation": {
+      "required": "Pflichtfeld",
+      "digits_only": "Nur Ziffern erlaubt"
+    },
+    "emptyState": {
+      "noAccounts": "Kein Kontenplan vorhanden",
+      "seedSkr03Description": "Diese Entity hat noch keinen Kontenplan. Importieren Sie den SKR03-Standardkontenrahmen mit über 200 Konten."
+    },
+    "toast": {
+      "created": "Konto angelegt",
+      "createError": "Fehler beim Anlegen des Kontos",
+      "updated": "Konto aktualisiert",
+      "updateError": "Fehler beim Aktualisieren des Kontos",
+      "deactivated": "Konto deaktiviert",
+      "deactivateError": "Fehler beim Deaktivieren des Kontos",
+      "seeded": "{{count}} SKR03-Konten importiert",
+      "seedError": "Fehler beim Importieren der Konten"
+    }
+  },
   "journalEntries": {
     "title": "Buchungssätze",
     "newEntry": "Neuer Buchungssatz",

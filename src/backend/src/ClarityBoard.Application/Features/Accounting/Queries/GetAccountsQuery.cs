@@ -8,6 +8,8 @@ namespace ClarityBoard.Application.Features.Accounting.Queries;
 public record GetAccountsQuery : IRequest<IReadOnlyList<AccountDto>>
 {
     public string? AccountType { get; init; }
+    public int? AccountClass { get; init; }
+    public string? Search { get; init; }
     public bool ActiveOnly { get; init; } = true;
 }
 
@@ -32,6 +34,17 @@ public class GetAccountsQueryHandler : IRequestHandler<GetAccountsQuery, IReadOn
 
         if (!string.IsNullOrEmpty(request.AccountType))
             query = query.Where(a => a.AccountType == request.AccountType);
+
+        if (request.AccountClass.HasValue)
+            query = query.Where(a => a.AccountClass == request.AccountClass.Value);
+
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            var search = request.Search.ToLower();
+            query = query.Where(a =>
+                a.Name.ToLower().Contains(search) ||
+                a.AccountNumber.Contains(search));
+        }
 
         return await query
             .OrderBy(a => a.AccountNumber)

@@ -6,6 +6,9 @@ import i18n from '@/i18n';
 import type { ApiResponse, PaginatedResponse } from '@/types/api';
 import type {
   Account,
+  AccountDetail,
+  CreateAccountRequest,
+  UpdateAccountRequest,
   JournalEntry,
   JournalEntryDetail,
   JournalEntryListItem,
@@ -28,16 +31,106 @@ import type {
 // Accounts
 // ---------------------------------------------------------------------------
 
-export function useAccounts(entityId: string | null, accountType?: string, activeOnly = true) {
+export function useAccounts(
+  entityId: string | null,
+  params?: { accountType?: string; accountClass?: number; search?: string; activeOnly?: boolean },
+) {
+  const activeOnly = params?.activeOnly ?? true;
   return useQuery({
-    queryKey: [...queryKeys.accounting.accounts(entityId ?? ''), accountType, activeOnly],
+    queryKey: [...queryKeys.accounting.accounts(entityId ?? ''), params],
     queryFn: async () => {
       const { data } = await api.get<Account[]>('/accounting/accounts', {
-        params: { accountType, activeOnly },
+        params: { ...params, activeOnly },
       });
       return data;
     },
     enabled: !!entityId,
+  });
+}
+
+export function useAccountDetail(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.accounting.accountDetail(id ?? ''),
+    queryFn: async () => {
+      const { data } = await api.get<AccountDetail>(`/accounting/accounts/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useCreateAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: CreateAccountRequest & { entityId: string }) => {
+      const { entityId, ...body } = request;
+      const { data } = await api.post<string>('/accounting/accounts', body);
+      return { id: data, entityId };
+    },
+    onSuccess: ({ entityId }) => {
+      toast.success(i18n.t('accounting:accounts.toast.created'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.accounts(entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:accounts.toast.createError'));
+    },
+  });
+}
+
+export function useUpdateAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ entityId, ...body }: UpdateAccountRequest & { entityId: string }) => {
+      await api.put(`/accounting/accounts/${body.id}`, body);
+      return { entityId, id: body.id };
+    },
+    onSuccess: ({ entityId, id }) => {
+      toast.success(i18n.t('accounting:accounts.toast.updated'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.accounts(entityId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.accountDetail(id) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:accounts.toast.updateError'));
+    },
+  });
+}
+
+export function useDeactivateAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, entityId }: { id: string; entityId: string }) => {
+      await api.post(`/accounting/accounts/${id}/deactivate`);
+      return { entityId, id };
+    },
+    onSuccess: ({ entityId, id }) => {
+      toast.success(i18n.t('accounting:accounts.toast.deactivated'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.accounts(entityId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.accountDetail(id) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:accounts.toast.deactivateError'));
+    },
+  });
+}
+
+export function useSeedAccounts() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ entityId }: { entityId: string }) => {
+      const { data } = await api.post<number>('/accounting/accounts/seed');
+      return { count: data, entityId };
+    },
+    onSuccess: ({ count, entityId }) => {
+      toast.success(i18n.t('accounting:accounts.toast.seeded', { count }));
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.accounts(entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:accounts.toast.seedError'));
+    },
   });
 }
 
