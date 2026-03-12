@@ -1,0 +1,5 @@
+ALTER TABLE ai.ai_prompt_versions
+  ADD COLUMN IF NOT EXISTS "PrimaryModel" varchar(100) NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS "FallbackModel" varchar(100) NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS "Temperature" numeric(4,2) NOT NULL DEFAULT 0.0,
+  ADD COLUMN IF NOT EXISTS "MaxTokens" integer NOT NULL DEFAULT 4096;
