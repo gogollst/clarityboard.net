@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAccounts, useSeedAccounts } from '@/hooks/useAccounting';
 import { useEntity } from '@/hooks/useEntity';
 import { useDebounced } from '@/hooks/useDebounced';
+import { getLocalizedAccountName } from '@/lib/accountUtils';
 import type { Account } from '@/types/accounting';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ import {
 import { Plus, Search, Download, Loader2 } from 'lucide-react';
 
 export function Component() {
-  const { t } = useTranslation('accounting');
+  const { t, i18n } = useTranslation('accounting');
   const navigate = useNavigate();
   const { selectedEntityId } = useEntity();
 
@@ -162,7 +163,7 @@ export function Component() {
                         <span className="w-16 font-mono text-sm tabular-nums">
                           {account.accountNumber}
                         </span>
-                        <span className="flex-1 text-sm">{account.name}</span>
+                        <span className="flex-1 text-sm">{getLocalizedAccountName(account, i18n.language)}</span>
                         <AccountTypeBadge type={account.accountType} t={t} />
                         {account.vatDefault && (
                           <span className="text-xs text-muted-foreground">

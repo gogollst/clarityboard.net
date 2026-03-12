@@ -57,6 +57,9 @@ public class GetAccountsQueryHandler : IRequestHandler<GetAccountsQuery, IReadOn
                 AccountClass = a.AccountClass,
                 IsActive = a.IsActive,
                 VatDefault = a.VatDefault,
+                NameDe = a.NameDe,
+                NameEn = a.NameEn,
+                NameRu = a.NameRu,
             })
             .ToListAsync(cancellationToken);
     }

@@ -38,6 +38,9 @@ public record AccountDto
     public required int AccountClass { get; init; }
     public required bool IsActive { get; init; }
     public string? VatDefault { get; init; }
+    public string? NameDe { get; init; }
+    public string? NameEn { get; init; }
+    public string? NameRu { get; init; }
 }
 
 public record AccountDetailDto
@@ -55,6 +58,9 @@ public record AccountDetailDto
     public required bool IsAutoPosting { get; init; }
     public required bool IsSystemAccount { get; init; }
     public Guid? ParentId { get; init; }
+    public string? NameDe { get; init; }
+    public string? NameEn { get; init; }
+    public string? NameRu { get; init; }
     public int JournalEntryCount { get; set; }
     public DateOnly? LastBookingDate { get; set; }
     public required DateTime CreatedAt { get; init; }

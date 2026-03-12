@@ -3,6 +3,7 @@ using ClarityBoard.Application.Common.Interfaces;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace ClarityBoard.Application.Features.Accounting.Commands;
 
@@ -15,6 +16,7 @@ public record UpdateAccountCommand : IRequest
     public string? CostCenterDefault { get; init; }
     public string? BwaLine { get; init; }
     public bool IsAutoPosting { get; init; }
+    public string? SourceLanguage { get; init; }
 }
 
 public class UpdateAccountCommandValidator : AbstractValidator<UpdateAccountCommand>
@@ -32,11 +34,15 @@ public class UpdateAccountCommandHandler : IRequestHandler<UpdateAccountCommand>
 {
     private readonly IAppDbContext _db;
     private readonly ICurrentUser _currentUser;
+    private readonly ITranslationService _translationService;
 
-    public UpdateAccountCommandHandler(IAppDbContext db, ICurrentUser currentUser)
+    private static readonly string[] AllLanguages = ["de", "en", "ru"];
+
+    public UpdateAccountCommandHandler(IAppDbContext db, ICurrentUser currentUser, ITranslationService translationService)
     {
         _db = db;
         _currentUser = currentUser;
+        _translationService = translationService;
     }
 
     public async Task Handle(UpdateAccountCommand request, CancellationToken cancellationToken)
@@ -52,6 +58,17 @@ public class UpdateAccountCommandHandler : IRequestHandler<UpdateAccountCommand>
             request.CostCenterDefault,
             request.BwaLine,
             request.IsAutoPosting);
+
+        // Re-translate if name changed
+        var sourceLang = request.SourceLanguage ?? "de";
+        var targetLangs = AllLanguages.Where(l => !l.Equals(sourceLang, StringComparison.OrdinalIgnoreCase));
+        var translations = await _translationService.TranslateAsync(request.Name, sourceLang, targetLangs, cancellationToken);
+
+        translations[sourceLang] = request.Name;
+        account.SetTranslatedNames(
+            translations.GetValueOrDefault("de"),
+            translations.GetValueOrDefault("en"),
+            translations.GetValueOrDefault("ru"));
 
         await _db.SaveChangesAsync(cancellationToken);
     }

@@ -19,6 +19,7 @@ public record CreateAccountCommand : IRequest<Guid>
     public string? CostCenterDefault { get; init; }
     public string? BwaLine { get; init; }
     public bool IsAutoPosting { get; init; }
+    public string? SourceLanguage { get; init; }
 }
 
 public class CreateAccountCommandValidator : AbstractValidator<CreateAccountCommand>
@@ -41,11 +42,15 @@ public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand,
 {
     private readonly IAppDbContext _db;
     private readonly ICurrentUser _currentUser;
+    private readonly ITranslationService _translationService;
 
-    public CreateAccountCommandHandler(IAppDbContext db, ICurrentUser currentUser)
+    private static readonly string[] AllLanguages = ["de", "en", "ru"];
+
+    public CreateAccountCommandHandler(IAppDbContext db, ICurrentUser currentUser, ITranslationService translationService)
     {
         _db = db;
         _currentUser = currentUser;
+        _translationService = translationService;
     }
 
     public async Task<Guid> Handle(CreateAccountCommand request, CancellationToken cancellationToken)
@@ -74,6 +79,17 @@ public class CreateAccountCommandHandler : IRequestHandler<CreateAccountCommand,
             request.CostCenterDefault,
             request.BwaLine,
             request.IsAutoPosting);
+
+        // Translate account name to other languages
+        var sourceLang = request.SourceLanguage ?? "de";
+        var targetLangs = AllLanguages.Where(l => !l.Equals(sourceLang, StringComparison.OrdinalIgnoreCase));
+        var translations = await _translationService.TranslateAsync(request.Name, sourceLang, targetLangs, cancellationToken);
+
+        translations[sourceLang] = request.Name;
+        account.SetTranslatedNames(
+            translations.GetValueOrDefault("de"),
+            translations.GetValueOrDefault("en"),
+            translations.GetValueOrDefault("ru"));
 
         _db.Accounts.Add(account);
         await _db.SaveChangesAsync(cancellationToken);

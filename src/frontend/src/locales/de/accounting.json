@@ -82,6 +82,7 @@
       "noAccounts": "Kein Kontenplan vorhanden",
       "seedSkr03Description": "Diese Entity hat noch keinen Kontenplan. Importieren Sie den SKR03-Standardkontenrahmen mit über 200 Konten."
     },
+    "translationHint": "Die Bezeichnung wird automatisch in die anderen Sprachen (EN, RU) übersetzt.",
     "toast": {
       "created": "Konto angelegt",
       "createError": "Fehler beim Anlegen des Kontos",

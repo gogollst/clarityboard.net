@@ -82,6 +82,7 @@
       "noAccounts": "No Chart of Accounts",
       "seedSkr03Description": "This entity has no chart of accounts yet. Import the SKR03 standard chart with over 200 accounts."
     },
+    "translationHint": "The name will be automatically translated to other languages (DE, RU).",
     "toast": {
       "created": "Account created",
       "createError": "Failed to create account",

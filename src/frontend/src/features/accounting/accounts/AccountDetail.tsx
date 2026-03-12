@@ -10,6 +10,7 @@ import {
   useDeactivateAccount,
 } from '@/hooks/useAccounting';
 import { useEntity } from '@/hooks/useEntity';
+import { getLocalizedAccountName } from '@/lib/accountUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,7 +42,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function Component() {
-  const { t } = useTranslation('accounting');
+  const { t, i18n } = useTranslation('accounting');
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { selectedEntityId } = useEntity();
@@ -51,6 +52,10 @@ export function Component() {
   const deactivateAccount = useDeactivateAccount();
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  const localizedName = account
+    ? getLocalizedAccountName(account, i18n.language)
+    : '';
 
   const {
     register,
@@ -63,7 +68,7 @@ export function Component() {
     resolver: zodResolver(schema),
     values: account
       ? {
-          name: account.name,
+          name: localizedName,
           vatDefault: account.vatDefault ?? '',
           costCenterDefault: account.costCenterDefault ?? '',
           bwaLine: account.bwaLine ?? '',
@@ -82,6 +87,7 @@ export function Component() {
         vatDefault: values.vatDefault || undefined,
         costCenterDefault: values.costCenterDefault || undefined,
         bwaLine: values.bwaLine || undefined,
+        sourceLanguage: i18n.language,
       },
       {
         onSuccess: () => setIsEditing(false),
@@ -134,7 +140,7 @@ export function Component() {
           <div>
             <CardTitle className="flex items-center gap-3">
               <span className="font-mono tabular-nums">{account.accountNumber}</span>
-              <span>{account.name}</span>
+              <span>{localizedName}</span>
             </CardTitle>
             <div className="mt-2 flex items-center gap-2">
               <Badge
@@ -180,9 +186,13 @@ export function Component() {
               <div>
                 <Label>{t('accounts.fields.name')}</Label>
                 <Input {...register('name')} />
-                {errors.name && (
+                {errors.name ? (
                   <p className="mt-1 text-sm text-destructive">
                     {t('accounts.validation.required')}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t('accounts.translationHint')}
                   </p>
                 )}
               </div>
@@ -235,6 +245,24 @@ export function Component() {
             </form>
           ) : (
             <div className="space-y-4">
+              {/* Show all translations if available */}
+              {(account.nameDe || account.nameEn || account.nameRu) && (
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">DE</span>
+                    <p className="font-medium">{account.nameDe || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">EN</span>
+                    <p className="font-medium">{account.nameEn || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">RU</span>
+                    <p className="font-medium">{account.nameRu || '—'}</p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">{t('accounts.fields.vatDefault')}</span>

@@ -233,6 +233,9 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.DatevAuto).HasMaxLength(10);
             entity.Property(e => e.CostCenterDefault).HasMaxLength(50);
             entity.Property(e => e.BwaLine).HasMaxLength(10);
+            entity.Property(e => e.NameDe).HasMaxLength(200);
+            entity.Property(e => e.NameEn).HasMaxLength(200);
+            entity.Property(e => e.NameRu).HasMaxLength(200);
         });
 
         modelBuilder.Entity<JournalEntry>(entity =>

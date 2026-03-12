@@ -16,6 +16,9 @@ public class Account
     public bool IsSystemAccount { get; private set; }
     public string? BwaLine { get; private set; }      // BWA position (e.g. "1020")
     public bool IsAutoPosting { get; private set; }   // automatic posting allowed
+    public string? NameDe { get; private set; }
+    public string? NameEn { get; private set; }
+    public string? NameRu { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -59,6 +62,14 @@ public class Account
         CostCenterDefault = costCenterDefault;
         BwaLine = bwaLine;
         IsAutoPosting = isAutoPosting;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void SetTranslatedNames(string? nameDe, string? nameEn, string? nameRu)
+    {
+        NameDe = nameDe;
+        NameEn = nameEn;
+        NameRu = nameRu;
         UpdatedAt = DateTime.UtcNow;
     }
 

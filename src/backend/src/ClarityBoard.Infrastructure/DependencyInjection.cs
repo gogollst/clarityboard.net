@@ -173,6 +173,10 @@ public static class DependencyInjection
         // Mail service (SMTP with retry + DB logging)
         services.AddScoped<IEmailService, ClarityBoard.Infrastructure.Services.Mail.SmtpEmailService>();
 
+        // Translation service (DeepL)
+        services.AddHttpClient("deepl", client => { client.Timeout = TimeSpan.FromSeconds(10); });
+        services.AddScoped<ITranslationService, ClarityBoard.Infrastructure.Services.Translation.DeepLTranslationService>();
+
         // Named HttpClient for the prompt AI service (60s timeout, no auth headers – each call sets its own)
         services.AddHttpClient("ai_prompt", client =>
         {

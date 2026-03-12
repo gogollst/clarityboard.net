@@ -44,7 +44,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function Component() {
-  const { t } = useTranslation('accounting');
+  const { t, i18n } = useTranslation('accounting');
   const navigate = useNavigate();
   const { selectedEntityId } = useEntity();
   const createAccount = useCreateAccount();
@@ -76,6 +76,7 @@ export function Component() {
         datevAuto: values.datevAuto || undefined,
         costCenterDefault: values.costCenterDefault || undefined,
         bwaLine: values.bwaLine || undefined,
+        sourceLanguage: i18n.language,
       },
       { onSuccess: () => navigate('/accounting/accounts') },
     );
@@ -134,9 +135,13 @@ export function Component() {
                 {...register('name')}
                 placeholder={t('accounts.placeholders.name')}
               />
-              {errors.name && (
+              {errors.name ? (
                 <p className="mt-1 text-sm text-destructive">
                   {t(`accounts.validation.${errors.name.message}`)}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t('accounts.translationHint')}
                 </p>
               )}
             </div>

@@ -120,6 +120,9 @@ export interface Account {
   accountClass: number;
   isActive: boolean;
   vatDefault?: string;
+  nameDe?: string;
+  nameEn?: string;
+  nameRu?: string;
 }
 
 export interface AccountDetail extends Account {
@@ -129,6 +132,9 @@ export interface AccountDetail extends Account {
   isAutoPosting: boolean;
   isSystemAccount: boolean;
   parentId?: string;
+  nameDe?: string;
+  nameEn?: string;
+  nameRu?: string;
   journalEntryCount: number;
   lastBookingDate?: string;
   createdAt: string;
@@ -145,6 +151,7 @@ export interface CreateAccountRequest {
   costCenterDefault?: string;
   bwaLine?: string;
   isAutoPosting?: boolean;
+  sourceLanguage?: string;
 }
 
 export interface UpdateAccountRequest {
@@ -154,6 +161,7 @@ export interface UpdateAccountRequest {
   costCenterDefault?: string;
   bwaLine?: string;
   isAutoPosting?: boolean;
+  sourceLanguage?: string;
 }
 
 // ---------------------------------------------------------------------------

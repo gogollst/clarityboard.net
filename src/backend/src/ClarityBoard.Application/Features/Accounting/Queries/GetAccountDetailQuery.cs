@@ -38,6 +38,9 @@ public class GetAccountDetailQueryHandler : IRequestHandler<GetAccountDetailQuer
                 IsAutoPosting = a.IsAutoPosting,
                 IsSystemAccount = a.IsSystemAccount,
                 ParentId = a.ParentId,
+                NameDe = a.NameDe,
+                NameEn = a.NameEn,
+                NameRu = a.NameRu,
                 CreatedAt = a.CreatedAt,
                 UpdatedAt = a.UpdatedAt,
             })
