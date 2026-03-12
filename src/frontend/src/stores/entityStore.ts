@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getStoredSelectedEntityId, storeSelectedEntityId } from '@/lib/api';
 
 export interface LegalEntity {
   id: string;
@@ -17,7 +18,10 @@ interface EntityState {
 
 export const useEntityStore = create<EntityState>((set) => ({
   entities: [],
-  selectedEntityId: null,
+  selectedEntityId: getStoredSelectedEntityId(),
   setEntities: (entities) => set({ entities }),
-  setSelectedEntity: (entityId) => set({ selectedEntityId: entityId }),
+  setSelectedEntity: (entityId) => {
+    storeSelectedEntityId(entityId);
+    set({ selectedEntityId: entityId });
+  },
 }));

@@ -13,6 +13,7 @@ const KEYS = {
   refreshToken: 'cb_refresh_token',
   user: 'cb_user',
   rememberMe: 'cb_remember_me',
+  selectedEntityId: 'cb_selected_entity_id',
 } as const;
 
 export function getStoredRememberMe(): boolean {
@@ -40,11 +41,20 @@ export function getStoredUser(): unknown {
   return raw ? JSON.parse(raw) : null;
 }
 
+export function storeSelectedEntityId(entityId: string): void {
+  getStorage().setItem(KEYS.selectedEntityId, entityId);
+}
+
+export function getStoredSelectedEntityId(): string | null {
+  return getStorage().getItem(KEYS.selectedEntityId);
+}
+
 export function clearStoredTokens(): void {
   [localStorage, sessionStorage].forEach((s) => {
     s.removeItem(KEYS.accessToken);
     s.removeItem(KEYS.refreshToken);
     s.removeItem(KEYS.user);
+    s.removeItem(KEYS.selectedEntityId);
   });
   localStorage.removeItem(KEYS.rememberMe);
 }

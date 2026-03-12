@@ -118,7 +118,18 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
             .Distinct()
             .ToListAsync(cancellationToken);
 
-        var defaultEntityId = userRoles.FirstOrDefault()?.EntityId ?? Guid.Empty;
+        var entityAccess = await _db.UserRoles
+            .Where(ur => ur.UserId == user.Id)
+            .Join(_db.LegalEntities, ur => ur.EntityId, le => le.Id, (ur, le) => new { ur, le })
+            .Join(_db.Roles, x => x.ur.RoleId, r => r.Id, (x, r) => new EntityAccess
+            {
+                EntityId = x.le.Id,
+                EntityName = x.le.Name,
+                Role = r.Name,
+            })
+            .ToListAsync(cancellationToken);
+
+        var defaultEntityId = entityAccess.FirstOrDefault()?.EntityId ?? Guid.Empty;
 
         var accessToken = _jwtTokenService.GenerateAccessToken(
             user.Id, user.Email, defaultEntityId, roleNames, permissions, accessTokenExpiry);
@@ -134,17 +145,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AuthResponse>
 
         _db.RefreshTokens.Add(refreshToken);
         await _db.SaveChangesAsync(cancellationToken);
-
-        var entityAccess = await _db.UserRoles
-            .Where(ur => ur.UserId == user.Id)
-            .Join(_db.LegalEntities, ur => ur.EntityId, le => le.Id, (ur, le) => new { ur, le })
-            .Join(_db.Roles, x => x.ur.RoleId, r => r.Id, (x, r) => new EntityAccess
-            {
-                EntityId = x.le.Id,
-                EntityName = x.le.Name,
-                Role = r.Name,
-            })
-            .ToListAsync(cancellationToken);
 
         return new AuthResponse
         {
