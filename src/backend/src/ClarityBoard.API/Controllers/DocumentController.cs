@@ -169,7 +169,8 @@ public class DocumentController : ControllerBase
 
     private Guid? GetUserId()
     {
-        var userIdClaim = User.FindFirst("sub")?.Value ?? User.FindFirst("user_id")?.Value;
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
         return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
     }
 }
