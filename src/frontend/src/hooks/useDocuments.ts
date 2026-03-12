@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
-import type { ApiResponse, PaginatedResponse } from '@/types/api';
+import type { PaginatedResponse } from '@/types/api';
 import type {
   Document,
   DocumentListParams,
@@ -18,10 +18,11 @@ export function useDocuments(params: DocumentListParams) {
   return useQuery({
     queryKey: [...queryKeys.documents.list(params.entityId), params],
     queryFn: async () => {
-      const { data } = await api.get<
-        ApiResponse<PaginatedResponse<Document>>
-      >('/documents', { params });
-      return data.data;
+      const { data } = await api.get<PaginatedResponse<Document>>(
+        '/documents',
+        { params },
+      );
+      return data;
     },
     enabled: !!params.entityId,
   });
@@ -31,10 +32,8 @@ export function useDocument(id: string | null) {
   return useQuery({
     queryKey: queryKeys.documents.detail(id ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<Document>>(
-        `/documents/${id}`,
-      );
-      return data.data;
+      const { data } = await api.get<Document>(`/documents/${id}`);
+      return data;
     },
     enabled: !!id,
   });
@@ -80,10 +79,10 @@ export function useDocumentDownloadUrl(id: string | null) {
   return useQuery({
     queryKey: queryKeys.documents.downloadUrl(id ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<DocumentDownloadUrl>>(
+      const { data } = await api.get<DocumentDownloadUrl>(
         `/documents/${id}/download`,
       );
-      return data.data;
+      return data;
     },
     enabled: !!id,
   });
@@ -145,10 +144,10 @@ export function useApproveBooking() {
       documentId: string;
       entityId: string;
     }) => {
-      const { data } = await api.post<ApiResponse<Document>>(
+      const { data } = await api.post<Document>(
         `/documents/${documentId}/approve-booking`,
       );
-      return { document: data.data, entityId };
+      return { document: data, entityId };
     },
     onSuccess: ({ document, entityId }) => {
       toast.success('Booking suggestion approved');
