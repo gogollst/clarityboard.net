@@ -75,11 +75,11 @@ public class DeepLTranslationService : ITranslationService
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, $"{settings.BaseUrl}/v2/translate");
                 request.Headers.Add("Authorization", $"DeepL-Auth-Key {settings.ApiKey}");
-                request.Content = JsonContent.Create(new
+                request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    text = new[] { text },
-                    source_lang = deepLSource,
-                    target_lang = deepLTarget,
+                    ["text"] = text,
+                    ["source_lang"] = deepLSource,
+                    ["target_lang"] = deepLTarget,
                 });
 
                 var response = await client.SendAsync(request, ct);
