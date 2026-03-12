@@ -48,6 +48,7 @@
     "trialBalance": "Оборотная ведомость",
     "balanceSheet": "Баланс",
     "profitAndLoss": "ОПиУ",
-    "vatReconciliation": "Сверка НДС"
+    "vatReconciliation": "Сверка НДС",
+    "businessPartners": "Контрагенты"
   }
 }

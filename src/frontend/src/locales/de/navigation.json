@@ -48,6 +48,7 @@
     "trialBalance": "Saldenliste",
     "balanceSheet": "Bilanz",
     "profitAndLoss": "GuV",
-    "vatReconciliation": "USt-Abgleich"
+    "vatReconciliation": "USt-Abgleich",
+    "businessPartners": "Geschäftspartner"
   }
 }

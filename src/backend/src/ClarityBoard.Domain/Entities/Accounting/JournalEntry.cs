@@ -21,6 +21,7 @@ public class JournalEntry
     public string? SourceType { get; private set; }
     public string? SourceRef { get; private set; }
     public Guid? PartnerEntityId { get; private set; }
+    public Guid? BusinessPartnerId { get; private set; }
     public string Hash { get; private set; } = default!;
     public string? PreviousHash { get; private set; }
     public DateTime CreatedAt { get; private set; }

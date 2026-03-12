@@ -266,6 +266,106 @@
       "bothDebitAndCredit": "Строка не может иметь одновременно дебет и кредит"
     }
   },
+  "businessPartners": {
+    "title": "Контрагенты",
+    "newPartner": "Новый контрагент",
+    "searchPlaceholder": "Название, номер партнёра или ИНН...",
+    "noEntries": "Контрагенты не найдены.",
+    "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",
+    "notFound": "Контрагент не найден.",
+    "createTitle": "Новый контрагент",
+    "createCardTitle": "Основные данные",
+    "createCardDescription": "Введите данные нового контрагента.",
+    "createButton": "Создать контрагента",
+    "columns": {
+      "partnerNumber": "Номер",
+      "name": "Наименование",
+      "type": "Тип",
+      "city": "Город",
+      "isActive": "Статус",
+      "openDocuments": "Открытые документы"
+    },
+    "fields": {
+      "name": "Наименование",
+      "partnerNumber": "Номер партнёра",
+      "taxId": "ИНН",
+      "vatNumber": "КПП",
+      "street": "Улица",
+      "city": "Город",
+      "postalCode": "Почтовый индекс",
+      "country": "Страна",
+      "email": "Электронная почта",
+      "phone": "Телефон",
+      "bankName": "Название банка",
+      "iban": "IBAN",
+      "bic": "БИК",
+      "isCreditor": "Кредитор",
+      "isDebtor": "Дебитор",
+      "paymentTermDays": "Срок оплаты (дни)",
+      "defaultExpenseAccount": "Счёт расходов по умолчанию",
+      "defaultRevenueAccount": "Счёт доходов по умолчанию",
+      "contactEmployee": "Контактное лицо (внутреннее)",
+      "notes": "Примечания",
+      "isActive": "Активен"
+    },
+    "placeholders": {
+      "name": "напр. ООО «Пример»",
+      "taxId": "напр. DE123456789",
+      "vatNumber": "напр. 12/345/67890",
+      "street": "напр. ул. Примерная, 1",
+      "city": "напр. Берлин",
+      "postalCode": "напр. 10115",
+      "country": "напр. DE",
+      "email": "напр. info@example.com",
+      "phone": "напр. +49 30 12345678",
+      "bankName": "напр. Deutsche Bank",
+      "iban": "напр. DE89370400440532013000",
+      "bic": "напр. COBADEFFXXX",
+      "notes": "Необязательные примечания..."
+    },
+    "filters": {
+      "all": "Все",
+      "creditors": "Кредиторы",
+      "debtors": "Дебиторы",
+      "active": "Активные",
+      "inactive": "Неактивные"
+    },
+    "tabs": {
+      "masterData": "Основные данные",
+      "bank": "Банковские реквизиты",
+      "accounting": "Бухгалтерия"
+    },
+    "type": {
+      "creditor": "Кредитор",
+      "debtor": "Дебитор",
+      "both": "Кредитор/Дебитор"
+    },
+    "status": {
+      "active": "Активен",
+      "inactive": "Неактивен"
+    },
+    "actions": {
+      "edit": "Редактировать",
+      "deactivate": "Деактивировать",
+      "save": "Сохранить"
+    },
+    "confirmDeactivate": "Вы уверены, что хотите деактивировать этого контрагента?",
+    "validation": {
+      "nameRequired": "Наименование обязательно",
+      "typeRequired": "Необходимо выбрать хотя бы кредитор или дебитор",
+      "paymentTermDaysMin": "Срок оплаты должен быть не менее 0"
+    },
+    "toast": {
+      "created": "Контрагент создан",
+      "createError": "Ошибка создания контрагента",
+      "updated": "Контрагент обновлён",
+      "updateError": "Ошибка обновления контрагента",
+      "deactivated": "Контрагент деактивирован",
+      "deactivateError": "Ошибка деактивации контрагента",
+      "partnerAssigned": "Контрагент назначен",
+      "assignError": "Ошибка назначения контрагента"
+    }
+  },
   "toast": {
     "journalEntryCreated": "Проводка создана",
     "journalEntryCreateError": "Ошибка создания проводки",

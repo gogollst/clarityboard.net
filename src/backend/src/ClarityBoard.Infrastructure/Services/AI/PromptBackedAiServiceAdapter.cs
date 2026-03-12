@@ -29,6 +29,13 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
         return new DocumentExtractionResult
         {
             VendorName = GetString(root, "vendor_name", "vendorName", "supplier_name"),
+            VendorTaxId = GetString(root, "vendor_tax_id", "vendorTaxId", "supplier_tax_id", "ust_id_nr"),
+            VendorStreet = GetString(root, "vendor_street", "vendorStreet", "supplier_street"),
+            VendorCity = GetString(root, "vendor_city", "vendorCity", "supplier_city"),
+            VendorPostalCode = GetString(root, "vendor_postal_code", "vendorPostalCode", "supplier_postal_code"),
+            VendorCountry = GetString(root, "vendor_country", "vendorCountry", "supplier_country"),
+            VendorIban = GetString(root, "vendor_iban", "vendorIban", "supplier_iban", "iban"),
+            VendorBic = GetString(root, "vendor_bic", "vendorBic", "supplier_bic", "bic"),
             InvoiceNumber = GetString(root, "invoice_number", "invoiceNumber", "document_number"),
             InvoiceDate = ParseDateOnly(GetString(root, "invoice_date", "invoiceDate", "date")),
             TotalAmount = GetDecimal(root, "total_amount", "totalAmount", "gross_amount"),

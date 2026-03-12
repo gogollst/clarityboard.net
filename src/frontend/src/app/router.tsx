@@ -90,6 +90,9 @@ export const router = createBrowserRouter([
       { path: 'admin/ai/logs', lazy: () => import('@/features/admin/AiCallLogs') },
 
       // Accounting
+      { path: 'accounting/business-partners', lazy: () => import('@/features/accounting/business-partners/BusinessPartnerList') },
+      { path: 'accounting/business-partners/new', lazy: () => import('@/features/accounting/business-partners/BusinessPartnerCreate') },
+      { path: 'accounting/business-partners/:id', lazy: () => import('@/features/accounting/business-partners/BusinessPartnerDetail') },
       { path: 'accounting/journal-entries', lazy: () => import('@/features/accounting/JournalEntryList') },
       { path: 'accounting/journal-entries/new', lazy: () => import('@/features/accounting/JournalEntryCreate') },
       { path: 'accounting/journal-entries/:id', lazy: () => import('@/features/accounting/JournalEntryDetail') },

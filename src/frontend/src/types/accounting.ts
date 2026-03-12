@@ -258,3 +258,99 @@ export interface UpdateFiscalPeriodStatusRequest {
   id: string;
   status: FiscalPeriodStatus;
 }
+
+// ---------------------------------------------------------------------------
+// Business Partners
+// ---------------------------------------------------------------------------
+
+export interface BusinessPartner {
+  id: string;
+  partnerNumber: string;
+  name: string;
+  taxId?: string;
+  vatNumber?: string;
+  street?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
+  email?: string;
+  phone?: string;
+  bankName?: string;
+  iban?: string;
+  bic?: string;
+  isCreditor: boolean;
+  isDebtor: boolean;
+  defaultExpenseAccountId?: string;
+  defaultRevenueAccountId?: string;
+  contactEmployeeId?: string;
+  contactEmployeeName?: string;
+  paymentTermDays: number;
+  isActive: boolean;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface BusinessPartnerListItem {
+  id: string;
+  partnerNumber: string;
+  name: string;
+  isCreditor: boolean;
+  isDebtor: boolean;
+  isActive: boolean;
+  city?: string;
+  openDocumentCount: number;
+}
+
+export interface BusinessPartnerSearchItem {
+  id: string;
+  partnerNumber: string;
+  name: string;
+  taxId?: string;
+  iban?: string;
+}
+
+export interface CreateBusinessPartnerRequest {
+  name: string;
+  taxId?: string;
+  vatNumber?: string;
+  street?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
+  email?: string;
+  phone?: string;
+  bankName?: string;
+  iban?: string;
+  bic?: string;
+  isCreditor: boolean;
+  isDebtor: boolean;
+  defaultExpenseAccountId?: string;
+  defaultRevenueAccountId?: string;
+  contactEmployeeId?: string;
+  paymentTermDays: number;
+  notes?: string;
+}
+
+export interface UpdateBusinessPartnerRequest {
+  id: string;
+  name: string;
+  taxId?: string;
+  vatNumber?: string;
+  street?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
+  email?: string;
+  phone?: string;
+  bankName?: string;
+  iban?: string;
+  bic?: string;
+  isCreditor: boolean;
+  isDebtor: boolean;
+  defaultExpenseAccountId?: string;
+  defaultRevenueAccountId?: string;
+  contactEmployeeId?: string;
+  paymentTermDays: number;
+  isActive: boolean;
+  notes?: string;
+}

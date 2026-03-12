@@ -266,6 +266,106 @@
       "bothDebitAndCredit": "A line cannot have both debit and credit"
     }
   },
+  "businessPartners": {
+    "title": "Business Partners",
+    "newPartner": "New Business Partner",
+    "searchPlaceholder": "Name, partner number or tax ID...",
+    "noEntries": "No business partners found.",
+    "noEntitySelected": "Please select an entity first.",
+    "notFound": "Business partner not found.",
+    "createTitle": "New Business Partner",
+    "createCardTitle": "Master Data",
+    "createCardDescription": "Enter the details of the new business partner.",
+    "createButton": "Create Partner",
+    "columns": {
+      "partnerNumber": "Partner No.",
+      "name": "Name",
+      "type": "Type",
+      "city": "City",
+      "isActive": "Status",
+      "openDocuments": "Open Documents"
+    },
+    "fields": {
+      "name": "Name",
+      "partnerNumber": "Partner Number",
+      "taxId": "Tax ID",
+      "vatNumber": "VAT Number",
+      "street": "Street",
+      "city": "City",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "email": "Email",
+      "phone": "Phone",
+      "bankName": "Bank Name",
+      "iban": "IBAN",
+      "bic": "BIC",
+      "isCreditor": "Creditor",
+      "isDebtor": "Debtor",
+      "paymentTermDays": "Payment Terms (Days)",
+      "defaultExpenseAccount": "Default Expense Account",
+      "defaultRevenueAccount": "Default Revenue Account",
+      "contactEmployee": "Contact Person (Internal)",
+      "notes": "Notes",
+      "isActive": "Active"
+    },
+    "placeholders": {
+      "name": "e.g. Acme Corp",
+      "taxId": "e.g. DE123456789",
+      "vatNumber": "e.g. 12/345/67890",
+      "street": "e.g. 123 Main St",
+      "city": "e.g. Berlin",
+      "postalCode": "e.g. 10115",
+      "country": "e.g. DE",
+      "email": "e.g. info@example.com",
+      "phone": "e.g. +49 30 12345678",
+      "bankName": "e.g. Deutsche Bank",
+      "iban": "e.g. DE89370400440532013000",
+      "bic": "e.g. COBADEFFXXX",
+      "notes": "Optional notes..."
+    },
+    "filters": {
+      "all": "All",
+      "creditors": "Creditors",
+      "debtors": "Debtors",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "tabs": {
+      "masterData": "Master Data",
+      "bank": "Bank Details",
+      "accounting": "Accounting"
+    },
+    "type": {
+      "creditor": "Creditor",
+      "debtor": "Debtor",
+      "both": "Creditor/Debtor"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "edit": "Edit",
+      "deactivate": "Deactivate",
+      "save": "Save"
+    },
+    "confirmDeactivate": "Are you sure you want to deactivate this business partner?",
+    "validation": {
+      "nameRequired": "Name is required",
+      "typeRequired": "At least Creditor or Debtor must be selected",
+      "paymentTermDaysMin": "Payment terms must be at least 0"
+    },
+    "toast": {
+      "created": "Business partner created",
+      "createError": "Failed to create business partner",
+      "updated": "Business partner updated",
+      "updateError": "Failed to update business partner",
+      "deactivated": "Business partner deactivated",
+      "deactivateError": "Failed to deactivate business partner",
+      "partnerAssigned": "Business partner assigned",
+      "assignError": "Failed to assign business partner"
+    }
+  },
   "toast": {
     "journalEntryCreated": "Journal entry created",
     "journalEntryCreateError": "Failed to create journal entry",

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Common.Messaging;
+using ClarityBoard.Domain.Entities.Accounting;
 using ClarityBoard.Domain.Entities.Document;
 using ClarityBoard.Infrastructure.Services.Documents;
 using MassTransit;
@@ -18,6 +19,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
     private readonly IAiService _aiService;
     private readonly IDocumentStorage _documentStorage;
     private readonly IDocumentTextAcquisitionService _textAcquisitionService;
+    private readonly IBusinessPartnerMatchingService _partnerMatchingService;
     private readonly DocumentStatusChangeNotifier _documentStatusChangeNotifier;
 
     public DocumentProcessingConsumer(
@@ -26,6 +28,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         IAiService aiService,
         IDocumentStorage documentStorage,
         IDocumentTextAcquisitionService textAcquisitionService,
+        IBusinessPartnerMatchingService partnerMatchingService,
         DocumentStatusChangeNotifier documentStatusChangeNotifier)
     {
         _logger = logger;
@@ -33,6 +36,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         _aiService = aiService;
         _documentStorage = documentStorage;
         _textAcquisitionService = textAcquisitionService;
+        _partnerMatchingService = partnerMatchingService;
         _documentStatusChangeNotifier = documentStatusChangeNotifier;
     }
 
@@ -142,6 +146,73 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             persistExtractionStopwatch.Stop();
             LogStageInformation(currentStage, persistExtractionStopwatch.ElapsedMilliseconds, document.Status,
                 "storedFieldCount {StoredFieldCount}", document.Fields.Count);
+
+            // 6b. Match or create business partner
+            currentStage = "match_partner";
+            var matchPartnerStopwatch = Stopwatch.StartNew();
+            if (!string.IsNullOrWhiteSpace(extraction.VendorName))
+            {
+                var matchResult = await _partnerMatchingService.MatchPartnerAsync(
+                    entityId, extraction.VendorName, extraction.VendorTaxId, extraction.VendorIban, ct);
+
+                switch (matchResult.MatchType)
+                {
+                    case PartnerMatchType.Exact:
+                        document.AssignBusinessPartner(matchResult.MatchedPartner!.Id);
+                        LogStageInformation(currentStage, matchPartnerStopwatch.ElapsedMilliseconds, "exact_match",
+                            "partnerId {PartnerId} partnerName {PartnerName}",
+                            matchResult.MatchedPartner.Id, matchResult.MatchedPartner.Name);
+                        break;
+
+                    case PartnerMatchType.Fuzzy:
+                        var firstSuggestion = matchResult.SuggestedPartners[0];
+                        document.SuggestBusinessPartner(firstSuggestion.Id);
+                        reviewReasons.Add("partner_fuzzy_match");
+                        LogStageInformation(currentStage, matchPartnerStopwatch.ElapsedMilliseconds, "fuzzy_match",
+                            "suggestedCount {SuggestedCount} firstSuggestion {FirstSuggestion}",
+                            matchResult.SuggestedPartners.Count, firstSuggestion.Name);
+                        break;
+
+                    case PartnerMatchType.None:
+                        var newPartner = BusinessPartner.Create(
+                            entityId: entityId,
+                            name: extraction.VendorName,
+                            isCreditor: true,
+                            isDebtor: false,
+                            taxId: extraction.VendorTaxId,
+                            street: extraction.VendorStreet,
+                            city: extraction.VendorCity,
+                            postalCode: extraction.VendorPostalCode,
+                            country: extraction.VendorCountry,
+                            iban: extraction.VendorIban,
+                            bic: extraction.VendorBic);
+
+                        // Generate partner number
+                        var lastNumber = await _db.BusinessPartners
+                            .Where(bp => bp.EntityId == entityId && bp.PartnerNumber.StartsWith("K-"))
+                            .OrderByDescending(bp => bp.PartnerNumber)
+                            .Select(bp => bp.PartnerNumber)
+                            .FirstOrDefaultAsync(ct);
+
+                        var nextSeq = 1;
+                        if (lastNumber is not null && int.TryParse(lastNumber[2..], out var parsed))
+                            nextSeq = parsed + 1;
+
+                        newPartner.SetPartnerNumber($"K-{nextSeq:D5}");
+                        _db.BusinessPartners.Add(newPartner);
+                        document.AssignBusinessPartner(newPartner.Id);
+
+                        LogStageInformation(currentStage, matchPartnerStopwatch.ElapsedMilliseconds, "auto_created",
+                            "partnerNumber {PartnerNumber} partnerName {PartnerName}",
+                            newPartner.PartnerNumber, newPartner.Name);
+                        break;
+                }
+            }
+            else
+            {
+                LogStageInformation(currentStage, matchPartnerStopwatch.ElapsedMilliseconds, "skipped_no_vendor_name");
+            }
+            matchPartnerStopwatch.Stop();
 
             // 7. Call AI for booking suggestion
             currentStage = "suggest_booking";
@@ -276,6 +347,10 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         var count = 0;
 
         if (!string.IsNullOrWhiteSpace(extraction.VendorName)) count++;
+        if (!string.IsNullOrWhiteSpace(extraction.VendorTaxId)) count++;
+        if (!string.IsNullOrWhiteSpace(extraction.VendorIban)) count++;
+        if (!string.IsNullOrWhiteSpace(extraction.VendorStreet)) count++;
+        if (!string.IsNullOrWhiteSpace(extraction.VendorCity)) count++;
         if (!string.IsNullOrWhiteSpace(extraction.InvoiceNumber)) count++;
         if (extraction.InvoiceDate.HasValue) count++;
         if (extraction.TotalAmount.HasValue) count++;
@@ -289,6 +364,24 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
     {
         if (extraction.VendorName is not null)
             document.AddField(DocumentField.Create(document.Id, "vendor_name", extraction.VendorName, extraction.Confidence));
+
+        if (extraction.VendorTaxId is not null)
+            document.AddField(DocumentField.Create(document.Id, "vendor_tax_id", extraction.VendorTaxId, extraction.Confidence));
+
+        if (extraction.VendorIban is not null)
+            document.AddField(DocumentField.Create(document.Id, "vendor_iban", extraction.VendorIban, extraction.Confidence));
+
+        if (extraction.VendorStreet is not null)
+            document.AddField(DocumentField.Create(document.Id, "vendor_street", extraction.VendorStreet, extraction.Confidence));
+
+        if (extraction.VendorCity is not null)
+            document.AddField(DocumentField.Create(document.Id, "vendor_city", extraction.VendorCity, extraction.Confidence));
+
+        if (extraction.VendorPostalCode is not null)
+            document.AddField(DocumentField.Create(document.Id, "vendor_postal_code", extraction.VendorPostalCode, extraction.Confidence));
+
+        if (extraction.VendorCountry is not null)
+            document.AddField(DocumentField.Create(document.Id, "vendor_country", extraction.VendorCountry, extraction.Confidence));
 
         if (extraction.InvoiceNumber is not null)
             document.AddField(DocumentField.Create(document.Id, "invoice_number", extraction.InvoiceNumber, extraction.Confidence));

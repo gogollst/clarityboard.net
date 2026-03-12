@@ -17,6 +17,11 @@ import type {
   CreateFiscalPeriodRequest,
   UpdateFiscalPeriodStatusRequest,
   VatReconciliation,
+  BusinessPartner,
+  BusinessPartnerListItem,
+  BusinessPartnerSearchItem,
+  CreateBusinessPartnerRequest,
+  UpdateBusinessPartnerRequest,
 } from '@/types/accounting';
 
 // ---------------------------------------------------------------------------
@@ -549,6 +554,166 @@ export function useSyncTravelCosts() {
     },
     onError: () => {
       toast.error(i18n.t('accounting:toast.travelSyncError'));
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Business Partners
+// ---------------------------------------------------------------------------
+
+interface BusinessPartnerParams {
+  page?: number;
+  pageSize?: number;
+  isCreditor?: boolean;
+  isDebtor?: boolean;
+  isActive?: boolean;
+  search?: string;
+}
+
+export function useBusinessPartners(
+  entityId: string | null,
+  params?: BusinessPartnerParams,
+) {
+  return useQuery({
+    queryKey: [...queryKeys.accounting.businessPartners(entityId ?? ''), params],
+    queryFn: async () => {
+      const { data } = await api.get<
+        ApiResponse<PaginatedResponse<BusinessPartnerListItem>>
+      >('/accounting/business-partners', {
+        params: { entityId, ...params },
+      });
+      return data.data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function useBusinessPartner(id: string | null, entityId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.accounting.businessPartner(id ?? ''),
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<BusinessPartner>>(
+        `/accounting/business-partners/${id}`,
+        { params: { entityId } },
+      );
+      return data.data;
+    },
+    enabled: !!id && !!entityId,
+  });
+}
+
+export function useSearchBusinessPartners(entityId: string | null, query: string) {
+  return useQuery({
+    queryKey: [...queryKeys.accounting.businessPartnerSearch(entityId ?? ''), query],
+    queryFn: async () => {
+      const { data } = await api.get<BusinessPartnerSearchItem[]>(
+        '/accounting/business-partners/search',
+        { params: { entityId, q: query } },
+      );
+      return data;
+    },
+    enabled: !!entityId && query.length >= 2,
+  });
+}
+
+export function useCreateBusinessPartner() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ entityId, ...body }: CreateBusinessPartnerRequest & { entityId: string }) => {
+      const { data } = await api.post<ApiResponse<string>>(
+        '/accounting/business-partners',
+        body,
+      );
+      return { id: data.data, entityId };
+    },
+    onSuccess: ({ entityId }) => {
+      toast.success(i18n.t('accounting:businessPartners.toast.created'));
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.businessPartners(entityId),
+      });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:businessPartners.toast.createError'));
+    },
+  });
+}
+
+export function useUpdateBusinessPartner() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ entityId, ...body }: UpdateBusinessPartnerRequest & { entityId: string }) => {
+      const { data } = await api.put<ApiResponse<void>>(
+        `/accounting/business-partners/${body.id}`,
+        body,
+      );
+      return { entityId, id: body.id, data };
+    },
+    onSuccess: ({ entityId, id }) => {
+      toast.success(i18n.t('accounting:businessPartners.toast.updated'));
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.businessPartners(entityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.businessPartner(id),
+      });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:businessPartners.toast.updateError'));
+    },
+  });
+}
+
+export function useDeactivateBusinessPartner() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, entityId }: { id: string; entityId: string }) => {
+      await api.post(`/accounting/business-partners/${id}/deactivate`);
+      return { entityId, id };
+    },
+    onSuccess: ({ entityId, id }) => {
+      toast.success(i18n.t('accounting:businessPartners.toast.deactivated'));
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.businessPartners(entityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.businessPartner(id),
+      });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:businessPartners.toast.deactivateError'));
+    },
+  });
+}
+
+export function useAssignDocumentPartner() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      documentId,
+      businessPartnerId,
+      entityId,
+    }: {
+      documentId: string;
+      businessPartnerId: string;
+      entityId: string;
+    }) => {
+      await api.post(`/accounting/documents/${documentId}/assign-partner`, {
+        businessPartnerId,
+      });
+      return { entityId, documentId };
+    },
+    onSuccess: ({ entityId, documentId }) => {
+      toast.success(i18n.t('accounting:businessPartners.toast.partnerAssigned'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents.detail(documentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents.list(entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:businessPartners.toast.assignError'));
     },
   });
 }

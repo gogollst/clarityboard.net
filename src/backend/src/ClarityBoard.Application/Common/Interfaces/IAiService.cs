@@ -20,6 +20,13 @@ public interface IAiService
 public record DocumentExtractionResult
 {
     public string? VendorName { get; init; }
+    public string? VendorTaxId { get; init; }
+    public string? VendorStreet { get; init; }
+    public string? VendorCity { get; init; }
+    public string? VendorPostalCode { get; init; }
+    public string? VendorCountry { get; init; }
+    public string? VendorIban { get; init; }
+    public string? VendorBic { get; init; }
     public string? InvoiceNumber { get; init; }
     public DateOnly? InvoiceDate { get; init; }
     public decimal? TotalAmount { get; init; }

@@ -22,6 +22,8 @@ public class Document
     public DateOnly? InvoiceDate { get; private set; }
     public decimal? TotalAmount { get; private set; }
     public string? Currency { get; private set; }
+    public Guid? BusinessPartnerId { get; private set; }
+    public Guid? SuggestedBusinessPartnerId { get; private set; }
 
     private readonly List<DocumentField> _fields = new();
     public IReadOnlyCollection<DocumentField> Fields => _fields.AsReadOnly();
@@ -77,4 +79,16 @@ public class Document
     public void UpdateExtractedData(string extractedData) => ExtractedData = extractedData;
 
     public void AddField(DocumentField field) => _fields.Add(field);
+
+    public void AssignBusinessPartner(Guid? businessPartnerId)
+    {
+        BusinessPartnerId = businessPartnerId;
+        if (businessPartnerId.HasValue)
+            SuggestedBusinessPartnerId = null;
+    }
+
+    public void SuggestBusinessPartner(Guid suggestedPartnerId)
+    {
+        SuggestedBusinessPartnerId = suggestedPartnerId;
+    }
 }

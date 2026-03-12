@@ -15,6 +15,7 @@ public class RecurringPattern
     public bool IsActive { get; private set; } = true;
     public DateTime CreatedAt { get; private set; }
     public DateTime? LastMatchedAt { get; private set; }
+    public Guid? BusinessPartnerId { get; private set; }
 
     private RecurringPattern() { }
 
@@ -46,5 +47,10 @@ public class RecurringPattern
         LastMatchedAt = DateTime.UtcNow;
         // Increase confidence with more matches, cap at 0.99
         Confidence = Math.Min(0.99m, Confidence + 0.01m);
+    }
+
+    public void AssignBusinessPartner(Guid? businessPartnerId)
+    {
+        BusinessPartnerId = businessPartnerId;
     }
 }

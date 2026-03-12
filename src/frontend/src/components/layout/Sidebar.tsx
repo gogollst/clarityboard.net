@@ -38,6 +38,7 @@ import {
   PieChart,
   TrendingDown,
   Receipt,
+  Handshake,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -102,6 +103,7 @@ export default function Sidebar() {
   const accountingNavGroupMemo = useMemo<NavGroup>(() => ({
     label: t('navigation:groups.accounting'),
     items: [
+      { label: t('navigation:items.businessPartners'), path: '/accounting/business-partners', icon: Handshake },
       { label: t('navigation:items.journalEntries'), path: '/accounting/journal-entries', icon: BookOpen },
       { label: t('navigation:items.trialBalance'), path: '/accounting/trial-balance', icon: Scale },
       { label: t('navigation:items.balanceSheet'), path: '/accounting/balance-sheet', icon: PieChart },

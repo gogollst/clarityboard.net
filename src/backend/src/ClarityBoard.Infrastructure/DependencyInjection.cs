@@ -118,6 +118,7 @@ public static class DependencyInjection
         services.AddScoped<IDocumentVisionService, DocumentVisionService>();
         services.AddScoped<IDocumentTextAcquisitionService, DocumentTextAcquisitionService>();
         services.AddScoped<DocumentStatusChangeNotifier>();
+        services.AddScoped<IBusinessPartnerMatchingService, BusinessPartnerMatchingService>();
 
         // KPI Calculators (registered as IKpiCalculationService for resolution by CalculatorName)
         services.AddScoped<IKpiCalculationService, ClarityBoard.Application.Services.FinancialKpiCalculator>();

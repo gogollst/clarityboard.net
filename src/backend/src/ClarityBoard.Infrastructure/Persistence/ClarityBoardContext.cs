@@ -37,6 +37,7 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
     public DbSet<AccountingScenario> AccountingScenarios => Set<AccountingScenario>();
     public DbSet<AccountingPlanEntry> AccountingPlanEntries => Set<AccountingPlanEntry>();
     public DbSet<DatevExport> DatevExports => Set<DatevExport>();
+    public DbSet<BusinessPartner> BusinessPartners => Set<BusinessPartner>();
 
     // Entity
     public DbSet<LegalEntity> LegalEntities => Set<LegalEntity>();
@@ -149,6 +150,7 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
         modelBuilder.Entity<AccountingScenario>().ToTable("accounting_scenarios", "accounting");
         modelBuilder.Entity<AccountingPlanEntry>().ToTable("accounting_plan_entries", "accounting");
         modelBuilder.Entity<DatevExport>().ToTable("datev_exports", "accounting");
+        modelBuilder.Entity<BusinessPartner>().ToTable("business_partners", "accounting");
 
         // Entity schema
         modelBuilder.Entity<LegalEntity>().ToTable("legal_entities", "entity");
@@ -354,6 +356,32 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.HasIndex(e => new { e.EntityId, e.CreatedAt });
             entity.Property(e => e.ExportType).HasConversion<string>().HasMaxLength(30);
             entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<BusinessPartner>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.EntityId, e.PartnerNumber }).IsUnique();
+            entity.HasIndex(e => new { e.EntityId, e.Name });
+            entity.Property(e => e.PartnerNumber).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.TaxId).HasMaxLength(50);
+            entity.Property(e => e.VatNumber).HasMaxLength(50);
+            entity.Property(e => e.Street).HasMaxLength(200);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.PostalCode).HasMaxLength(20);
+            entity.Property(e => e.Country).HasMaxLength(2);
+            entity.Property(e => e.Email).HasMaxLength(200);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.BankName).HasMaxLength(200);
+            entity.Property(e => e.Iban).HasMaxLength(34);
+            entity.Property(e => e.Bic).HasMaxLength(11);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasOne<ClarityBoard.Domain.Entities.Hr.Employee>()
+                .WithMany()
+                .HasForeignKey(e => e.ContactEmployeeId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // ───────────────────────────────────────────────

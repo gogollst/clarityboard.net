@@ -31,6 +31,7 @@ public interface IAppDbContext
     DbSet<AccountingScenario> AccountingScenarios { get; }
     DbSet<AccountingPlanEntry> AccountingPlanEntries { get; }
     DbSet<DatevExport> DatevExports { get; }
+    DbSet<BusinessPartner> BusinessPartners { get; }
 
     // Entity
     DbSet<LegalEntity> LegalEntities { get; }

@@ -68,6 +68,7 @@ Rules:
 - German Umsatzsteuer rates: 19% (standard), 7% (reduced), 0% (exempt)
 - Distinguish Nettobetrag, Steuerbetrag and Bruttobetrag
 - Extract all line items with description, quantity, unit price and total
+- Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic
 - Assign a confidence score 0.0–1.0 based on text quality and completeness
 - If a field cannot be determined reliably, omit it rather than guess
 """,
@@ -93,6 +94,7 @@ Rules:
 - German Umsatzsteuer rates: 19% (standard), 7% (reduced), 0% (exempt)
 - Distinguish Nettobetrag, Steuerbetrag and Bruttobetrag
 - Extract all line items with description, quantity, unit price and total
+- Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic
 - Assign a confidence score 0.0–1.0 based on text quality and completeness
 - If a field cannot be determined reliably, omit it rather than guess
 """,

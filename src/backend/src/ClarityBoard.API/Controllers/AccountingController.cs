@@ -265,6 +265,97 @@ public class AccountingController : ControllerBase
         return CreatedAtAction(nameof(GetAccountingScenarios), new { }, id);
     }
 
+    // ── Business Partners ────────────────────────────────────────────────
+
+    [HttpGet("business-partners")]
+    [ProducesResponseType(typeof(PagedResult<BusinessPartnerListItemDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<BusinessPartnerListItemDto>>> GetBusinessPartners(
+        [FromQuery] Guid entityId,
+        [FromQuery] bool? isCreditor = null,
+        [FromQuery] bool? isDebtor = null,
+        [FromQuery] bool? isActive = null,
+        [FromQuery] string? search = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(
+            new GetBusinessPartnersQuery(entityId, isCreditor, isDebtor, isActive, search, page, pageSize), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("business-partners/{id:guid}")]
+    [ProducesResponseType(typeof(BusinessPartnerDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<BusinessPartnerDto>> GetBusinessPartner(
+        [FromQuery] Guid entityId, Guid id, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetBusinessPartnerQuery(entityId, id), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("business-partners/search")]
+    [ProducesResponseType(typeof(List<BusinessPartnerSearchResultDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<BusinessPartnerSearchResultDto>>> SearchBusinessPartners(
+        [FromQuery] Guid entityId, [FromQuery] string q = "", CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new SearchBusinessPartnersQuery(entityId, q), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("business-partners")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Guid>> CreateBusinessPartner(
+        CreateBusinessPartnerCommand command, CancellationToken ct)
+    {
+        var id = await _mediator.Send(command, ct);
+        return CreatedAtAction(nameof(GetBusinessPartner), new { id }, id);
+    }
+
+    [HttpPut("business-partners/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateBusinessPartner(
+        Guid id, UpdateBusinessPartnerCommand command, CancellationToken ct)
+    {
+        if (id != command.Id)
+            return BadRequest("Route id does not match body id.");
+
+        await _mediator.Send(command, ct);
+        return NoContent();
+    }
+
+    [HttpPost("business-partners/{id:guid}/deactivate")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeactivateBusinessPartner(Guid id, CancellationToken ct)
+    {
+        await _mediator.Send(new DeactivateBusinessPartnerCommand(id), ct);
+        return NoContent();
+    }
+
+    [HttpPost("documents/{id:guid}/assign-partner")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AssignDocumentPartner(
+        Guid id, [FromBody] AssignDocumentPartnerRequest request, CancellationToken ct)
+    {
+        await _mediator.Send(new AssignDocumentPartnerCommand(id, request.BusinessPartnerId), ct);
+        return NoContent();
+    }
+
+    [HttpPost("documents/{id:guid}/confirm-partner")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ConfirmPartnerMatch(
+        Guid id, [FromBody] ConfirmPartnerMatchRequest request, CancellationToken ct)
+    {
+        await _mediator.Send(new ConfirmPartnerMatchCommand(id, request.BusinessPartnerId), ct);
+        return NoContent();
+    }
+
     // ── Travel Cost Sync ─────────────────────────────────────────────────
 
     [HttpPost("travel-costs/sync")]
@@ -283,4 +374,14 @@ public class AccountingController : ControllerBase
 public record ReverseJournalEntryRequest
 {
     public required string Reason { get; init; }
+}
+
+public record AssignDocumentPartnerRequest
+{
+    public Guid? BusinessPartnerId { get; init; }
+}
+
+public record ConfirmPartnerMatchRequest
+{
+    public required Guid BusinessPartnerId { get; init; }
 }

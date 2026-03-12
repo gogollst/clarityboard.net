@@ -266,6 +266,106 @@
       "bothDebitAndCredit": "Eine Zeile kann nicht gleichzeitig Soll und Haben haben"
     }
   },
+  "businessPartners": {
+    "title": "Geschäftspartner",
+    "newPartner": "Neuer Geschäftspartner",
+    "searchPlaceholder": "Name, Partnernummer oder USt-IdNr...",
+    "noEntries": "Keine Geschäftspartner gefunden.",
+    "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",
+    "notFound": "Geschäftspartner nicht gefunden.",
+    "createTitle": "Neuer Geschäftspartner",
+    "createCardTitle": "Stammdaten",
+    "createCardDescription": "Erfassen Sie die Daten des neuen Geschäftspartners.",
+    "createButton": "Geschäftspartner anlegen",
+    "columns": {
+      "partnerNumber": "Partnernr.",
+      "name": "Name",
+      "type": "Typ",
+      "city": "Ort",
+      "isActive": "Status",
+      "openDocuments": "Offene Belege"
+    },
+    "fields": {
+      "name": "Name",
+      "partnerNumber": "Partnernummer",
+      "taxId": "USt-IdNr",
+      "vatNumber": "Steuernummer",
+      "street": "Straße",
+      "city": "Ort",
+      "postalCode": "PLZ",
+      "country": "Land",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "bankName": "Bankname",
+      "iban": "IBAN",
+      "bic": "BIC",
+      "isCreditor": "Kreditor",
+      "isDebtor": "Debitor",
+      "paymentTermDays": "Zahlungsziel (Tage)",
+      "defaultExpenseAccount": "Standard-Aufwandskonto",
+      "defaultRevenueAccount": "Standard-Erlöskonto",
+      "contactEmployee": "Ansprechpartner (intern)",
+      "notes": "Notizen",
+      "isActive": "Aktiv"
+    },
+    "placeholders": {
+      "name": "z.B. Muster GmbH",
+      "taxId": "z.B. DE123456789",
+      "vatNumber": "z.B. 12/345/67890",
+      "street": "z.B. Musterstraße 1",
+      "city": "z.B. Berlin",
+      "postalCode": "z.B. 10115",
+      "country": "z.B. DE",
+      "email": "z.B. info@example.com",
+      "phone": "z.B. +49 30 12345678",
+      "bankName": "z.B. Deutsche Bank",
+      "iban": "z.B. DE89370400440532013000",
+      "bic": "z.B. COBADEFFXXX",
+      "notes": "Optionale Notizen..."
+    },
+    "filters": {
+      "all": "Alle",
+      "creditors": "Kreditoren",
+      "debtors": "Debitoren",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "tabs": {
+      "masterData": "Stammdaten",
+      "bank": "Bankverbindung",
+      "accounting": "Buchhaltung"
+    },
+    "type": {
+      "creditor": "Kreditor",
+      "debtor": "Debitor",
+      "both": "Kreditor/Debitor"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "actions": {
+      "edit": "Bearbeiten",
+      "deactivate": "Deaktivieren",
+      "save": "Speichern"
+    },
+    "confirmDeactivate": "Möchten Sie diesen Geschäftspartner wirklich deaktivieren?",
+    "validation": {
+      "nameRequired": "Name ist erforderlich",
+      "typeRequired": "Mindestens Kreditor oder Debitor muss ausgewählt sein",
+      "paymentTermDaysMin": "Zahlungsziel muss mindestens 0 sein"
+    },
+    "toast": {
+      "created": "Geschäftspartner angelegt",
+      "createError": "Fehler beim Anlegen des Geschäftspartners",
+      "updated": "Geschäftspartner aktualisiert",
+      "updateError": "Fehler beim Aktualisieren des Geschäftspartners",
+      "deactivated": "Geschäftspartner deaktiviert",
+      "deactivateError": "Fehler beim Deaktivieren des Geschäftspartners",
+      "partnerAssigned": "Geschäftspartner zugeordnet",
+      "assignError": "Fehler bei der Zuordnung des Geschäftspartners"
+    }
+  },
   "toast": {
     "journalEntryCreated": "Buchungssatz erstellt",
     "journalEntryCreateError": "Fehler beim Erstellen des Buchungssatzes",

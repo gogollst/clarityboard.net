@@ -38,6 +38,12 @@ export const queryKeys = {
       ['accounting', 'scenarios', entityId] as const,
     accounts: (entityId: string) =>
       ['accounting', 'accounts', entityId] as const,
+    businessPartners: (entityId: string) =>
+      ['accounting', 'business-partners', entityId] as const,
+    businessPartner: (id: string) =>
+      ['accounting', 'business-partner', id] as const,
+    businessPartnerSearch: (entityId: string) =>
+      ['accounting', 'business-partner-search', entityId] as const,
   },
 
   cashflow: {
