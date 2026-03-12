@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import i18n from '@/i18n';
-import type { ApiResponse, PaginatedResponse } from '@/types/api';
+import type { PaginatedResponse } from '@/types/api';
 import type {
   Account,
   AccountDetail,
@@ -154,11 +154,11 @@ export function useJournalEntries(
     queryKey: [...queryKeys.accounting.journalEntries(entityId ?? ''), params],
     queryFn: async () => {
       const { data } = await api.get<
-        ApiResponse<PaginatedResponse<JournalEntryListItem>>
+        PaginatedResponse<JournalEntryListItem>
       >('/accounting/journal-entries', {
         params: { entityId, ...params },
       });
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -168,11 +168,11 @@ export function useJournalEntry(id: string | null, entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.accounting.journalEntry(id ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<JournalEntryDetail>>(
+      const { data } = await api.get<JournalEntryDetail>(
         `/accounting/journal-entries/${id}`,
         { params: { entityId } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!id && !!entityId,
   });
@@ -183,11 +183,11 @@ export function useCreateJournalEntry() {
 
   return useMutation({
     mutationFn: async (request: CreateJournalEntryRequest) => {
-      const { data } = await api.post<ApiResponse<JournalEntry>>(
+      const { data } = await api.post<JournalEntry>(
         '/accounting/journal-entries',
         request,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success(i18n.t('accounting:toast.journalEntryCreated'));
@@ -217,12 +217,12 @@ export function useReverseJournalEntry() {
       entityId: string;
       reason: string;
     }) => {
-      const { data } = await api.post<ApiResponse<string>>(
+      const { data } = await api.post<string>(
         `/accounting/journal-entries/${id}/reverse`,
         { reason },
         { params: { entityId } },
       );
-      return { reversalId: data.data, entityId };
+      return { reversalId: data, entityId };
     },
     onSuccess: ({ entityId }) => {
       toast.success(i18n.t('accounting:toast.journalEntryReversed'));
@@ -251,11 +251,11 @@ export function useTrialBalance(
   return useQuery({
     queryKey: [...queryKeys.accounting.trialBalance(entityId ?? ''), year, month],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<TrialBalance>>(
+      const { data } = await api.get<TrialBalance>(
         '/accounting/trial-balance',
         { params: { entityId, year, month } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId && !!year && !!month,
   });
@@ -277,11 +277,11 @@ export function useProfitAndLoss(
       compareMonth,
     ],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<ProfitAndLoss>>(
+      const { data } = await api.get<ProfitAndLoss>(
         '/accounting/pnl',
         { params: { entityId, year, month, compareYear, compareMonth } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId && !!year && !!month,
   });
@@ -303,11 +303,11 @@ export function useBalanceSheet(
       compareMonth,
     ],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<BalanceSheet>>(
+      const { data } = await api.get<BalanceSheet>(
         '/accounting/balance-sheet',
         { params: { entityId, year, month, compareYear, compareMonth } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId && !!year && !!month,
   });
@@ -321,11 +321,11 @@ export function useFiscalPeriods(entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.accounting.fiscalPeriods(entityId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<FiscalPeriod[]>>(
+      const { data } = await api.get<FiscalPeriod[]>(
         '/accounting/fiscal-periods',
         { params: { entityId } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -336,11 +336,11 @@ export function useCreateFiscalPeriod() {
 
   return useMutation({
     mutationFn: async (request: CreateFiscalPeriodRequest) => {
-      const { data } = await api.post<ApiResponse<FiscalPeriod>>(
+      const { data } = await api.post<FiscalPeriod>(
         '/accounting/fiscal-periods',
         request,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success(i18n.t('accounting:toast.fiscalPeriodCreated'));
@@ -363,11 +363,11 @@ export function useUpdateFiscalPeriodStatus() {
       status,
       entityId,
     }: UpdateFiscalPeriodStatusRequest & { entityId: string }) => {
-      const { data } = await api.put<ApiResponse<FiscalPeriod>>(
+      const { data } = await api.put<FiscalPeriod>(
         `/accounting/fiscal-periods/${id}/status`,
         { status },
       );
-      return { period: data.data, entityId };
+      return { period: data, entityId };
     },
     onSuccess: ({ entityId }) => {
       toast.success(i18n.t('accounting:toast.fiscalPeriodClosed'));
@@ -397,11 +397,11 @@ export function useVatReconciliation(
       periodEnd,
     ],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<VatReconciliation>>(
+      const { data } = await api.get<VatReconciliation>(
         '/accounting/vat-reconciliation',
         { params: { entityId, periodStart, periodEnd } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId && !!periodStart && !!periodEnd,
   });
@@ -416,10 +416,10 @@ export function usePostJournalEntry() {
 
   return useMutation({
     mutationFn: async ({ id, entityId }: { id: string; entityId: string }) => {
-      const { data } = await api.post<ApiResponse<{ entryNumber: number; hash: string }>>(
+      const { data } = await api.post<{ entryNumber: number; hash: string }>(
         `/accounting/journal-entries/${id}/post`,
       );
-      return { result: data.data, entityId };
+      return { result: data, entityId };
     },
     onSuccess: ({ entityId }) => {
       toast.success(i18n.t('accounting:toast.journalEntryPosted'));
@@ -672,11 +672,11 @@ export function useBusinessPartners(
     queryKey: [...queryKeys.accounting.businessPartners(entityId ?? ''), params],
     queryFn: async () => {
       const { data } = await api.get<
-        ApiResponse<PaginatedResponse<BusinessPartnerListItem>>
+        PaginatedResponse<BusinessPartnerListItem>
       >('/accounting/business-partners', {
         params: { entityId, ...params },
       });
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -686,11 +686,11 @@ export function useBusinessPartner(id: string | null, entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.accounting.businessPartner(id ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<BusinessPartner>>(
+      const { data } = await api.get<BusinessPartner>(
         `/accounting/business-partners/${id}`,
         { params: { entityId } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!id && !!entityId,
   });
@@ -715,11 +715,11 @@ export function useCreateBusinessPartner() {
 
   return useMutation({
     mutationFn: async ({ entityId, ...body }: CreateBusinessPartnerRequest & { entityId: string }) => {
-      const { data } = await api.post<ApiResponse<string>>(
+      const { data } = await api.post<string>(
         '/accounting/business-partners',
         body,
       );
-      return { id: data.data, entityId };
+      return { id: data, entityId };
     },
     onSuccess: ({ entityId }) => {
       toast.success(i18n.t('accounting:businessPartners.toast.created'));
@@ -738,11 +738,11 @@ export function useUpdateBusinessPartner() {
 
   return useMutation({
     mutationFn: async ({ entityId, ...body }: UpdateBusinessPartnerRequest & { entityId: string }) => {
-      const { data } = await api.put<ApiResponse<void>>(
+      await api.put(
         `/accounting/business-partners/${body.id}`,
         body,
       );
-      return { entityId, id: body.id, data };
+      return { entityId, id: body.id };
     },
     onSuccess: ({ entityId, id }) => {
       toast.success(i18n.t('accounting:businessPartners.toast.updated'));

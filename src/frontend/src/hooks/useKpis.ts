@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
-import type { ApiResponse } from '@/types/api';
 import type {
   DashboardDto,
   KpiSnapshot,
@@ -19,11 +18,11 @@ export function useKpiDashboard(entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.kpi.dashboard(entityId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<DashboardDto>>(
+      const { data } = await api.get<DashboardDto>(
         '/kpi/dashboard',
         { params: { entityId } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
     refetchInterval: 60_000, // refresh every minute as fallback to SignalR
@@ -43,11 +42,11 @@ export function useKpiHistory(
       endDate,
     ],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<KpiSnapshot[]>>(
+      const { data } = await api.get<KpiSnapshot[]>(
         `/kpi/${kpiId}/history`,
         { params: { from: startDate, to: endDate } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId && !!kpiId,
   });
@@ -57,10 +56,10 @@ export function useKpiDefinitions() {
   return useQuery({
     queryKey: queryKeys.kpi.definitions(),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<KpiDefinition[]>>(
+      const { data } = await api.get<KpiDefinition[]>(
         '/kpi/definitions',
       );
-      return data.data;
+      return data;
     },
     staleTime: 10 * 60 * 1000, // definitions rarely change
   });
@@ -101,11 +100,11 @@ export function useKpiAlerts(entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.kpi.alerts(entityId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<AlertDto[]>>(
+      const { data } = await api.get<AlertDto[]>(
         '/kpi/alerts',
         { params: { entityId } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -116,11 +115,11 @@ export function useCreateKpiAlert() {
 
   return useMutation({
     mutationFn: async (request: CreateAlertRequest) => {
-      const { data } = await api.post<ApiResponse<AlertDto>>(
+      const { data } = await api.post<AlertDto>(
         '/kpi/alerts',
         request,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success('Alert created');
@@ -140,11 +139,11 @@ export function useUpdateKpiAlert() {
   return useMutation({
     mutationFn: async (request: UpdateAlertRequest) => {
       const { id, entityId: _, ...body } = request; // eslint-disable-line @typescript-eslint/no-unused-vars
-      const { data } = await api.put<ApiResponse<AlertDto>>(
+      const { data } = await api.put<AlertDto>(
         `/kpi/alerts/${id}`,
         body,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success('Alert updated');
@@ -188,10 +187,10 @@ export function useAlertEvents(alertId: string | null) {
   return useQuery({
     queryKey: queryKeys.kpi.alertEvents(alertId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<AlertEvent[]>>(
+      const { data } = await api.get<AlertEvent[]>(
         `/kpi/alerts/${alertId}/events`,
       );
-      return data.data;
+      return data;
     },
     enabled: !!alertId,
   });
@@ -290,11 +289,11 @@ export function useKpiDrillDown(
       date,
     ],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<KpiDrillDown>>(
+      const { data } = await api.get<KpiDrillDown>(
         '/kpi/drill-down',
         { params: { entityId, kpiId, date } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId && !!kpiId,
   });
@@ -304,11 +303,11 @@ export function useWorkingCapital(entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.kpi.workingCapital(entityId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<WorkingCapital>>(
+      const { data } = await api.get<WorkingCapital>(
         '/kpi/working-capital',
         { params: { entityId } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
-import type { ApiResponse, PaginatedResponse } from '@/types/api';
+import type { PaginatedResponse } from '@/types/api';
 import type {
   FixedAsset,
   Anlagenspiegel,
@@ -27,11 +27,11 @@ export function useAssets(
     queryKey: [...queryKeys.assets.list(entityId ?? ''), params],
     queryFn: async () => {
       const { data } = await api.get<
-        ApiResponse<PaginatedResponse<FixedAsset>>
+        PaginatedResponse<FixedAsset>
       >('/assets', {
         params: { entityId, ...params },
       });
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -41,10 +41,10 @@ export function useAsset(id: string | null) {
   return useQuery({
     queryKey: queryKeys.assets.detail(id ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<FixedAsset>>(
+      const { data } = await api.get<FixedAsset>(
         `/assets/${id}`,
       );
-      return data.data;
+      return data;
     },
     enabled: !!id,
   });
@@ -57,11 +57,11 @@ export function useAnlagenspiegel(
   return useQuery({
     queryKey: queryKeys.assets.anlagenspiegel(entityId ?? '', year),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<Anlagenspiegel>>(
+      const { data } = await api.get<Anlagenspiegel>(
         '/assets/anlagenspiegel',
         { params: { entityId, year } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -76,11 +76,11 @@ export function useRegisterAsset() {
 
   return useMutation({
     mutationFn: async (request: RegisterAssetRequest) => {
-      const { data } = await api.post<ApiResponse<FixedAsset>>(
+      const { data } = await api.post<FixedAsset>(
         '/assets',
         request,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success('Asset registered');
@@ -105,11 +105,11 @@ export function useDisposeAsset() {
       request: DisposeAssetRequest;
       entityId: string;
     }) => {
-      const { data } = await api.post<ApiResponse<FixedAsset>>(
+      const { data } = await api.post<FixedAsset>(
         `/assets/${request.id}/dispose`,
         request,
       );
-      return { asset: data.data, entityId };
+      return { asset: data, entityId };
     },
     onSuccess: ({ asset, entityId }) => {
       toast.success('Asset disposed');

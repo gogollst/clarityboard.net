@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
-import type { ApiResponse, PaginatedResponse } from '@/types/api';
+import type { PaginatedResponse } from '@/types/api';
 import type {
   WebhookConfig,
   MappingRule,
@@ -21,11 +21,11 @@ export function useWebhookConfigs(entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.webhooks.configs(entityId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<WebhookConfig[]>>(
+      const { data } = await api.get<WebhookConfig[]>(
         '/webhook-config',
         { params: { entityId } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -36,11 +36,11 @@ export function useCreateWebhookConfig() {
 
   return useMutation({
     mutationFn: async (request: CreateWebhookConfigRequest) => {
-      const { data } = await api.post<ApiResponse<WebhookConfig>>(
+      const { data } = await api.post<WebhookConfig>(
         '/webhook-config',
         request,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success('Webhook configuration created');
@@ -65,11 +65,11 @@ export function useUpdateWebhookConfig() {
       request: UpdateWebhookConfigRequest;
       entityId: string;
     }) => {
-      const { data } = await api.put<ApiResponse<WebhookConfig>>(
+      const { data } = await api.put<WebhookConfig>(
         `/webhook-config/${request.id}`,
         request,
       );
-      return { config: data.data, entityId };
+      return { config: data, entityId };
     },
     onSuccess: ({ entityId }) => {
       toast.success('Webhook configuration updated');
@@ -98,11 +98,11 @@ export function useCreateMappingRule() {
       request: CreateMappingRuleRequest;
       entityId: string;
     }) => {
-      const { data } = await api.post<ApiResponse<MappingRule>>(
+      const { data } = await api.post<MappingRule>(
         `/webhook-config/${request.webhookConfigId}/mapping-rules`,
         request,
       );
-      return { rule: data.data, entityId };
+      return { rule: data, entityId };
     },
     onSuccess: ({ entityId }) => {
       toast.success('Mapping rule created');
@@ -127,11 +127,11 @@ export function useUpdateMappingRule() {
       request: UpdateMappingRuleRequest;
       entityId: string;
     }) => {
-      const { data } = await api.put<ApiResponse<MappingRule>>(
+      const { data } = await api.put<MappingRule>(
         `/webhook-config/mapping-rules/${request.id}`,
         request,
       );
-      return { rule: data.data, entityId };
+      return { rule: data, entityId };
     },
     onSuccess: ({ entityId }) => {
       toast.success('Mapping rule updated');
@@ -188,11 +188,11 @@ export function useDeadLetterQueue(
     queryKey: [...queryKeys.webhooks.deadLetter(entityId ?? ''), params],
     queryFn: async () => {
       const { data } = await api.get<
-        ApiResponse<PaginatedResponse<WebhookDeadLetterEvent>>
+        PaginatedResponse<WebhookDeadLetterEvent>
       >('/webhook-config/dead-letter', {
         params: { entityId, ...params },
       });
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });

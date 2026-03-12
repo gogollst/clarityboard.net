@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
-import type { ApiResponse } from '@/types/api';
 import type { DatevExport, TriggerDatevExportRequest } from '@/types/admin';
 
 // ---------------------------------------------------------------------------
@@ -13,11 +12,11 @@ export function useDatevExports(entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.datev.exports(entityId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<DatevExport[]>>(
+      const { data } = await api.get<DatevExport[]>(
         '/datev/exports',
         { params: { entityId } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -27,10 +26,10 @@ export function useDatevDownloadUrl(exportId: string | null) {
   return useQuery({
     queryKey: queryKeys.datev.downloadUrl(exportId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<{ url: string }>>(
+      const { data } = await api.get<{ url: string }>(
         `/datev/exports/${exportId}/download`,
       );
-      return data.data;
+      return data;
     },
     enabled: !!exportId,
   });
@@ -45,11 +44,11 @@ export function useTriggerExport() {
 
   return useMutation({
     mutationFn: async (request: TriggerDatevExportRequest) => {
-      const { data } = await api.post<ApiResponse<DatevExport>>(
+      const { data } = await api.post<DatevExport>(
         '/datev/export',
         request,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success('DATEV export triggered');

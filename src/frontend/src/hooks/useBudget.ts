@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
-import type { ApiResponse } from '@/types/api';
 import type {
   Budget,
   PlanVsActual,
@@ -20,10 +19,10 @@ export function useBudgets(entityId: string | null, year?: number) {
   return useQuery({
     queryKey: [...queryKeys.budget.list(entityId ?? ''), year],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<Budget[]>>('/budget', {
+      const { data } = await api.get<Budget[]>('/budget', {
         params: { entityId, year },
       });
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -33,10 +32,10 @@ export function useBudget(id: string | null) {
   return useQuery({
     queryKey: queryKeys.budget.detail(id ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<Budget>>(
+      const { data } = await api.get<Budget>(
         `/budget/${id}`,
       );
-      return data.data;
+      return data;
     },
     enabled: !!id,
   });
@@ -46,10 +45,10 @@ export function usePlanVsActual(budgetId: string | null) {
   return useQuery({
     queryKey: queryKeys.budget.planVsActual(budgetId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<PlanVsActual>>(
+      const { data } = await api.get<PlanVsActual>(
         `/budget/${budgetId}/plan-vs-actual`,
       );
-      return data.data;
+      return data;
     },
     enabled: !!budgetId,
   });
@@ -64,11 +63,11 @@ export function useCreateBudget() {
 
   return useMutation({
     mutationFn: async (request: CreateBudgetRequest) => {
-      const { data } = await api.post<ApiResponse<Budget>>(
+      const { data } = await api.post<Budget>(
         '/budget',
         request,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success('Budget created');
@@ -87,11 +86,11 @@ export function useUpdateBudget() {
 
   return useMutation({
     mutationFn: async (request: UpdateBudgetRequest) => {
-      const { data } = await api.put<ApiResponse<Budget>>(
+      const { data } = await api.put<Budget>(
         `/budget/${request.id}`,
         request,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (data) => {
       toast.success('Budget updated');
@@ -113,11 +112,11 @@ export function useCreateBudgetRevision() {
 
   return useMutation({
     mutationFn: async (request: CreateBudgetRevisionRequest) => {
-      const { data } = await api.post<ApiResponse<BudgetRevision>>(
+      const { data } = await api.post<BudgetRevision>(
         `/budget/${request.budgetId}/revisions`,
         { note: request.note },
       );
-      return { revision: data.data, budgetId: request.budgetId };
+      return { revision: data, budgetId: request.budgetId };
     },
     onSuccess: ({ budgetId }) => {
       toast.success('Budget revision created');

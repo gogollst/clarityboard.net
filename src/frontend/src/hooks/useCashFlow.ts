@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
-import type { ApiResponse, PaginatedResponse } from '@/types/api';
+import type { PaginatedResponse } from '@/types/api';
 import type {
   CashFlowOverview,
   CashFlowForecast,
@@ -27,11 +27,11 @@ export function useCashFlowOverview(
       endDate,
     ],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<CashFlowOverview>>(
+      const { data } = await api.get<CashFlowOverview>(
         '/cashflow/overview',
         { params: { entityId, startDate, endDate } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -44,11 +44,11 @@ export function useCashFlowForecast(
   return useQuery({
     queryKey: [...queryKeys.cashflow.forecast(entityId ?? ''), weeks],
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<CashFlowForecast>>(
+      const { data } = await api.get<CashFlowForecast>(
         '/cashflow/forecast',
         { params: { entityId, weeks } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -58,11 +58,11 @@ export function useCashFlowWorkingCapital(entityId: string | null) {
   return useQuery({
     queryKey: queryKeys.cashflow.workingCapital(entityId ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<ApiResponse<WorkingCapital>>(
+      const { data } = await api.get<WorkingCapital>(
         '/cashflow/working-capital',
         { params: { entityId } },
       );
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -85,11 +85,11 @@ export function useCashFlowEntries(
     queryKey: [...queryKeys.cashflow.entries(entityId ?? ''), params],
     queryFn: async () => {
       const { data } = await api.get<
-        ApiResponse<PaginatedResponse<CashFlowEntry>>
+        PaginatedResponse<CashFlowEntry>
       >('/cashflow/entries', {
         params: { entityId, ...params },
       });
-      return data.data;
+      return data;
     },
     enabled: !!entityId,
   });
@@ -100,11 +100,11 @@ export function useCreateCashFlowEntry() {
 
   return useMutation({
     mutationFn: async (request: CreateCashFlowEntryRequest) => {
-      const { data } = await api.post<ApiResponse<CashFlowEntry>>(
+      const { data } = await api.post<CashFlowEntry>(
         '/cashflow/entries',
         request,
       );
-      return data.data;
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success('Cash flow entry created');
