@@ -55,6 +55,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AccountCombobox } from '@/components/shared/AccountCombobox';
+import { getReviewReasonDisplay } from '@/lib/reviewReasonUtils';
 import {
   ArrowLeft,
   Check,
@@ -76,6 +77,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import type { ModifyBookingRequest, DocumentField } from '@/types/document';
+import { VAT_CODES } from '@/lib/vatCodes';
 
 const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'info'> = {
   uploaded: 'info',
@@ -86,15 +88,6 @@ const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'de
   failed: 'destructive',
 };
 
-const REVIEW_REASON_MAP: Record<string, { labelKey: string; hintKey: string }> = {
-  low_extraction_confidence: { labelKey: 'reviewReasons.lowExtraction', hintKey: 'reviewReasons.lowExtractionHint' },
-  low_booking_confidence: { labelKey: 'reviewReasons.lowBooking', hintKey: 'reviewReasons.lowBookingHint' },
-  partner_fuzzy_match: { labelKey: 'reviewReasons.fuzzyPartner', hintKey: 'reviewReasons.fuzzyPartnerHint' },
-  booking_suggestion_failed: { labelKey: 'reviewReasons.bookingFailed', hintKey: 'reviewReasons.bookingFailedHint' },
-  booking_suggestion_unresolved_accounts: { labelKey: 'reviewReasons.unresolvedAccounts', hintKey: 'reviewReasons.unresolvedAccountsHint' },
-  azure_doc_intelligence_failed: { labelKey: 'reviewReasons.azureFailed', hintKey: 'reviewReasons.azureFailedHint' },
-  azure_doc_intelligence_low_confidence: { labelKey: 'reviewReasons.azureLowConfidence', hintKey: 'reviewReasons.azureLowConfidenceHint' },
-};
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -154,20 +147,6 @@ export function Component() {
   const deleteDocument = useDeleteDocument();
   const { data: preflight, refetch: fetchPreflight, isFetching: isPreflightLoading } = useDeleteDocumentPreflight(selectedEntityId, id ?? null);
 
-  // Account & employee data for modify form
-  const { data: accounts = [] } = useAccounts(selectedEntityId);
-  const { data: employeesData } = useEmployees();
-  const employees = employeesData?.items ?? [];
-
-  // Partner search state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showPartnerSearch, setShowPartnerSearch] = useState(false);
-  const debouncedSearch = useDebounced(searchQuery, 300);
-  const { data: searchResults = [] } = useSearchBusinessPartners(
-    selectedEntityId,
-    debouncedSearch,
-  );
-
   // Entities for target entity selection
   const { data: entities = [] } = useEntities();
 
@@ -180,6 +159,22 @@ export function Component() {
   const [showOcrPanel, setShowOcrPanel] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [targetEntityId, setTargetEntityId] = useState<string>('');
+
+  // Account & employee data for modify form
+  // Load accounts for the target entity (AI suggestion may point to a different entity)
+  const modifyTargetEntityId = targetEntityId || doc?.bookingSuggestion?.suggestedEntityId || selectedEntityId;
+  const { data: accounts = [] } = useAccounts(modifyTargetEntityId);
+  const { data: employeesData } = useEmployees();
+  const employees = employeesData?.items ?? [];
+
+  // Partner search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showPartnerSearch, setShowPartnerSearch] = useState(false);
+  const debouncedSearch = useDebounced(searchQuery, 300);
+  const { data: searchResults = [] } = useSearchBusinessPartners(
+    selectedEntityId,
+    debouncedSearch,
+  );
 
   // Modify form
   const modifyForm = useForm<ModifyBookingRequest>();
@@ -465,15 +460,20 @@ export function Component() {
           <CardContent>
             <div className="space-y-2">
               {doc.reviewReasons.map((reason) => {
-                const mapped = REVIEW_REASON_MAP[reason];
+                const display = getReviewReasonDisplay(reason, t);
                 return (
                   <div key={reason} className="rounded-md border border-amber-200 bg-white p-3 dark:border-amber-700 dark:bg-amber-900/30">
                     <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                      {mapped ? t(mapped.labelKey) : reason}
+                      {display.isAiFreetext && (
+                        <Badge variant="outline" className="mr-2 text-[10px] px-1.5 py-0 align-middle border-amber-300 text-amber-600 dark:border-amber-600 dark:text-amber-400">
+                          {t('reviewReasons.aiNote')}
+                        </Badge>
+                      )}
+                      {display.isAiFreetext ? <span className="italic">{display.label}</span> : display.label}
                     </p>
-                    {mapped && (
+                    {display.hint && (
                       <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                        {t(mapped.hintKey)}
+                        {display.hint}
                       </p>
                     )}
                   </div>
@@ -1030,7 +1030,22 @@ export function Component() {
 
             <div>
               <Label>{t('detail.bookingSuggestion.vatCode')}</Label>
-              <Input className="mt-1" {...modifyForm.register('vatCode')} />
+              <Select
+                value={modifyForm.watch('vatCode') ?? ''}
+                onValueChange={(v) => modifyForm.setValue('vatCode', v === 'none' ? undefined : v)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  {VAT_CODES.map((vc) => (
+                    <SelectItem key={vc.value} value={vc.value}>
+                      {vc.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
