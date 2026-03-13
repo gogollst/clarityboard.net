@@ -8,6 +8,7 @@ import {
   useAccounts,
 } from '@/hooks/useAccounting';
 import { useEntity } from '@/hooks/useEntity';
+import { getLocalizedAccountName } from '@/lib/accountUtils';
 import type { BusinessPartner } from '@/types/accounting';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -98,7 +99,7 @@ interface EditDialogProps {
 }
 
 function EditDialog({ open, onClose, partner, entityId }: EditDialogProps) {
-  const { t } = useTranslation('accounting');
+  const { t, i18n } = useTranslation('accounting');
   const updatePartner = useUpdateBusinessPartner();
   const { data: accounts = [] } = useAccounts(entityId);
 
@@ -329,7 +330,7 @@ function EditDialog({ open, onClose, partner, entityId }: EditDialogProps) {
                   <SelectItem value="none">—</SelectItem>
                   {expenseAccounts.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
-                      {a.accountNumber} — {a.name}
+                      {a.accountNumber} — {getLocalizedAccountName(a, i18n.language)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -350,7 +351,7 @@ function EditDialog({ open, onClose, partner, entityId }: EditDialogProps) {
                   <SelectItem value="none">—</SelectItem>
                   {revenueAccounts.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
-                      {a.accountNumber} — {a.name}
+                      {a.accountNumber} — {getLocalizedAccountName(a, i18n.language)}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
 import { useEntity } from '@/hooks/useEntity';
 import { useCreateJournalEntry, useAccounts } from '@/hooks/useAccounting';
+import { getLocalizedAccountName } from '@/lib/accountUtils';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,7 +52,7 @@ function formatCurrency(value: number): string {
 }
 
 export function Component() {
-  const { t } = useTranslation(['accounting', 'common']);
+  const { t, i18n } = useTranslation(['accounting', 'common']);
   const navigate = useNavigate();
   const { selectedEntityId } = useEntity();
   const createMutation = useCreateJournalEntry();
@@ -220,7 +221,7 @@ export function Component() {
                           <SelectContent>
                             {(accounts ?? []).map((acc) => (
                               <SelectItem key={acc.id} value={acc.id}>
-                                {acc.accountNumber} – {acc.name}
+                                {acc.accountNumber} – {getLocalizedAccountName(acc, i18n.language)}
                               </SelectItem>
                             ))}
                           </SelectContent>

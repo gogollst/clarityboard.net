@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useCreateBusinessPartner, useAccounts } from '@/hooks/useAccounting';
 import { useEntity } from '@/hooks/useEntity';
+import { getLocalizedAccountName } from '@/lib/accountUtils';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,7 +57,7 @@ type FormValues = {
 };
 
 export function Component() {
-  const { t } = useTranslation('accounting');
+  const { t, i18n } = useTranslation('accounting');
   const navigate = useNavigate();
   const { selectedEntityId } = useEntity();
   const createPartner = useCreateBusinessPartner();
@@ -409,7 +410,7 @@ export function Component() {
                         <SelectItem value="none">—</SelectItem>
                         {expenseAccounts.map((a) => (
                           <SelectItem key={a.id} value={a.id}>
-                            {a.accountNumber} — {a.name}
+                            {a.accountNumber} — {getLocalizedAccountName(a, i18n.language)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -431,7 +432,7 @@ export function Component() {
                         <SelectItem value="none">—</SelectItem>
                         {revenueAccounts.map((a) => (
                           <SelectItem key={a.id} value={a.id}>
-                            {a.accountNumber} — {a.name}
+                            {a.accountNumber} — {getLocalizedAccountName(a, i18n.language)}
                           </SelectItem>
                         ))}
                       </SelectContent>
