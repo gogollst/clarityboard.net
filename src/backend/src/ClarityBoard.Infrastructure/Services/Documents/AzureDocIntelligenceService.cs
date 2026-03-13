@@ -61,12 +61,11 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
         try
         {
             var content = await BinaryData.FromStreamAsync(documentStream, ct);
-            var analyzeRequest = new AnalyzeDocumentContent { Base64Source = content };
 
             var operation = await client.AnalyzeDocumentAsync(
                 WaitUntil.Completed,
                 modelId,
-                analyzeRequest,
+                content,
                 cancellationToken: ct);
 
             var result = operation.Value;
@@ -127,11 +126,10 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
                 "IDAwMDAwIG4gCjAwMDAwMDAwNzQgMDAwMDAgbiAKMDAwMDAwMDE0MyAwMDAwMCBuIAp0cmFpbGVy" +
                 "Cjw8IC9TaXplIDQgL1Jvb3QgMSAwIFIgPj4Kc3RhcnR4cmVmCjIzNgolJUVPRg==");
 
-            var analyzeRequest = new AnalyzeDocumentContent { Base64Source = BinaryData.FromBytes(testPdf) };
             var operation = await client.AnalyzeDocumentAsync(
                 WaitUntil.Completed,
                 "prebuilt-layout",
-                analyzeRequest,
+                BinaryData.FromBytes(testPdf),
                 cancellationToken: ct);
 
             return operation.HasCompleted;
