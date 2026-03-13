@@ -217,7 +217,7 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
             warnings.Add("azure_no_fields_detected");
             return new DocumentExtractionResult
             {
-                Confidence = (decimal)doc.Confidence,
+                Confidence = doc.Confidence.HasValue ? (decimal)doc.Confidence.Value : 0.5m,
             };
         }
 
@@ -246,11 +246,12 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
         // Filter out NaN/Infinity which would throw OverflowException on decimal cast
         var confidences = fields.Values
             .Select(f => f.Confidence)
-            .Where(c => float.IsFinite(c))
-            .Select(c => (decimal)c)
+            .Where(c => c.HasValue && float.IsFinite(c.Value))
+            .Select(c => (decimal)c!.Value)
             .ToList();
         var fieldConfidence = confidences.Count > 0 ? confidences.Average() : 0.5m;
-        var docConfidence = float.IsFinite(doc.Confidence) ? (decimal)doc.Confidence : 0.5m;
+        var rawDocConf = doc.Confidence;
+        var docConfidence = rawDocConf.HasValue && float.IsFinite(rawDocConf.Value) ? (decimal)rawDocConf.Value : 0.5m;
         var overallConfidence = Math.Min(docConfidence, fieldConfidence);
 
         // Build raw fields from all Azure fields for transparency
@@ -340,9 +341,8 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
 
         var allConfidences = result.Pages
             .SelectMany(p => p.Words ?? Enumerable.Empty<DocumentWord>())
-            .Select(w => w.Confidence)
-            .Where(c => float.IsFinite(c))
-            .Select(c => (decimal)c)
+            .Where(w => w.Confidence.HasValue && float.IsFinite(w.Confidence.Value))
+            .Select(w => (decimal)w.Confidence!.Value)
             .ToList();
 
         return allConfidences.Count > 0 ? allConfidences.Average() : 0.5m;
