@@ -724,7 +724,9 @@ export function Component() {
                   <tbody>
                     {doc.fields.map((field: DocumentField) => (
                       <tr key={field.id} className="border-b last:border-0">
-                        <td className="py-2 font-medium">{field.fieldName}</td>
+                        <td className="py-2 font-medium">
+                          {t(`detail.fieldsPanel.fieldLabels.${field.fieldName}`, { defaultValue: field.fieldName })}
+                        </td>
                         <td className="py-2">
                           {field.correctedValue ?? field.fieldValue ?? '—'}
                           {field.correctedValue && field.fieldValue && (
