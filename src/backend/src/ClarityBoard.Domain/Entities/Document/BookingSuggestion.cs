@@ -24,6 +24,9 @@ public class BookingSuggestion
     public DateTime? RejectedAt { get; private set; }
     public string? RejectionReason { get; private set; }
     public bool IsAutoBooked { get; private set; }
+    public string? InvoiceType { get; private set; }
+    public string? TaxKey { get; private set; }
+    public string? VatTreatmentType { get; private set; }
 
     private BookingSuggestion() { }
 
@@ -31,7 +34,8 @@ public class BookingSuggestion
         Guid documentId, Guid entityId,
         Guid debitAccountId, Guid creditAccountId,
         decimal amount, string? vatCode, decimal? vatAmount,
-        string? description, decimal confidence, string? aiReasoning = null)
+        string? description, decimal confidence, string? aiReasoning = null,
+        string? invoiceType = null, string? taxKey = null, string? vatTreatmentType = null)
     {
         return new BookingSuggestion
         {
@@ -46,6 +50,9 @@ public class BookingSuggestion
             Description = description,
             Confidence = confidence,
             AiReasoning = aiReasoning,
+            InvoiceType = invoiceType,
+            TaxKey = taxKey,
+            VatTreatmentType = vatTreatmentType,
             CreatedAt = DateTime.UtcNow,
         };
     }

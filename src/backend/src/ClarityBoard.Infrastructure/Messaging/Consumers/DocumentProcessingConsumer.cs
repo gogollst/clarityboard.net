@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Common.Messaging;
 using ClarityBoard.Domain.Entities.Accounting;
@@ -216,7 +217,30 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             }
             entityRecognitionStopwatch.Stop();
 
-            // 7. Call AI for booking suggestion — load entity's accounts
+            // 7. Build company context for AI prompt
+            currentStage = "build_company_context";
+            string? companyContext = null;
+            try
+            {
+                var allEntities = await _db.LegalEntities
+                    .Where(e => e.IsActive)
+                    .Select(e => new { e.Name, e.LegalForm, e.VatId, e.ParentEntityId })
+                    .ToListAsync(ct);
+
+                var holdingEntity = allEntities.FirstOrDefault(e => e.ParentEntityId == null);
+                var holdingName = holdingEntity?.Name ?? legalEntity?.Name ?? "Unknown";
+
+                var entitiesJson = string.Join("\n", allEntities.Select(e =>
+                    $"- {e.Name} ({e.LegalForm}){(e.VatId is not null ? $", USt-IdNr: {e.VatId}" : "")}"));
+
+                companyContext = $"Holding: {holdingName}\n\nGesellschaften:\n{entitiesJson}";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to build company context for booking suggestion — proceeding without");
+            }
+
+            // 7b. Call AI for booking suggestion — load entity's accounts
             currentStage = "suggest_booking";
             var suggestBookingStopwatch = Stopwatch.StartNew();
             BookingSuggestionResult? bookingSuggestion = null;
@@ -231,13 +255,34 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                     .ToListAsync(ct);
 
                 bookingSuggestion = await _aiService.SuggestBookingAsync(
-                    extraction, entityId, chartOfAccounts, accounts, ct);
+                    extraction, entityId, chartOfAccounts, accounts, companyContext, ct);
                 suggestBookingStopwatch.Stop();
                 LogConfidenceStage(currentStage, suggestBookingStopwatch.ElapsedMilliseconds, bookingSuggestion.Confidence,
                     "amount {Amount} debitAccount {DebitAccount} creditAccount {CreditAccount}",
                     bookingSuggestion.Amount, bookingSuggestion.DebitAccountNumber, bookingSuggestion.CreditAccountNumber);
                 if (bookingSuggestion.Confidence < LowConfidenceThreshold)
                     reviewReasons.Add("low_booking_confidence");
+
+                // Evaluate AI classification flags
+                if (bookingSuggestion.Flags is not null)
+                {
+                    if (bookingSuggestion.Flags.NeedsManualReview)
+                        reviewReasons.Add("ai_needs_manual_review");
+                    if (bookingSuggestion.Flags.ReverseCharge)
+                        reviewReasons.Add("reverse_charge_detected");
+                    if (bookingSuggestion.Flags.ActivationRequired)
+                        reviewReasons.Add("activation_required");
+                    if (bookingSuggestion.Flags.EntertainmentExpense)
+                        reviewReasons.Add("entertainment_expense_70_30");
+                    if (bookingSuggestion.Flags.IntraCommunity)
+                        reviewReasons.Add("intra_community_acquisition");
+
+                    foreach (var reason in bookingSuggestion.Flags.ReviewReasons)
+                    {
+                        if (!reviewReasons.Contains(reason))
+                            reviewReasons.Add(reason);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -706,6 +751,20 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             return false;
         }
 
+        // Serialize full AI response (flags, vat treatment, line items) as JSON for AiReasoning
+        var aiReasoningJson = JsonSerializer.Serialize(new
+        {
+            suggestion.Reasoning,
+            suggestion.InvoiceType,
+            suggestion.TaxKey,
+            suggestion.VatTreatment,
+            suggestion.Flags,
+            suggestion.ClassifiedLineItems,
+            suggestion.BookingEntries,
+            suggestion.AssignedEntity,
+            suggestion.Notes,
+        }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = false });
+
         var bookingSuggestion = BookingSuggestion.Create(
             documentId: document.Id,
             entityId: entityId,
@@ -713,10 +772,13 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             creditAccountId: creditAccount.Id,
             amount: suggestion.Amount,
             vatCode: suggestion.VatCode,
-            vatAmount: null, // Could be calculated from amount + vatCode
+            vatAmount: null,
             description: suggestion.Description,
             confidence: suggestion.Confidence,
-            aiReasoning: suggestion.Reasoning);
+            aiReasoning: aiReasoningJson,
+            invoiceType: suggestion.InvoiceType,
+            taxKey: suggestion.TaxKey,
+            vatTreatmentType: suggestion.VatTreatment?.Type);
 
         _db.BookingSuggestions.Add(bookingSuggestion);
         return true;

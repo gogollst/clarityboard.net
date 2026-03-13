@@ -611,6 +611,9 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.Status).HasMaxLength(20);
             entity.Property(e => e.Confidence).HasPrecision(5, 4);
             entity.Property(e => e.RejectionReason).HasMaxLength(500);
+            entity.Property(e => e.InvoiceType).HasMaxLength(50);
+            entity.Property(e => e.TaxKey).HasMaxLength(10);
+            entity.Property(e => e.VatTreatmentType).HasMaxLength(50);
         });
 
         modelBuilder.Entity<RecurringPattern>(entity =>

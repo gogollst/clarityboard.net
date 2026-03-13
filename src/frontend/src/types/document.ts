@@ -71,6 +71,9 @@ export interface BookingSuggestion {
   hrEmployeeName?: string;
   isAutoBooked?: boolean;
   rejectionReason?: string;
+  invoiceType?: string;
+  taxKey?: string;
+  vatTreatmentType?: string;
 }
 
 export interface DocumentListParams {

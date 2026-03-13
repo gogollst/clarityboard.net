@@ -58,7 +58,7 @@ public class PromptBackedAiServiceAdapterTests
             new("1200", "Forderungen", "asset", null),
         };
 
-        var result = await sut.SuggestBookingAsync(extraction, Guid.NewGuid(), "SKR03", accounts, CancellationToken.None);
+        var result = await sut.SuggestBookingAsync(extraction, Guid.NewGuid(), "SKR03", accounts, null, CancellationToken.None);
 
         Assert.Equal("3400", result.DebitAccountNumber);
         Assert.Equal("1200", result.CreditAccountNumber);

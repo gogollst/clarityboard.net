@@ -11,6 +11,7 @@ public interface IAiService
     Task<BookingSuggestionResult> SuggestBookingAsync(
         DocumentExtractionResult extraction, Guid entityId,
         string chartOfAccounts, IReadOnlyList<AccountInfo> accounts,
+        string? companyContext,
         CancellationToken ct);
 
     Task<string> AnalyzeKpiAsync(
@@ -59,6 +60,7 @@ public record LineItemResult
 
 public record BookingSuggestionResult
 {
+    // Existing fields
     public string? DebitAccountNumber { get; init; }
     public string? CreditAccountNumber { get; init; }
     public decimal Amount { get; init; }
@@ -66,6 +68,60 @@ public record BookingSuggestionResult
     public string? Description { get; init; }
     public decimal Confidence { get; init; }
     public string? Reasoning { get; init; }
+
+    // Classification fields from enriched prompt
+    public string? InvoiceType { get; init; }
+    public string? TaxKey { get; init; }
+    public VatTreatmentResult? VatTreatment { get; init; }
+    public BookingFlagsResult? Flags { get; init; }
+    public IReadOnlyList<ClassifiedLineItemResult> ClassifiedLineItems { get; init; } = [];
+    public IReadOnlyList<BookingEntryResult> BookingEntries { get; init; } = [];
+    public string? AssignedEntity { get; init; }
+    public string? Notes { get; init; }
+}
+
+public record VatTreatmentResult
+{
+    public string Type { get; init; } = "standard_19";
+    public string? Explanation { get; init; }
+    public string? InputTaxAccount { get; init; }
+    public bool InputTaxDeductible { get; init; } = true;
+    public string? OutputTaxAccount { get; init; }
+    public string? LegalBasis { get; init; }
+}
+
+public record BookingFlagsResult
+{
+    public bool NeedsManualReview { get; init; }
+    public IReadOnlyList<string> ReviewReasons { get; init; } = [];
+    public bool IsRecurring { get; init; }
+    public bool GwgRelevant { get; init; }
+    public bool ActivationRequired { get; init; }
+    public bool ReverseCharge { get; init; }
+    public bool IntraCommunity { get; init; }
+    public bool EntertainmentExpense { get; init; }
+}
+
+public record ClassifiedLineItemResult
+{
+    public string? Description { get; init; }
+    public decimal NetAmount { get; init; }
+    public decimal VatRate { get; init; }
+    public decimal VatAmount { get; init; }
+    public string? AccountNumber { get; init; }
+    public string? AccountName { get; init; }
+    public string? CostCenter { get; init; }
+}
+
+public record BookingEntryResult
+{
+    public string? DebitAccount { get; init; }
+    public string? DebitAccountName { get; init; }
+    public string? CreditAccount { get; init; }
+    public string? CreditAccountName { get; init; }
+    public decimal Amount { get; init; }
+    public string? TaxKey { get; init; }
+    public string? Description { get; init; }
 }
 
 public record AccountInfo(string AccountNumber, string Name, string AccountType, string? VatDefault);

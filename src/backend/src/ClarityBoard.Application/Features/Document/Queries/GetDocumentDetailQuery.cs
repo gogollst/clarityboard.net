@@ -71,6 +71,9 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
                 HrEmployeeName = employeeName,
                 IsAutoBooked = bookingSuggestion.IsAutoBooked,
                 RejectionReason = bookingSuggestion.RejectionReason,
+                InvoiceType = bookingSuggestion.InvoiceType,
+                TaxKey = bookingSuggestion.TaxKey,
+                VatTreatmentType = bookingSuggestion.VatTreatmentType,
             };
         }
 

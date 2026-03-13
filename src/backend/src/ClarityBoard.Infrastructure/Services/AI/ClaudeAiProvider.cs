@@ -67,6 +67,7 @@ public partial class ClaudeAiProvider : IAiService
     public async Task<BookingSuggestionResult> SuggestBookingAsync(
         DocumentExtractionResult extraction, Guid entityId,
         string chartOfAccounts, IReadOnlyList<AccountInfo> accounts,
+        string? companyContext,
         CancellationToken ct)
     {
         var tool = new ClaudeTool

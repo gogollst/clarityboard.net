@@ -90,6 +90,9 @@ public record BookingSuggestionDto
     public string? HrEmployeeName { get; init; }
     public bool IsAutoBooked { get; init; }
     public string? RejectionReason { get; init; }
+    public string? InvoiceType { get; init; }
+    public string? TaxKey { get; init; }
+    public string? VatTreatmentType { get; init; }
 }
 
 public record DocumentUploadResult

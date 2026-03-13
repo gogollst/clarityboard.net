@@ -78,6 +78,7 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
         Guid entityId,
         string chartOfAccounts,
         IReadOnlyList<AccountInfo> accounts,
+        string? companyContext,
         CancellationToken ct)
     {
         var accountsSummary = string.Join("\n", accounts.Select(a => $"{a.AccountNumber} {a.Name} ({a.AccountType})"));
@@ -90,6 +91,10 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
                 ["chart_of_accounts"] = chartOfAccounts,
                 ["accounts_json"] = accountsSummary,
                 ["extraction_json"] = JsonSerializer.Serialize(extraction),
+                ["company_context"] = companyContext ?? string.Empty,
+                ["holding_name"] = string.Empty,
+                ["entities_context"] = string.Empty,
+                ["cost_centers"] = string.Empty,
             },
             ct);
 
@@ -98,6 +103,7 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
 
         return new BookingSuggestionResult
         {
+            // Existing fields (backward compatible)
             DebitAccountNumber = GetString(root, "debit_account_number", "debitAccountNumber", "debit_account"),
             CreditAccountNumber = GetString(root, "credit_account_number", "creditAccountNumber", "credit_account"),
             Amount = GetDecimal(root, "amount") ?? extraction.TotalAmount ?? 0m,
@@ -105,6 +111,16 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
             Description = GetString(root, "description", "booking_text"),
             Confidence = GetDecimal(root, "confidence") ?? 0m,
             Reasoning = GetString(root, "reasoning", "rationale"),
+
+            // New classification fields
+            InvoiceType = GetString(root, "invoice_type", "invoiceType"),
+            TaxKey = GetString(root, "tax_key", "taxKey", "bu_schluessel"),
+            AssignedEntity = GetString(root, "assigned_entity", "assignedEntity"),
+            Notes = GetString(root, "notes"),
+            VatTreatment = ParseVatTreatment(root),
+            Flags = ParseFlags(root),
+            ClassifiedLineItems = ParseClassifiedLineItems(root),
+            BookingEntries = ParseBookingEntries(root),
         };
     }
 
@@ -254,5 +270,100 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
 
         property = default;
         return false;
+    }
+
+    private static bool GetBool(JsonElement element, params string[] names)
+    {
+        if (!TryGetProperty(element, out var property, names))
+            return false;
+
+        return property.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.String => bool.TryParse(property.GetString(), out var parsed) && parsed,
+            _ => false,
+        };
+    }
+
+    private static IReadOnlyList<string> GetStringArray(JsonElement element, params string[] names)
+    {
+        if (!TryGetProperty(element, out var property, names) || property.ValueKind != JsonValueKind.Array)
+            return [];
+
+        return property.EnumerateArray()
+            .Where(e => e.ValueKind == JsonValueKind.String)
+            .Select(e => e.GetString()!)
+            .ToList();
+    }
+
+    private static VatTreatmentResult? ParseVatTreatment(JsonElement root)
+    {
+        var obj = GetNestedObject(root, "vat_treatment", "vatTreatment");
+        if (obj is null) return null;
+        var vt = obj.Value;
+
+        return new VatTreatmentResult
+        {
+            Type = GetString(vt, "type") ?? "standard_19",
+            Explanation = GetString(vt, "explanation"),
+            InputTaxAccount = GetString(vt, "input_tax_account", "inputTaxAccount"),
+            InputTaxDeductible = GetBool(vt, "input_tax_deductible", "inputTaxDeductible"),
+            OutputTaxAccount = GetString(vt, "output_tax_account", "outputTaxAccount"),
+            LegalBasis = GetString(vt, "legal_basis", "legalBasis"),
+        };
+    }
+
+    private static BookingFlagsResult? ParseFlags(JsonElement root)
+    {
+        var obj = GetNestedObject(root, "flags");
+        if (obj is null) return null;
+        var f = obj.Value;
+
+        return new BookingFlagsResult
+        {
+            NeedsManualReview = GetBool(f, "needs_manual_review", "needsManualReview"),
+            ReviewReasons = GetStringArray(f, "review_reasons", "reviewReasons"),
+            IsRecurring = GetBool(f, "is_recurring", "isRecurring"),
+            GwgRelevant = GetBool(f, "gwg_relevant", "gwgRelevant"),
+            ActivationRequired = GetBool(f, "activation_required", "activationRequired"),
+            ReverseCharge = GetBool(f, "reverse_charge", "reverseCharge"),
+            IntraCommunity = GetBool(f, "intra_community", "intraCommunity"),
+            EntertainmentExpense = GetBool(f, "entertainment_expense", "entertainmentExpense"),
+        };
+    }
+
+    private static IReadOnlyList<ClassifiedLineItemResult> ParseClassifiedLineItems(JsonElement root)
+    {
+        if (!TryGetProperty(root, out var items, "classified_line_items", "classifiedLineItems") || items.ValueKind != JsonValueKind.Array)
+            return [];
+
+        return items.EnumerateArray().Select(item => new ClassifiedLineItemResult
+        {
+            Description = GetString(item, "description"),
+            NetAmount = GetDecimal(item, "net_amount", "netAmount") ?? 0m,
+            VatRate = GetDecimal(item, "vat_rate", "vatRate") ?? 0m,
+            VatAmount = GetDecimal(item, "vat_amount", "vatAmount") ?? 0m,
+            AccountNumber = GetString(item, "account_number", "accountNumber"),
+            AccountName = GetString(item, "account_name", "accountName"),
+            CostCenter = GetString(item, "cost_center", "costCenter"),
+        }).ToList();
+    }
+
+    private static IReadOnlyList<BookingEntryResult> ParseBookingEntries(JsonElement root)
+    {
+        if (!TryGetProperty(root, out var entries, "booking_entries", "bookingEntries") || entries.ValueKind != JsonValueKind.Array)
+            return [];
+
+        return entries.EnumerateArray().Select(entry => new BookingEntryResult
+        {
+            DebitAccount = GetString(entry, "debit_account", "debitAccount"),
+            DebitAccountName = GetString(entry, "debit_account_name", "debitAccountName"),
+            CreditAccount = GetString(entry, "credit_account", "creditAccount"),
+            CreditAccountName = GetString(entry, "credit_account_name", "creditAccountName"),
+            Amount = GetDecimal(entry, "amount") ?? 0m,
+            TaxKey = GetString(entry, "tax_key", "taxKey"),
+            Description = GetString(entry, "booking_text", "bookingText", "description"),
+        }).ToList();
     }
 }
