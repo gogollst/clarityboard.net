@@ -173,6 +173,11 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                         break;
 
                     case PartnerMatchType.None:
+                        // Country must be ISO 3166-1 alpha-2 (max 2 chars) — discard if AI returned full name
+                        var vendorCountry = extraction.VendorCountry is { Length: 2 }
+                            ? extraction.VendorCountry.ToUpperInvariant()
+                            : null;
+
                         var newPartner = BusinessPartner.Create(
                             entityId: entityId,
                             name: extraction.VendorName,
@@ -182,7 +187,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                             street: extraction.VendorStreet,
                             city: extraction.VendorCity,
                             postalCode: extraction.VendorPostalCode,
-                            country: extraction.VendorCountry,
+                            country: vendorCountry,
                             iban: extraction.VendorIban,
                             bic: extraction.VendorBic);
 
