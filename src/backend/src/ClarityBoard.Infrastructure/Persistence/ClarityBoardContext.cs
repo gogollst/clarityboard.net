@@ -109,6 +109,7 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
 
     // AI Management
     public DbSet<AiProviderConfig> AiProviderConfigs => Set<AiProviderConfig>();
+    public DbSet<AiProviderModel> AiProviderModels => Set<AiProviderModel>();
     public DbSet<AiPrompt> AiPrompts => Set<AiPrompt>();
     public DbSet<AiPromptVersion> AiPromptVersions => Set<AiPromptVersion>();
     public DbSet<AiCallLog> AiCallLogs => Set<AiCallLog>();
@@ -206,6 +207,7 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
 
         // AI schema
         modelBuilder.Entity<AiProviderConfig>().ToTable("ai_provider_configs", "ai");
+        modelBuilder.Entity<AiProviderModel>().ToTable("ai_provider_models", "ai");
         modelBuilder.Entity<AiPrompt>().ToTable("ai_prompts", "ai");
         modelBuilder.Entity<AiPromptVersion>().ToTable("ai_prompt_versions", "ai");
         modelBuilder.Entity<AiCallLog>().ToTable("ai_call_logs", "ai");
@@ -608,6 +610,7 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.VatAmount).HasPrecision(18, 2);
             entity.Property(e => e.Status).HasMaxLength(20);
             entity.Property(e => e.Confidence).HasPrecision(5, 4);
+            entity.Property(e => e.RejectionReason).HasMaxLength(500);
         });
 
         modelBuilder.Entity<RecurringPattern>(entity =>
@@ -619,6 +622,8 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.VatCode).HasMaxLength(10);
             entity.Property(e => e.CostCenter).HasMaxLength(50);
             entity.Property(e => e.Confidence).HasPrecision(5, 4);
+            entity.HasIndex(e => new { e.EntityId, e.AutoBookEnabled })
+                .HasFilter("\"IsActive\" = true AND \"AutoBookEnabled\" = true");
         });
 
         // ───────────────────────────────────────────────
@@ -851,6 +856,16 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.KeyHint).HasMaxLength(10);
             entity.Property(e => e.BaseUrl).HasMaxLength(500);
             entity.Property(e => e.ModelDefault).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<AiProviderModel>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.Provider, e.ModelId }).IsUnique();
+            entity.Property(e => e.Provider).HasConversion<int>();
+            entity.Property(e => e.ModelId).HasMaxLength(100);
+            entity.Property(e => e.DisplayName).HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(500);
         });
 
         modelBuilder.Entity<AiPrompt>(entity =>

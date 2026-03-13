@@ -27,7 +27,10 @@
     "approveBooking": "Buchung freigeben",
     "assignPartner": "Partner zuordnen",
     "confirmPartner": "Partner bestätigen",
-    "createNewPartner": "Neuen Partner anlegen"
+    "createNewPartner": "Neuen Partner anlegen",
+    "modifyBooking": "Anpassen",
+    "rejectBooking": "Ablehnen",
+    "confirmApproval": "Bestätigen & Buchen"
   },
   "detail": {
     "title": "Dokumentdetail",
@@ -54,7 +57,20 @@
       "creditAccount": "Haben-Konto",
       "amount": "Betrag",
       "description": "Beschreibung",
-      "confidence": "Konfidenz"
+      "confidence": "Konfidenz",
+      "vatCode": "USt-Code",
+      "aiReasoning": "KI-Begründung",
+      "showReasoning": "Begründung anzeigen",
+      "hideReasoning": "Begründung ausblenden",
+      "autoBooked": "Automatisch gebucht",
+      "autoBookedHint": "Basierend auf wiederkehrendem Muster",
+      "employee": "Mitarbeiter",
+      "selectEmployee": "Mitarbeiter wählen (optional)",
+      "modifyTitle": "Buchungsvorschlag anpassen",
+      "rejectTitle": "Buchungsvorschlag ablehnen",
+      "rejectConfirm": "Möchten Sie diesen Buchungsvorschlag wirklich ablehnen?",
+      "rejectReason": "Begründung (optional)",
+      "rejected": "Abgelehnt"
     },
     "partnerAssignment": {
       "title": "Partnerzuordnung",
@@ -64,6 +80,10 @@
       "assigned": "Partner erfolgreich zugeordnet",
       "confirmed": "Partnervorschlag bestätigt"
     }
+  },
+  "toast": {
+    "bookingModified": "Buchung mit Änderungen erstellt",
+    "bookingRejected": "Buchungsvorschlag abgelehnt"
   },
   "uploadPage": {
     "title": "Dokument hochladen",

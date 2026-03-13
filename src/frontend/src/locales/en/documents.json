@@ -27,7 +27,10 @@
     "approveBooking": "Approve Booking",
     "assignPartner": "Assign Partner",
     "confirmPartner": "Confirm Partner",
-    "createNewPartner": "Create New Partner"
+    "createNewPartner": "Create New Partner",
+    "modifyBooking": "Modify",
+    "rejectBooking": "Reject",
+    "confirmApproval": "Confirm & Book"
   },
   "detail": {
     "title": "Document Detail",
@@ -54,7 +57,20 @@
       "creditAccount": "Credit Account",
       "amount": "Amount",
       "description": "Description",
-      "confidence": "Confidence"
+      "confidence": "Confidence",
+      "vatCode": "VAT Code",
+      "aiReasoning": "AI Reasoning",
+      "showReasoning": "Show reasoning",
+      "hideReasoning": "Hide reasoning",
+      "autoBooked": "Automatically booked",
+      "autoBookedHint": "Based on recurring pattern",
+      "employee": "Employee",
+      "selectEmployee": "Select employee (optional)",
+      "modifyTitle": "Modify Booking Suggestion",
+      "rejectTitle": "Reject Booking Suggestion",
+      "rejectConfirm": "Are you sure you want to reject this suggestion?",
+      "rejectReason": "Reason (optional)",
+      "rejected": "Rejected"
     },
     "partnerAssignment": {
       "title": "Partner Assignment",
@@ -64,6 +80,10 @@
       "assigned": "Partner assigned successfully",
       "confirmed": "Partner match confirmed"
     }
+  },
+  "toast": {
+    "bookingModified": "Booking created with modifications",
+    "bookingRejected": "Booking suggestion rejected"
   },
   "uploadPage": {
     "title": "Upload Document",

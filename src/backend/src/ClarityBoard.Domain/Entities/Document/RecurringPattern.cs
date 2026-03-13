@@ -16,6 +16,9 @@ public class RecurringPattern
     public DateTime CreatedAt { get; private set; }
     public DateTime? LastMatchedAt { get; private set; }
     public Guid? BusinessPartnerId { get; private set; }
+    public Guid? HrEmployeeId { get; private set; }
+    public int AutoBookThreshold { get; private set; } = 3;
+    public bool AutoBookEnabled { get; private set; }
 
     private RecurringPattern() { }
 
@@ -47,6 +50,21 @@ public class RecurringPattern
         LastMatchedAt = DateTime.UtcNow;
         // Increase confidence with more matches, cap at 0.99
         Confidence = Math.Min(0.99m, Confidence + 0.01m);
+
+        if (MatchCount >= AutoBookThreshold)
+            AutoBookEnabled = true;
+    }
+
+    public void UpdateAccounts(Guid debitAccountId, Guid creditAccountId, string? vatCode)
+    {
+        DebitAccountId = debitAccountId;
+        CreditAccountId = creditAccountId;
+        VatCode = vatCode;
+    }
+
+    public void SetEmployee(Guid? hrEmployeeId)
+    {
+        HrEmployeeId = hrEmployeeId;
     }
 
     public void AssignBusinessPartner(Guid? businessPartnerId)

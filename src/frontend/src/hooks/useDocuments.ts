@@ -8,6 +8,7 @@ import type {
   DocumentListParams,
   UploadDocumentRequest,
   DocumentDownloadUrl,
+  ModifyBookingRequest,
 } from '@/types/document';
 
 // ---------------------------------------------------------------------------
@@ -89,10 +90,6 @@ export function useDocumentDownloadUrl(id: string | null) {
 }
 
 // ---------------------------------------------------------------------------
-// Approve AI Booking Suggestion
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
 // Confirm Partner Match (fuzzy match confirmation)
 // ---------------------------------------------------------------------------
 
@@ -140,12 +137,15 @@ export function useApproveBooking() {
     mutationFn: async ({
       documentId,
       entityId,
+      hrEmployeeId,
     }: {
       documentId: string;
       entityId: string;
+      hrEmployeeId?: string;
     }) => {
       const { data } = await api.post<Document>(
         `/documents/${documentId}/approve-booking`,
+        hrEmployeeId ? { hrEmployeeId } : undefined,
       );
       return { document: data, entityId };
     },
@@ -157,7 +157,6 @@ export function useApproveBooking() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.documents.list(entityId),
       });
-      // Also refresh accounting data since a journal entry was created
       queryClient.invalidateQueries({
         queryKey: queryKeys.accounting.journalEntries(entityId),
       });
@@ -167,6 +166,81 @@ export function useApproveBooking() {
     },
     onError: () => {
       toast.error('Failed to approve booking suggestion');
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Modify Booking Suggestion
+// ---------------------------------------------------------------------------
+
+export function useModifyBooking() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      documentId,
+      entityId,
+      ...request
+    }: ModifyBookingRequest & { documentId: string; entityId: string }) => {
+      const { data } = await api.post<string>(
+        `/documents/${documentId}/modify-booking`,
+        request,
+      );
+      return { journalEntryId: data, documentId, entityId };
+    },
+    onSuccess: ({ documentId, entityId }) => {
+      toast.success('Booking created with modifications');
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documents.detail(documentId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documents.list(entityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.journalEntries(entityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.trialBalance(entityId),
+      });
+    },
+    onError: () => {
+      toast.error('Failed to modify booking suggestion');
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Reject Booking Suggestion
+// ---------------------------------------------------------------------------
+
+export function useRejectBooking() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      documentId,
+      entityId,
+      reason,
+    }: {
+      documentId: string;
+      entityId: string;
+      reason?: string;
+    }) => {
+      await api.post(`/documents/${documentId}/reject-booking`, reason ? { reason } : undefined);
+      return { documentId, entityId };
+    },
+    onSuccess: ({ documentId, entityId }) => {
+      toast.success('Booking suggestion rejected');
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documents.detail(documentId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documents.list(entityId),
+      });
+    },
+    onError: () => {
+      toast.error('Failed to reject booking suggestion');
     },
   });
 }

@@ -27,7 +27,10 @@
     "approveBooking": "Утвердить проводку",
     "assignPartner": "Назначить контрагента",
     "confirmPartner": "Подтвердить контрагента",
-    "createNewPartner": "Создать нового контрагента"
+    "createNewPartner": "Создать нового контрагента",
+    "modifyBooking": "Изменить",
+    "rejectBooking": "Отклонить",
+    "confirmApproval": "Подтвердить и провести"
   },
   "detail": {
     "title": "Детали документа",
@@ -54,7 +57,20 @@
       "creditAccount": "Кредит-счёт",
       "amount": "Сумма",
       "description": "Описание",
-      "confidence": "Уверенность"
+      "confidence": "Уверенность",
+      "vatCode": "Код НДС",
+      "aiReasoning": "Обоснование ИИ",
+      "showReasoning": "Показать обоснование",
+      "hideReasoning": "Скрыть обоснование",
+      "autoBooked": "Автоматически проведено",
+      "autoBookedHint": "На основе повторяющегося шаблона",
+      "employee": "Сотрудник",
+      "selectEmployee": "Выбрать сотрудника (необязательно)",
+      "modifyTitle": "Изменить предложение проводки",
+      "rejectTitle": "Отклонить предложение проводки",
+      "rejectConfirm": "Вы уверены, что хотите отклонить это предложение?",
+      "rejectReason": "Причина (необязательно)",
+      "rejected": "Отклонено"
     },
     "partnerAssignment": {
       "title": "Назначение контрагента",
@@ -64,6 +80,10 @@
       "assigned": "Контрагент успешно назначен",
       "confirmed": "Предложение контрагента подтверждено"
     }
+  },
+  "toast": {
+    "bookingModified": "Проводка создана с изменениями",
+    "bookingRejected": "Предложение проводки отклонено"
   },
   "uploadPage": {
     "title": "Загрузка документа",

@@ -25,11 +25,23 @@ export interface Document {
 
 export interface BookingSuggestion {
   id: string;
-  debitAccount: string;
-  creditAccount: string;
+  debitAccountId: string;
+  debitAccountNumber?: string;
+  debitAccountName?: string;
+  creditAccountId: string;
+  creditAccountNumber?: string;
+  creditAccountName?: string;
   amount: number;
+  vatCode?: string;
+  vatAmount?: number;
   description: string;
   confidence: number;
+  status: 'suggested' | 'accepted' | 'rejected' | 'modified';
+  aiReasoning?: string;
+  hrEmployeeId?: string;
+  hrEmployeeName?: string;
+  isAutoBooked?: boolean;
+  rejectionReason?: string;
 }
 
 export interface DocumentListParams {
@@ -48,4 +60,14 @@ export interface UploadDocumentRequest {
 export interface DocumentDownloadUrl {
   url: string;
   expiresAt: string;
+}
+
+export interface ModifyBookingRequest {
+  debitAccountId: string;
+  creditAccountId: string;
+  amount: number;
+  vatCode?: string;
+  vatAmount?: number;
+  description?: string;
+  hrEmployeeId?: string;
 }

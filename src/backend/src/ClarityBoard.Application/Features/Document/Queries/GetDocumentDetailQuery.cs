@@ -28,6 +28,71 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
             .OrderByDescending(bs => bs.CreatedAt)
             .FirstOrDefaultAsync(ct);
 
+        // Resolve account names for booking suggestion
+        BookingSuggestionDto? bookingSuggestionDto = null;
+        if (bookingSuggestion is not null)
+        {
+            var debitAccount = await _db.Accounts
+                .Where(a => a.Id == bookingSuggestion.DebitAccountId)
+                .Select(a => new { a.AccountNumber, a.Name })
+                .FirstOrDefaultAsync(ct);
+
+            var creditAccount = await _db.Accounts
+                .Where(a => a.Id == bookingSuggestion.CreditAccountId)
+                .Select(a => new { a.AccountNumber, a.Name })
+                .FirstOrDefaultAsync(ct);
+
+            string? employeeName = null;
+            if (bookingSuggestion.HrEmployeeId.HasValue)
+            {
+                employeeName = await _db.Employees
+                    .Where(e => e.Id == bookingSuggestion.HrEmployeeId.Value)
+                    .Select(e => e.FirstName + " " + e.LastName)
+                    .FirstOrDefaultAsync(ct);
+            }
+
+            bookingSuggestionDto = new BookingSuggestionDto
+            {
+                Id = bookingSuggestion.Id,
+                DebitAccountId = bookingSuggestion.DebitAccountId,
+                DebitAccountNumber = debitAccount?.AccountNumber,
+                DebitAccountName = debitAccount?.Name,
+                CreditAccountId = bookingSuggestion.CreditAccountId,
+                CreditAccountNumber = creditAccount?.AccountNumber,
+                CreditAccountName = creditAccount?.Name,
+                Amount = bookingSuggestion.Amount,
+                VatCode = bookingSuggestion.VatCode,
+                VatAmount = bookingSuggestion.VatAmount,
+                Description = bookingSuggestion.Description,
+                Confidence = bookingSuggestion.Confidence,
+                Status = bookingSuggestion.Status,
+                AiReasoning = bookingSuggestion.AiReasoning,
+                HrEmployeeId = bookingSuggestion.HrEmployeeId,
+                HrEmployeeName = employeeName,
+                IsAutoBooked = bookingSuggestion.IsAutoBooked,
+                RejectionReason = bookingSuggestion.RejectionReason,
+            };
+        }
+
+        // Resolve business partner names
+        string? businessPartnerName = null;
+        if (document.BusinessPartnerId.HasValue)
+        {
+            businessPartnerName = await _db.BusinessPartners
+                .Where(bp => bp.Id == document.BusinessPartnerId.Value)
+                .Select(bp => bp.Name)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        string? suggestedBusinessPartnerName = null;
+        if (document.SuggestedBusinessPartnerId.HasValue)
+        {
+            suggestedBusinessPartnerName = await _db.BusinessPartners
+                .Where(bp => bp.Id == document.SuggestedBusinessPartnerId.Value)
+                .Select(bp => bp.Name)
+                .FirstOrDefaultAsync(ct);
+        }
+
         return new DocumentDetailDto
         {
             Id = document.Id,
@@ -44,6 +109,10 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
             Currency = document.Currency,
             Confidence = document.Confidence,
             BookedJournalEntryId = document.BookedJournalEntryId,
+            BusinessPartnerId = document.BusinessPartnerId,
+            BusinessPartnerName = businessPartnerName,
+            SuggestedBusinessPartnerId = document.SuggestedBusinessPartnerId,
+            SuggestedBusinessPartnerName = suggestedBusinessPartnerName,
             CreatedAt = document.CreatedAt,
             ProcessedAt = document.ProcessedAt,
             ReviewReasons = DocumentExtractedDataReader.ReadReviewReasons(document.ExtractedData),
@@ -56,19 +125,7 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
                 IsVerified = f.IsVerified,
                 CorrectedValue = f.CorrectedValue,
             }).ToList(),
-            BookingSuggestion = bookingSuggestion is null ? null : new BookingSuggestionDto
-            {
-                Id = bookingSuggestion.Id,
-                DebitAccountId = bookingSuggestion.DebitAccountId,
-                CreditAccountId = bookingSuggestion.CreditAccountId,
-                Amount = bookingSuggestion.Amount,
-                VatCode = bookingSuggestion.VatCode,
-                VatAmount = bookingSuggestion.VatAmount,
-                Description = bookingSuggestion.Description,
-                Confidence = bookingSuggestion.Confidence,
-                Status = bookingSuggestion.Status,
-                AiReasoning = bookingSuggestion.AiReasoning,
-            },
+            BookingSuggestion = bookingSuggestionDto,
         };
     }
 }

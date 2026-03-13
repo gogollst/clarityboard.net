@@ -17,6 +17,13 @@ public class BookingSuggestion
     public DateTime CreatedAt { get; private set; }
     public Guid? AcceptedBy { get; private set; }
     public DateTime? AcceptedAt { get; private set; }
+    public Guid? HrEmployeeId { get; private set; }
+    public Guid? ModifiedBy { get; private set; }
+    public DateTime? ModifiedAt { get; private set; }
+    public Guid? RejectedBy { get; private set; }
+    public DateTime? RejectedAt { get; private set; }
+    public string? RejectionReason { get; private set; }
+    public bool IsAutoBooked { get; private set; }
 
     private BookingSuggestion() { }
 
@@ -43,12 +50,39 @@ public class BookingSuggestion
         };
     }
 
-    public void Accept(Guid userId)
+    public void Accept(Guid userId, Guid? hrEmployeeId = null)
     {
         Status = "accepted";
         AcceptedBy = userId;
         AcceptedAt = DateTime.UtcNow;
+        HrEmployeeId = hrEmployeeId;
     }
 
-    public void Reject() => Status = "rejected";
+    public void Modify(Guid userId, Guid debitAccountId, Guid creditAccountId,
+        decimal amount, string? vatCode, decimal? vatAmount, string? description, Guid? hrEmployeeId)
+    {
+        DebitAccountId = debitAccountId;
+        CreditAccountId = creditAccountId;
+        Amount = amount;
+        VatCode = vatCode;
+        VatAmount = vatAmount;
+        Description = description;
+        HrEmployeeId = hrEmployeeId;
+        Status = "modified";
+        ModifiedBy = userId;
+        ModifiedAt = DateTime.UtcNow;
+    }
+
+    public void Reject(Guid userId, string? reason)
+    {
+        Status = "rejected";
+        RejectedBy = userId;
+        RejectedAt = DateTime.UtcNow;
+        RejectionReason = reason;
+    }
+
+    public void MarkAutoBooked()
+    {
+        IsAutoBooked = true;
+    }
 }

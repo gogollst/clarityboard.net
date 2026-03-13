@@ -34,6 +34,10 @@ public record DocumentDetailDto
     public string? Currency { get; init; }
     public decimal? Confidence { get; init; }
     public Guid? BookedJournalEntryId { get; init; }
+    public Guid? BusinessPartnerId { get; init; }
+    public string? BusinessPartnerName { get; init; }
+    public Guid? SuggestedBusinessPartnerId { get; init; }
+    public string? SuggestedBusinessPartnerName { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? ProcessedAt { get; init; }
     public IReadOnlyList<string> ReviewReasons { get; init; } = [];
@@ -55,7 +59,11 @@ public record BookingSuggestionDto
 {
     public Guid Id { get; init; }
     public Guid DebitAccountId { get; init; }
+    public string? DebitAccountNumber { get; init; }
+    public string? DebitAccountName { get; init; }
     public Guid CreditAccountId { get; init; }
+    public string? CreditAccountNumber { get; init; }
+    public string? CreditAccountName { get; init; }
     public decimal Amount { get; init; }
     public string? VatCode { get; init; }
     public decimal? VatAmount { get; init; }
@@ -63,6 +71,10 @@ public record BookingSuggestionDto
     public decimal Confidence { get; init; }
     public string Status { get; init; } = default!;
     public string? AiReasoning { get; init; }
+    public Guid? HrEmployeeId { get; init; }
+    public string? HrEmployeeName { get; init; }
+    public bool IsAutoBooked { get; init; }
+    public string? RejectionReason { get; init; }
 }
 
 public record DocumentUploadResult

@@ -3,6 +3,7 @@ using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Common.Messaging;
 using ClarityBoard.Domain.Entities.Accounting;
 using ClarityBoard.Domain.Entities.Document;
+using ClarityBoard.Domain.Interfaces;
 using ClarityBoard.Infrastructure.Services.Documents;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ namespace ClarityBoard.Infrastructure.Messaging.Consumers;
 public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
 {
     private const decimal LowConfidenceThreshold = 0.70m;
+    private const decimal AutoBookConfidenceThreshold = 0.85m;
 
     private readonly ILogger<DocumentProcessingConsumer> _logger;
     private readonly IAppDbContext _db;
@@ -21,6 +23,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
     private readonly IDocumentTextAcquisitionService _textAcquisitionService;
     private readonly IBusinessPartnerMatchingService _partnerMatchingService;
     private readonly DocumentStatusChangeNotifier _documentStatusChangeNotifier;
+    private readonly IAccountingRepository _accountingRepo;
 
     public DocumentProcessingConsumer(
         ILogger<DocumentProcessingConsumer> logger,
@@ -29,7 +32,8 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         IDocumentStorage documentStorage,
         IDocumentTextAcquisitionService textAcquisitionService,
         IBusinessPartnerMatchingService partnerMatchingService,
-        DocumentStatusChangeNotifier documentStatusChangeNotifier)
+        DocumentStatusChangeNotifier documentStatusChangeNotifier,
+        IAccountingRepository accountingRepo)
     {
         _logger = logger;
         _db = db;
@@ -38,6 +42,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         _textAcquisitionService = textAcquisitionService;
         _partnerMatchingService = partnerMatchingService;
         _documentStatusChangeNotifier = documentStatusChangeNotifier;
+        _accountingRepo = accountingRepo;
     }
 
     public async Task Consume(ConsumeContext<ProcessDocument> context)
@@ -250,17 +255,26 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
 
             document.UpdateExtractedData(DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons, textResult));
 
-            if (reviewReasons.Count > 0)
-                document.MarkReview();
+            // 9. Check auto-booking eligibility
+            var autoBooked = false;
+            if (bookingSuggestionCreated)
+            {
+                autoBooked = await TryAutoBookAsync(document, entityId, bookingSuggestion!, ct);
+            }
 
-            // 9. Status is already set to "extracted" by SetExtraction
+            if (!autoBooked)
+            {
+                if (reviewReasons.Count > 0)
+                    document.MarkReview();
+            }
+
             await _db.SaveChangesAsync(ct);
             persistResultsStopwatch.Stop();
             LogStageInformation(currentStage, persistResultsStopwatch.ElapsedMilliseconds,
-                bookingSuggestionCreated ? "saved" : "saved_without_booking_suggestion",
+                autoBooked ? "auto_booked" : bookingSuggestionCreated ? "saved" : "saved_without_booking_suggestion",
                 "documentStatus {DocumentStatus} storedFieldCount {StoredFieldCount}", document.Status, storedFieldCount);
 
-            if (reviewReasons.Count > 0)
+            if (reviewReasons.Count > 0 && !autoBooked)
             {
                 _logger.LogWarning(
                     "Document marked for manual review with reasons {ReviewReasons}",
@@ -273,7 +287,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
 
             _logger.LogInformation(
                 "Document processing completed in {DurationMs}ms with result {Result} status {Status} extractionConfidence {ExtractionConfidence} bookingConfidence {BookingConfidence} reviewReasonCount {ReviewReasonCount}",
-                overallStopwatch.ElapsedMilliseconds, "success", document.Status, extraction.Confidence, bookingSuggestion?.Confidence, reviewReasons.Count);
+                overallStopwatch.ElapsedMilliseconds, autoBooked ? "auto_booked" : "success", document.Status, extraction.Confidence, bookingSuggestion?.Confidence, reviewReasons.Count);
         }
         catch (Exception ex)
         {
@@ -287,6 +301,112 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             await _documentStatusChangeNotifier.NotifyAsync(entityId, document.Id, document.Status, ct);
             throw; // Re-throw so MassTransit retry policy can handle it
         }
+    }
+
+    private async Task<bool> TryAutoBookAsync(
+        Document document, Guid entityId,
+        BookingSuggestionResult suggestion, CancellationToken ct)
+    {
+        // Only auto-book if document has a confirmed business partner (not just suggested)
+        if (!document.BusinessPartnerId.HasValue)
+            return false;
+
+        var vendorName = document.VendorName;
+        if (string.IsNullOrWhiteSpace(vendorName))
+            return false;
+
+        // Find matching recurring pattern with auto-book enabled
+        var pattern = await _db.RecurringPatterns
+            .FirstOrDefaultAsync(p =>
+                p.EntityId == entityId
+                && p.AutoBookEnabled
+                && p.IsActive
+                && p.VendorName.ToLower() == vendorName.ToLower(), ct);
+
+        if (pattern is null)
+            return false;
+
+        // Verify AI suggestion matches the pattern accounts
+        var debitAccount = await _db.Accounts
+            .FirstOrDefaultAsync(a => a.EntityId == entityId && a.AccountNumber == suggestion.DebitAccountNumber, ct);
+        var creditAccount = await _db.Accounts
+            .FirstOrDefaultAsync(a => a.EntityId == entityId && a.AccountNumber == suggestion.CreditAccountNumber, ct);
+
+        if (debitAccount is null || creditAccount is null)
+            return false;
+
+        if (debitAccount.Id != pattern.DebitAccountId || creditAccount.Id != pattern.CreditAccountId)
+            return false;
+
+        if (suggestion.Confidence < AutoBookConfidenceThreshold)
+            return false;
+
+        // All conditions met — auto-book
+        var invoiceDate = document.InvoiceDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var fiscalPeriod = await _db.FiscalPeriods
+            .FirstOrDefaultAsync(fp =>
+                fp.EntityId == entityId
+                && fp.StartDate <= invoiceDate
+                && fp.EndDate >= invoiceDate, ct);
+
+        if (fiscalPeriod is null)
+            return false; // No fiscal period — fall back to manual review
+
+        var entryNumber = await _accountingRepo.GetNextEntryNumberAsync(entityId, ct);
+
+        var journalEntry = JournalEntry.Create(
+            entityId: entityId,
+            entryNumber: entryNumber,
+            entryDate: invoiceDate,
+            description: suggestion.Description ?? $"Invoice: {document.VendorName} {document.InvoiceNumber}",
+            fiscalPeriodId: fiscalPeriod.Id,
+            createdBy: Guid.Empty, // system
+            sourceType: "ai-auto-book",
+            sourceRef: document.Id.ToString(),
+            documentId: document.Id);
+
+        var debitLine = JournalEntryLine.CreateDebit(
+            lineNumber: 1,
+            accountId: debitAccount.Id,
+            amount: suggestion.Amount,
+            vatCode: suggestion.VatCode,
+            vatAmount: 0,
+            description: suggestion.Description,
+            hrEmployeeId: pattern.HrEmployeeId);
+        journalEntry.AddLine(debitLine);
+
+        var creditLine = JournalEntryLine.CreateCredit(
+            lineNumber: 2,
+            accountId: creditAccount.Id,
+            amount: suggestion.Amount,
+            vatCode: suggestion.VatCode,
+            vatAmount: 0,
+            description: suggestion.Description,
+            hrEmployeeId: pattern.HrEmployeeId);
+        journalEntry.AddLine(creditLine);
+
+        await _accountingRepo.AddJournalEntryAsync(journalEntry, ct);
+
+        // Update booking suggestion
+        var bookingSuggestionEntity = await _db.BookingSuggestions
+            .Where(bs => bs.DocumentId == document.Id && bs.Status == "suggested")
+            .OrderByDescending(bs => bs.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+
+        if (bookingSuggestionEntity is not null)
+        {
+            bookingSuggestionEntity.Accept(Guid.Empty);
+            bookingSuggestionEntity.MarkAutoBooked();
+        }
+
+        document.MarkBooked(journalEntry.Id);
+        pattern.IncrementMatch();
+
+        _logger.LogInformation(
+            "Document auto-booked via recurring pattern {PatternId} with confidence {Confidence} matchCount {MatchCount}",
+            pattern.Id, suggestion.Confidence, pattern.MatchCount);
+
+        return true;
     }
 
     private void LogStageInformation(string stage, long durationMs, string result,

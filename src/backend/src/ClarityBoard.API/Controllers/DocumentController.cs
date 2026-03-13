@@ -17,6 +17,27 @@ public class DocumentUploadFormData
     public string? DocumentType { get; set; }
 }
 
+public record ApproveBookingRequest
+{
+    public Guid? HrEmployeeId { get; init; }
+}
+
+public record RejectBookingRequest
+{
+    public string? Reason { get; init; }
+}
+
+public record ModifyBookingRequest
+{
+    public Guid DebitAccountId { get; init; }
+    public Guid CreditAccountId { get; init; }
+    public decimal Amount { get; init; }
+    public string? VatCode { get; init; }
+    public decimal? VatAmount { get; init; }
+    public string? Description { get; init; }
+    public Guid? HrEmployeeId { get; init; }
+}
+
 [ApiController]
 [Authorize]
 [Route("api/documents")]
@@ -146,7 +167,8 @@ public class DocumentController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Guid>> ApproveBooking(
-        Guid id, [FromQuery] Guid entityId, CancellationToken ct = default)
+        Guid id, [FromBody] ApproveBookingRequest? request,
+        [FromQuery] Guid entityId, CancellationToken ct = default)
     {
         var userId = GetUserId();
         if (userId is null)
@@ -159,6 +181,77 @@ public class DocumentController : ControllerBase
                 EntityId = entityId,
                 DocumentId = id,
                 UserId = userId.Value,
+                HrEmployeeId = request?.HrEmployeeId,
+            }, ct);
+
+            return Ok(journalEntryId);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Reject a booking suggestion.
+    /// </summary>
+    [HttpPost("{id:guid}/reject-booking")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> RejectBooking(
+        Guid id, [FromBody] RejectBookingRequest? request,
+        [FromQuery] Guid entityId, CancellationToken ct = default)
+    {
+        var userId = GetUserId();
+        if (userId is null)
+            return Unauthorized();
+
+        try
+        {
+            await _mediator.Send(new RejectBookingSuggestionCommand
+            {
+                EntityId = entityId,
+                DocumentId = id,
+                UserId = userId.Value,
+                Reason = request?.Reason,
+            }, ct);
+
+            return Ok();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Modify a booking suggestion and create a journal entry with the modified values.
+    /// </summary>
+    [HttpPost("{id:guid}/modify-booking")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Guid>> ModifyBooking(
+        Guid id, [FromBody] ModifyBookingRequest request,
+        [FromQuery] Guid entityId, CancellationToken ct = default)
+    {
+        var userId = GetUserId();
+        if (userId is null)
+            return Unauthorized();
+
+        try
+        {
+            var journalEntryId = await _mediator.Send(new ModifyBookingSuggestionCommand
+            {
+                EntityId = entityId,
+                DocumentId = id,
+                UserId = userId.Value,
+                DebitAccountId = request.DebitAccountId,
+                CreditAccountId = request.CreditAccountId,
+                Amount = request.Amount,
+                VatCode = request.VatCode,
+                VatAmount = request.VatAmount,
+                Description = request.Description,
+                HrEmployeeId = request.HrEmployeeId,
             }, ct);
 
             return Ok(journalEntryId);
