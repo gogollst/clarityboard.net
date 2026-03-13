@@ -163,9 +163,10 @@ export function Component() {
     );
   };
 
-  // Calculate Brutto / Netto / USt from lines
-  const totalDebit = (entry?.lines ?? []).reduce((sum, l) => sum + l.debitAmount, 0);
-  const totalVat = (entry?.lines ?? []).reduce((sum, l) => sum + l.vatAmount, 0);
+  // Calculate Brutto / Netto / USt from debit lines only (credit lines mirror the same amounts)
+  const debitLines = (entry?.lines ?? []).filter(l => l.debitAmount > 0);
+  const totalDebit = debitLines.reduce((sum, l) => sum + l.debitAmount, 0);
+  const totalVat = debitLines.reduce((sum, l) => sum + l.vatAmount, 0);
   const totalNet = totalDebit - totalVat;
 
   const columns = [
