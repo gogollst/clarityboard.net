@@ -189,6 +189,18 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
             vendorCountry = addr.CountryRegion;
         }
 
+        // Customer/recipient address
+        string? recipientStreet = null, recipientCity = null, recipientPostalCode = null, recipientCountry = null;
+        if (fields.TryGetValue("CustomerAddress", out var custAddrField)
+            && custAddrField.FieldType == DocumentFieldType.Address
+            && custAddrField.ValueAddress is { } custAddr)
+        {
+            recipientStreet = custAddr.Road;
+            recipientCity = custAddr.City;
+            recipientPostalCode = custAddr.PostalCode;
+            recipientCountry = custAddr.CountryRegion;
+        }
+
         // Currency from InvoiceTotal or SubTotal
         string? currency = null;
         if (fields.TryGetValue("InvoiceTotal", out var totalField)
@@ -262,6 +274,16 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
             VendorCountry = vendorCountry,
             VendorIban = null, // Not extracted by Azure prebuilt models
             VendorBic = null,
+            RecipientName = GetStringValue(fields, "CustomerName"),
+            RecipientTaxId = GetStringValue(fields, "CustomerTaxId"),
+            RecipientVatId = GetStringValue(fields, "CustomerTaxId"), // Azure uses same field for both
+            RecipientStreet = recipientStreet,
+            RecipientCity = recipientCity,
+            RecipientPostalCode = recipientPostalCode,
+            RecipientCountry = recipientCountry,
+            DocumentDirection = !string.IsNullOrWhiteSpace(GetStringValue(fields, "VendorName")) ? "incoming"
+                : !string.IsNullOrWhiteSpace(GetStringValue(fields, "CustomerName")) ? "outgoing"
+                : null,
             InvoiceNumber = GetStringValue(fields, "InvoiceId"),
             InvoiceDate = GetDateValue(fields, "InvoiceDate"),
             TotalAmount = totalAmount,
