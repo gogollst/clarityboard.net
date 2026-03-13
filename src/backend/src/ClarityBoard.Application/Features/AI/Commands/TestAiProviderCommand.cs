@@ -17,12 +17,18 @@ public class TestAiProviderCommandHandler
     private readonly IAppDbContext _db;
     private readonly IPromptAiService _aiService;
     private readonly ITranslationService _translationService;
+    private readonly IAzureDocIntelligenceService _azureDocIntelligence;
 
-    public TestAiProviderCommandHandler(IAppDbContext db, IPromptAiService aiService, ITranslationService translationService)
+    public TestAiProviderCommandHandler(
+        IAppDbContext db,
+        IPromptAiService aiService,
+        ITranslationService translationService,
+        IAzureDocIntelligenceService azureDocIntelligence)
     {
         _db        = db;
         _aiService = aiService;
         _translationService = translationService;
+        _azureDocIntelligence = azureDocIntelligence;
     }
 
     public async Task<ProviderTestResultDto> Handle(
@@ -38,6 +44,10 @@ public class TestAiProviderCommandHandler
             {
                 var result = await _translationService.TranslateAsync("Test", "en", ["de"], cancellationToken);
                 healthy = result.Count > 0;
+            }
+            else if (request.Provider == AiProvider.AzureDocIntelligence)
+            {
+                healthy = await _azureDocIntelligence.TestConnectivityAsync(cancellationToken);
             }
             else
             {

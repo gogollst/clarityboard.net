@@ -1,4 +1,5 @@
 using ClarityBoard.Application.Common.Interfaces;
+using ClarityBoard.Domain.Entities.AI;
 using ClarityBoard.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,11 +58,23 @@ public sealed class AiHealthCheckService : BackgroundService
 
         _logger.LogInformation("Running health checks for {Count} AI providers", configs.Count);
 
+        var azureService = scope.ServiceProvider.GetRequiredService<IAzureDocIntelligenceService>();
+        var translationService = scope.ServiceProvider.GetRequiredService<ITranslationService>();
+
         foreach (var config in configs)
         {
             try
             {
-                var isHealthy = await aiService.TestProviderAsync(config.Provider, ct);
+                bool isHealthy;
+                if (config.Provider == AiProvider.AzureDocIntelligence)
+                    isHealthy = await azureService.TestConnectivityAsync(ct);
+                else if (config.Provider == AiProvider.DeepL)
+                {
+                    var result = await translationService.TranslateAsync("Test", "en", ["de"], ct);
+                    isHealthy = result.Count > 0;
+                }
+                else
+                    isHealthy = await aiService.TestProviderAsync(config.Provider, ct);
                 config.SetHealthStatus(isHealthy);
 
                 _logger.LogInformation(
