@@ -74,6 +74,8 @@ export interface BookingSuggestion {
   invoiceType?: string;
   taxKey?: string;
   vatTreatmentType?: string;
+  suggestedEntityId?: string;
+  suggestedEntityName?: string;
 }
 
 export interface DocumentListParams {
@@ -101,6 +103,7 @@ export interface ModifyBookingRequest {
   vatAmount?: number;
   description?: string;
   hrEmployeeId?: string;
+  targetEntityId?: string;
 }
 
 export interface DeleteDocumentPreflight {

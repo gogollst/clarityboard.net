@@ -15,7 +15,7 @@ import {
 import { useAccounts } from '@/hooks/useAccounting';
 import { useSearchBusinessPartners, useAssignDocumentPartner } from '@/hooks/useAccounting';
 import { useEmployees } from '@/hooks/useHr';
-import { useEntity } from '@/hooks/useEntity';
+import { useEntity, useEntities } from '@/hooks/useEntity';
 import { useDebounced } from '@/hooks/useDebounced';
 import { formatCurrency } from '@/lib/format';
 import PageHeader from '@/components/shared/PageHeader';
@@ -168,6 +168,9 @@ export function Component() {
     debouncedSearch,
   );
 
+  // Entities for target entity selection
+  const { data: entities = [] } = useEntities();
+
   // UI state
   const [showReasoning, setShowReasoning] = useState(false);
   const [showModifySheet, setShowModifySheet] = useState(false);
@@ -176,6 +179,7 @@ export function Component() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
   const [showOcrPanel, setShowOcrPanel] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [targetEntityId, setTargetEntityId] = useState<string>('');
 
   // Modify form
   const modifyForm = useForm<ModifyBookingRequest>();
@@ -228,12 +232,19 @@ export function Component() {
     );
   };
 
+  // Effective target entity: user override > AI suggestion > uploaded entity
+  const effectiveTargetEntityId = targetEntityId
+    || doc.bookingSuggestion?.suggestedEntityId
+    || selectedEntityId
+    || '';
+
   const handleApproveBooking = () => {
     if (!selectedEntityId) return;
     approveBooking.mutate({
       documentId: doc.id,
       entityId: selectedEntityId,
       hrEmployeeId: selectedEmployeeId || undefined,
+      targetEntityId: effectiveTargetEntityId && effectiveTargetEntityId !== selectedEntityId ? effectiveTargetEntityId : undefined,
     });
   };
 
@@ -276,6 +287,7 @@ export function Component() {
         documentId: doc.id,
         entityId: selectedEntityId,
         ...data,
+        targetEntityId: effectiveTargetEntityId && effectiveTargetEntityId !== selectedEntityId ? effectiveTargetEntityId : undefined,
       },
       {
         onSuccess: () => setShowModifySheet(false),
@@ -861,6 +873,35 @@ export function Component() {
               {/* Actions */}
               {canAct && (
                 <div className="mt-6 border-t pt-4 space-y-4">
+                  {/* Target entity select */}
+                  {entities.length > 1 && (
+                    <div className="flex items-center gap-3">
+                      <Label className="text-sm whitespace-nowrap">
+                        {t('detail.bookingSuggestion.targetEntity')}
+                      </Label>
+                      <Select
+                        value={targetEntityId || bs.suggestedEntityId || selectedEntityId || ''}
+                        onValueChange={setTargetEntityId}
+                      >
+                        <SelectTrigger className="w-64">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {entities.map((entity) => (
+                            <SelectItem key={entity.id} value={entity.id}>
+                              {entity.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {bs.suggestedEntityId && bs.suggestedEntityId !== selectedEntityId && (
+                        <span className="text-xs text-amber-600">
+                          {t('detail.bookingSuggestion.entitySuggested')}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* Optional employee select for approve */}
                   {employees.length > 0 && (
                     <div className="flex items-center gap-3">

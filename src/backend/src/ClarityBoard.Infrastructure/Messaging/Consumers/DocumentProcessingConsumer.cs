@@ -192,27 +192,46 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             }
             matchPartnerStopwatch.Stop();
 
-            // 6c. Entity recognition — verify document belongs to the correct entity
+            // 6c. Entity recognition — match against ALL entities to find the best target
             currentStage = "entity_recognition";
             var entityRecognitionStopwatch = Stopwatch.StartNew();
-            var legalEntity = await _db.LegalEntities
-                .FirstOrDefaultAsync(e => e.Id == entityId, ct);
+            Guid? suggestedEntityId = null;
+            var allEntities = await _db.LegalEntities
+                .Where(e => e.IsActive)
+                .ToListAsync(ct);
 
-            if (legalEntity is not null)
+            var legalEntity = allEntities.FirstOrDefault(e => e.Id == entityId);
+
+            if (allEntities.Count > 0)
             {
-                var (matchConfidence, matchReason) = MatchEntityFields(legalEntity, extraction);
+                var bestMatch = allEntities
+                    .Select(e => (Entity: e, Match: MatchEntityFields(e, extraction)))
+                    .OrderByDescending(x => x.Match.Confidence)
+                    .First();
 
-                if (matchConfidence < 0.5m && matchConfidence >= 0m)
+                if (bestMatch.Match.Confidence >= 0.5m)
                 {
-                    reviewReasons.Add("entity_mismatch_suspected");
-                    _logger.LogWarning(
-                        "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — matchReason: {MatchReason}",
-                        currentStage, entityRecognitionStopwatch.ElapsedMilliseconds, "low_match", matchReason);
+                    suggestedEntityId = bestMatch.Entity.Id;
+                    LogStageInformation(currentStage, entityRecognitionStopwatch.ElapsedMilliseconds, "matched",
+                        "suggestedEntity {SuggestedEntity} confidence {Confidence} reason {Reason}",
+                        bestMatch.Entity.Name, bestMatch.Match.Confidence, bestMatch.Match.Reason);
+
+                    if (bestMatch.Entity.Id != entityId)
+                    {
+                        _logger.LogInformation(
+                            "Entity recognition suggests different entity: {SuggestedEntity} (uploaded as {UploadedEntity})",
+                            bestMatch.Entity.Name, legalEntity?.Name ?? entityId.ToString());
+                    }
                 }
                 else
                 {
-                    LogStageInformation(currentStage, entityRecognitionStopwatch.ElapsedMilliseconds, "matched",
-                        "confidence {Confidence} reason {Reason}", matchConfidence, matchReason);
+                    // No strong match — fall back to uploaded entity
+                    suggestedEntityId = entityId;
+                    reviewReasons.Add("entity_mismatch_suspected");
+                    _logger.LogWarning(
+                        "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — best match: {BestEntity} ({Confidence})",
+                        currentStage, entityRecognitionStopwatch.ElapsedMilliseconds, "low_match",
+                        bestMatch.Entity.Name, bestMatch.Match.Confidence);
                 }
             }
             entityRecognitionStopwatch.Stop();
@@ -298,7 +317,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             var persistResultsStopwatch = Stopwatch.StartNew();
             if (bookingSuggestion is not null)
             {
-                bookingSuggestionCreated = await CreateBookingSuggestionAsync(document, entityId, bookingSuggestion, ct);
+                bookingSuggestionCreated = await CreateBookingSuggestionAsync(document, entityId, bookingSuggestion, suggestedEntityId, ct);
                 if (!bookingSuggestionCreated)
                     reviewReasons.Add("booking_suggestion_unresolved_accounts");
             }
@@ -731,15 +750,16 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
 
     private async Task<bool> CreateBookingSuggestionAsync(
         Document document, Guid entityId,
-        BookingSuggestionResult suggestion, CancellationToken ct)
+        BookingSuggestionResult suggestion, Guid? suggestedEntityId, CancellationToken ct)
     {
-        // Resolve account numbers to account IDs
+        // Resolve account numbers to account IDs (use suggested entity for account lookup)
+        var targetEntityId = suggestedEntityId ?? entityId;
         var debitAccount = await _db.Accounts
-            .FirstOrDefaultAsync(a => a.EntityId == entityId
+            .FirstOrDefaultAsync(a => a.EntityId == targetEntityId
                                       && a.AccountNumber == suggestion.DebitAccountNumber, ct);
 
         var creditAccount = await _db.Accounts
-            .FirstOrDefaultAsync(a => a.EntityId == entityId
+            .FirstOrDefaultAsync(a => a.EntityId == targetEntityId
                                       && a.AccountNumber == suggestion.CreditAccountNumber, ct);
 
         if (debitAccount is null || creditAccount is null)
@@ -778,7 +798,8 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             aiReasoning: aiReasoningJson,
             invoiceType: suggestion.InvoiceType,
             taxKey: suggestion.TaxKey,
-            vatTreatmentType: suggestion.VatTreatment?.Type);
+            vatTreatmentType: suggestion.VatTreatment?.Type,
+            suggestedEntityId: suggestedEntityId);
 
         _db.BookingSuggestions.Add(bookingSuggestion);
         return true;

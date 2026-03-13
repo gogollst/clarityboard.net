@@ -93,6 +93,8 @@ public record BookingSuggestionDto
     public string? InvoiceType { get; init; }
     public string? TaxKey { get; init; }
     public string? VatTreatmentType { get; init; }
+    public Guid? SuggestedEntityId { get; init; }
+    public string? SuggestedEntityName { get; init; }
 }
 
 public record DocumentUploadResult

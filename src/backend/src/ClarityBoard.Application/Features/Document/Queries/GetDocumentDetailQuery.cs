@@ -51,6 +51,15 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
                     .FirstOrDefaultAsync(ct);
             }
 
+            string? suggestedEntityName = null;
+            if (bookingSuggestion.SuggestedEntityId.HasValue)
+            {
+                suggestedEntityName = await _db.LegalEntities
+                    .Where(e => e.Id == bookingSuggestion.SuggestedEntityId.Value)
+                    .Select(e => e.Name)
+                    .FirstOrDefaultAsync(ct);
+            }
+
             bookingSuggestionDto = new BookingSuggestionDto
             {
                 Id = bookingSuggestion.Id,
@@ -74,6 +83,8 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
                 InvoiceType = bookingSuggestion.InvoiceType,
                 TaxKey = bookingSuggestion.TaxKey,
                 VatTreatmentType = bookingSuggestion.VatTreatmentType,
+                SuggestedEntityId = bookingSuggestion.SuggestedEntityId,
+                SuggestedEntityName = suggestedEntityName,
             };
         }
 

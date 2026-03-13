@@ -21,6 +21,7 @@ public class DocumentUploadFormData
 public record ApproveBookingRequest
 {
     public Guid? HrEmployeeId { get; init; }
+    public Guid? TargetEntityId { get; init; }
 }
 
 public record RejectBookingRequest
@@ -37,6 +38,7 @@ public record ModifyBookingRequest
     public decimal? VatAmount { get; init; }
     public string? Description { get; init; }
     public Guid? HrEmployeeId { get; init; }
+    public Guid? TargetEntityId { get; init; }
 }
 
 [ApiController]
@@ -183,6 +185,7 @@ public class DocumentController : ControllerBase
                 DocumentId = id,
                 UserId = userId.Value,
                 HrEmployeeId = request?.HrEmployeeId,
+                TargetEntityId = request?.TargetEntityId,
             }, ct);
 
             return Ok(journalEntryId);
@@ -253,6 +256,7 @@ public class DocumentController : ControllerBase
                 VatAmount = request.VatAmount,
                 Description = request.Description,
                 HrEmployeeId = request.HrEmployeeId,
+                TargetEntityId = request.TargetEntityId,
             }, ct);
 
             return Ok(journalEntryId);

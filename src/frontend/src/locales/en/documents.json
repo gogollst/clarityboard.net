@@ -90,6 +90,8 @@
       "autoBookedHint": "Based on recurring pattern",
       "employee": "Employee",
       "selectEmployee": "Select employee (optional)",
+      "targetEntity": "Target entity",
+      "entitySuggested": "AI suggestion",
       "modifyTitle": "Modify Booking Suggestion",
       "rejectTitle": "Reject Booking Suggestion",
       "rejectConfirm": "Are you sure you want to reject this suggestion?",

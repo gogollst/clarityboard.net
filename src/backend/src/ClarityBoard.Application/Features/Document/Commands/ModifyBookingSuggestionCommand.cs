@@ -19,6 +19,7 @@ public record ModifyBookingSuggestionCommand : IRequest<Guid>, IEntityScoped
     public decimal? VatAmount { get; init; }
     public string? Description { get; init; }
     public Guid? HrEmployeeId { get; init; }
+    public Guid? TargetEntityId { get; init; }
 }
 
 public class ModifyBookingSuggestionCommandHandler : IRequestHandler<ModifyBookingSuggestionCommand, Guid>
@@ -52,20 +53,25 @@ public class ModifyBookingSuggestionCommandHandler : IRequestHandler<ModifyBooki
         suggestion.Modify(request.UserId, request.DebitAccountId, request.CreditAccountId,
             request.Amount, request.VatCode, request.VatAmount, request.Description, request.HrEmployeeId);
 
+        // Determine target entity: user override > AI suggestion > uploaded entity
+        var targetEntityId = request.TargetEntityId
+                             ?? suggestion.SuggestedEntityId
+                             ?? request.EntityId;
+
         // Create journal entry with modified values
         var invoiceDate = document.InvoiceDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var fiscalPeriod = await _db.FiscalPeriods
             .FirstOrDefaultAsync(fp =>
-                fp.EntityId == request.EntityId
+                fp.EntityId == targetEntityId
                 && fp.StartDate <= invoiceDate
                 && fp.EndDate >= invoiceDate, ct)
             ?? throw new InvalidOperationException(
                 $"No fiscal period found for date {invoiceDate}. Please create the fiscal period first.");
 
-        var entryNumber = await _accountingRepo.GetNextEntryNumberAsync(request.EntityId, ct);
+        var entryNumber = await _accountingRepo.GetNextEntryNumberAsync(targetEntityId, ct);
 
         var journalEntry = JournalEntry.Create(
-            entityId: request.EntityId,
+            entityId: targetEntityId,
             entryNumber: entryNumber,
             entryDate: invoiceDate,
             description: request.Description ?? $"Invoice: {document.VendorName} {document.InvoiceNumber}",
@@ -100,7 +106,7 @@ public class ModifyBookingSuggestionCommandHandler : IRequestHandler<ModifyBooki
         document.MarkBooked(journalEntry.Id);
 
         await _patternLearner.LearnFromDecisionAsync(
-            request.EntityId, document.VendorName, document.BusinessPartnerId,
+            targetEntityId, document.VendorName, document.BusinessPartnerId,
             request.DebitAccountId, request.CreditAccountId, request.VatCode, request.HrEmployeeId, ct);
 
         await _db.SaveChangesAsync(ct);

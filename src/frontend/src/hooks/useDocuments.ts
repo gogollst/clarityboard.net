@@ -179,14 +179,19 @@ export function useApproveBooking() {
       documentId,
       entityId,
       hrEmployeeId,
+      targetEntityId,
     }: {
       documentId: string;
       entityId: string;
       hrEmployeeId?: string;
+      targetEntityId?: string;
     }) => {
+      const body: Record<string, string | undefined> = {};
+      if (hrEmployeeId) body.hrEmployeeId = hrEmployeeId;
+      if (targetEntityId) body.targetEntityId = targetEntityId;
       const { data } = await api.post<string>(
         `/documents/${documentId}/approve-booking`,
-        hrEmployeeId ? { hrEmployeeId } : undefined,
+        Object.keys(body).length > 0 ? body : undefined,
         { params: { entityId } },
       );
       return { journalEntryId: data, documentId, entityId };

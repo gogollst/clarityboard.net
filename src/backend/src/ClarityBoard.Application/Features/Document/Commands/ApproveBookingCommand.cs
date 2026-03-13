@@ -12,6 +12,7 @@ public record ApproveBookingCommand : IRequest<Guid>, IEntityScoped
     public Guid DocumentId { get; init; }
     public Guid UserId { get; init; }
     public Guid? HrEmployeeId { get; init; }
+    public Guid? TargetEntityId { get; init; }
 }
 
 public class ApproveBookingCommandHandler : IRequestHandler<ApproveBookingCommand, Guid>
@@ -41,22 +42,27 @@ public class ApproveBookingCommandHandler : IRequestHandler<ApproveBookingComman
             .FirstOrDefaultAsync(ct)
             ?? throw new InvalidOperationException($"No pending booking suggestion for document {request.DocumentId}.");
 
+        // Determine target entity: user override > AI suggestion > uploaded entity
+        var targetEntityId = request.TargetEntityId
+                             ?? suggestion.SuggestedEntityId
+                             ?? request.EntityId;
+
         // Find or create fiscal period for the invoice date
         var invoiceDate = document.InvoiceDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var fiscalPeriod = await _db.FiscalPeriods
             .FirstOrDefaultAsync(fp =>
-                fp.EntityId == request.EntityId
+                fp.EntityId == targetEntityId
                 && fp.StartDate <= invoiceDate
                 && fp.EndDate >= invoiceDate, ct)
             ?? throw new InvalidOperationException(
                 $"No fiscal period found for date {invoiceDate}. Please create the fiscal period first.");
 
         // Get next entry number
-        var entryNumber = await _accountingRepo.GetNextEntryNumberAsync(request.EntityId, ct);
+        var entryNumber = await _accountingRepo.GetNextEntryNumberAsync(targetEntityId, ct);
 
         // Create JournalEntry from BookingSuggestion
         var journalEntry = JournalEntry.Create(
-            entityId: request.EntityId,
+            entityId: targetEntityId,
             entryNumber: entryNumber,
             entryDate: invoiceDate,
             description: suggestion.Description ?? $"Invoice: {document.VendorName} {document.InvoiceNumber}",
@@ -101,7 +107,7 @@ public class ApproveBookingCommandHandler : IRequestHandler<ApproveBookingComman
 
         // Learn from the decision for recurring patterns
         await _patternLearner.LearnFromDecisionAsync(
-            request.EntityId, document.VendorName, document.BusinessPartnerId,
+            targetEntityId, document.VendorName, document.BusinessPartnerId,
             suggestion.DebitAccountId, suggestion.CreditAccountId, suggestion.VatCode,
             request.HrEmployeeId, ct);
 

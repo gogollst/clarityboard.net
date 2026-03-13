@@ -90,6 +90,8 @@
       "autoBookedHint": "Basierend auf wiederkehrendem Muster",
       "employee": "Mitarbeiter",
       "selectEmployee": "Mitarbeiter wählen (optional)",
+      "targetEntity": "Ziel-Gesellschaft",
+      "entitySuggested": "KI-Vorschlag",
       "modifyTitle": "Buchungsvorschlag anpassen",
       "rejectTitle": "Buchungsvorschlag ablehnen",
       "rejectConfirm": "Möchten Sie diesen Buchungsvorschlag wirklich ablehnen?",
