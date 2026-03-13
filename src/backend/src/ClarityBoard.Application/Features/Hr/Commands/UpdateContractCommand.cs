@@ -9,9 +9,10 @@ using Microsoft.EntityFrameworkCore;
 namespace ClarityBoard.Application.Features.Hr.Commands;
 
 [RequirePermission("hr.manage")]
-public record CreateContractCommand : IRequest<Guid>
+public record UpdateContractCommand : IRequest<Unit>
 {
     public required Guid EmployeeId { get; init; }
+    public required Guid ContractId { get; init; }
     public required string ContractType { get; init; }
     public required decimal WeeklyHours { get; init; }
     public required int WorkdaysPerWeek { get; init; }
@@ -19,8 +20,6 @@ public record CreateContractCommand : IRequest<Guid>
     public DateOnly? EndDate { get; init; }
     public DateOnly? ProbationEndDate { get; init; }
     public required int EmployeeNoticeWeeks { get; init; }
-    public required DateTime ValidFrom { get; init; }
-    public required string ChangeReason { get; init; }
 
     // Salary fields
     public required string SalaryType { get; init; }
@@ -43,9 +42,9 @@ public record CreateContractCommand : IRequest<Guid>
     public string? Notes { get; init; }
 }
 
-public class CreateContractCommandValidator : AbstractValidator<CreateContractCommand>
+public class UpdateContractCommandValidator : AbstractValidator<UpdateContractCommand>
 {
-    public CreateContractCommandValidator()
+    public UpdateContractCommandValidator()
     {
         RuleFor(x => x.ContractType)
             .Must(t => Enum.TryParse<ContractType>(t, ignoreCase: true, out _))
@@ -54,19 +53,13 @@ public class CreateContractCommandValidator : AbstractValidator<CreateContractCo
         RuleFor(x => x.WorkdaysPerWeek).InclusiveBetween(1, 7);
         RuleFor(x => x.EmployeeNoticeWeeks).GreaterThanOrEqualTo(0);
         RuleFor(x => x.EmployerNoticeWeeks).GreaterThanOrEqualTo(0);
-        RuleFor(x => x.ChangeReason).NotEmpty().MaximumLength(500);
-
-        // Salary validation
         RuleFor(x => x.SalaryType)
             .Must(t => Enum.TryParse<Domain.Entities.Hr.SalaryType>(t, ignoreCase: true, out _))
             .WithMessage("SalaryType must be 'Monthly', 'Hourly', or 'DailyRate'.");
         RuleFor(x => x.GrossAmountCents).GreaterThan(0);
         RuleFor(x => x.CurrencyCode).NotEmpty().Length(3);
         RuleFor(x => x.BonusAmountCents).GreaterThanOrEqualTo(0);
-        RuleFor(x => x.BonusCurrencyCode).Length(3);
         RuleFor(x => x.AnnualVacationDays).InclusiveBetween(0, 365);
-
-        // FixedTerm conditional validation
         RuleFor(x => x.FixedTermReason)
             .NotEmpty()
             .When(x => x.ContractType.Equals("FixedTerm", StringComparison.OrdinalIgnoreCase))
@@ -80,55 +73,25 @@ public class CreateContractCommandValidator : AbstractValidator<CreateContractCo
             .Must((cmd, endDate) => endDate > cmd.StartDate)
             .When(x => x.EndDate.HasValue)
             .WithMessage("EndDate must be after StartDate.");
-        RuleFor(x => x.ProbationEndDate)
-            .Must((cmd, probEnd) => probEnd >= cmd.StartDate)
-            .When(x => x.ProbationEndDate.HasValue)
-            .WithMessage("ProbationEndDate must be on or after StartDate.");
-
-        // EmploymentType validation
         RuleFor(x => x.EmploymentType)
             .Must(t => Enum.TryParse<Domain.Entities.Hr.EmploymentType>(t, ignoreCase: true, out _))
-            .When(x => x.EmploymentType != null)
-            .WithMessage("EmploymentType must be 'FullTime', 'PartTime', 'MiniJob', 'Internship', or 'WorkingStudent'.");
+            .When(x => x.EmploymentType != null);
     }
 }
 
-public class CreateContractCommandHandler : IRequestHandler<CreateContractCommand, Guid>
+public class UpdateContractCommandHandler : IRequestHandler<UpdateContractCommand, Unit>
 {
     private readonly IAppDbContext _db;
-    private readonly ICurrentUser _currentUser;
 
-    public CreateContractCommandHandler(IAppDbContext db, ICurrentUser currentUser)
+    public UpdateContractCommandHandler(IAppDbContext db) => _db = db;
+
+    public async Task<Unit> Handle(UpdateContractCommand request, CancellationToken cancellationToken)
     {
-        _db          = db;
-        _currentUser = currentUser;
-    }
-
-    public async Task<Guid> Handle(CreateContractCommand request, CancellationToken cancellationToken)
-    {
-        var employeeExists = await _db.Employees
-            .AnyAsync(e => e.Id == request.EmployeeId, cancellationToken);
-
-        if (!employeeExists)
-            throw new NotFoundException("Employee", request.EmployeeId);
-
-        var validFrom = request.ValidFrom.Kind == DateTimeKind.Unspecified
-            ? DateTime.SpecifyKind(request.ValidFrom, DateTimeKind.Utc)
-            : request.ValidFrom.ToUniversalTime();
-
-        // Close current active contract record
-        var current = await _db.Contracts
-            .FirstOrDefaultAsync(c => c.EmployeeId == request.EmployeeId && c.ValidTo == null, cancellationToken);
-
-        if (current != null)
-            current.Close(validFrom);
-
-        // Also close current active salary record
-        var currentSalary = await _db.SalaryHistories
-            .FirstOrDefaultAsync(s => s.EmployeeId == request.EmployeeId && s.ValidTo == null, cancellationToken);
-
-        if (currentSalary != null)
-            currentSalary.Close(validFrom);
+        var contract = await _db.Contracts
+            .FirstOrDefaultAsync(c => c.Id == request.ContractId
+                                   && c.EmployeeId == request.EmployeeId
+                                   && c.ValidTo == null, cancellationToken)
+            ?? throw new NotFoundException("Contract", request.ContractId);
 
         var contractType = Enum.Parse<ContractType>(request.ContractType, ignoreCase: true);
         var salaryType   = Enum.Parse<Domain.Entities.Hr.SalaryType>(request.SalaryType, ignoreCase: true);
@@ -136,16 +99,12 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
             ? Enum.Parse<Domain.Entities.Hr.EmploymentType>(request.EmploymentType, ignoreCase: true)
             : (Domain.Entities.Hr.EmploymentType?)null;
 
-        var newContract = Contract.Create(
-            employeeId:             request.EmployeeId,
+        contract.Update(
             type:                   contractType,
             weeklyHours:            request.WeeklyHours,
             workdaysPerWeek:        request.WorkdaysPerWeek,
             startDate:              request.StartDate,
             employeeNoticeWeeks:    request.EmployeeNoticeWeeks,
-            createdBy:              _currentUser.UserId,
-            changeReason:           request.ChangeReason,
-            validFrom:              validFrom,
             salaryType:             salaryType,
             grossAmountCents:       request.GrossAmountCents,
             currencyCode:           request.CurrencyCode,
@@ -165,9 +124,7 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
             endDate:                request.EndDate,
             probationEndDate:       request.ProbationEndDate);
 
-        _db.Contracts.Add(newContract);
         await _db.SaveChangesAsync(cancellationToken);
-
-        return newContract.Id;
+        return Unit.Value;
     }
 }

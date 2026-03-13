@@ -143,7 +143,7 @@ public class HrController : ControllerBase
         return NoContent();
     }
 
-    // ── Salary ──
+    // ── Salary (legacy read-only) ──
 
     [HttpGet("employees/{id:guid}/salary-history")]
     [ProducesResponseType(typeof(List<SalaryDto>), StatusCodes.Status200OK)]
@@ -152,28 +152,6 @@ public class HrController : ControllerBase
     {
         var result = await _mediator.Send(new GetSalaryHistoryQuery(id), ct);
         return Ok(result);
-    }
-
-    [HttpPost("employees/{id:guid}/salary")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> UpdateSalary(
-        Guid id, [FromBody] UpdateSalaryRequest body, CancellationToken ct)
-    {
-        await _mediator.Send(new UpdateSalaryCommand
-        {
-            EmployeeId         = id,
-            GrossAmountCents   = body.GrossAmountCents,
-            CurrencyCode       = body.CurrencyCode,
-            BonusAmountCents   = body.BonusAmountCents,
-            BonusCurrencyCode  = body.BonusCurrencyCode,
-            SalaryType         = body.SalaryType,
-            PaymentCycleMonths = body.PaymentCycleMonths,
-            ValidFrom          = body.ValidFrom,
-            ChangeReason       = body.ChangeReason,
-        }, ct);
-        return NoContent();
     }
 
     // ── Contracts ──
@@ -188,24 +166,108 @@ public class HrController : ControllerBase
     }
 
     [HttpPost("employees/{id:guid}/contracts")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> CreateContract(
+        Guid id, [FromBody] CreateContractRequest body, CancellationToken ct)
+    {
+        var contractId = await _mediator.Send(new CreateContractCommand
+        {
+            EmployeeId              = id,
+            ContractType            = body.ContractType,
+            WeeklyHours             = body.WeeklyHours,
+            WorkdaysPerWeek         = body.WorkdaysPerWeek,
+            StartDate               = body.StartDate,
+            EndDate                 = body.EndDate,
+            ProbationEndDate        = body.ProbationEndDate,
+            EmployeeNoticeWeeks     = body.EmployeeNoticeWeeks,
+            ValidFrom               = body.ValidFrom,
+            ChangeReason            = body.ChangeReason,
+            SalaryType              = body.SalaryType,
+            GrossAmountCents        = body.GrossAmountCents,
+            CurrencyCode            = body.CurrencyCode,
+            BonusAmountCents        = body.BonusAmountCents,
+            BonusCurrencyCode       = body.BonusCurrencyCode,
+            PaymentCycleMonths      = body.PaymentCycleMonths,
+            EmploymentType          = body.EmploymentType,
+            EmployerNoticeWeeks     = body.EmployerNoticeWeeks,
+            AnnualVacationDays      = body.AnnualVacationDays,
+            FixedTermReason         = body.FixedTermReason,
+            FixedTermExtensionCount = body.FixedTermExtensionCount,
+            Has13thSalary           = body.Has13thSalary,
+            HasVacationBonus        = body.HasVacationBonus,
+            VariablePayCents        = body.VariablePayCents,
+            VariablePayDescription  = body.VariablePayDescription,
+            Notes                   = body.Notes,
+        }, ct);
+        return Created(string.Empty, new { id = contractId });
+    }
+
+    [HttpPut("employees/{id:guid}/contracts/{contractId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CreateContract(
-        Guid id, [FromBody] CreateContractRequest body, CancellationToken ct)
+    public async Task<IActionResult> UpdateContract(
+        Guid id, Guid contractId, [FromBody] UpdateContractRequest body, CancellationToken ct)
     {
-        await _mediator.Send(new CreateContractCommand
+        await _mediator.Send(new UpdateContractCommand
         {
-            EmployeeId       = id,
-            ContractType     = body.ContractType,
-            WeeklyHours      = body.WeeklyHours,
-            WorkdaysPerWeek  = body.WorkdaysPerWeek,
-            StartDate        = body.StartDate,
-            EndDate          = body.EndDate,
-            ProbationEndDate = body.ProbationEndDate,
-            NoticeWeeks      = body.NoticeWeeks,
-            ValidFrom        = body.ValidFrom,
-            ChangeReason     = body.ChangeReason,
+            EmployeeId              = id,
+            ContractId              = contractId,
+            ContractType            = body.ContractType,
+            WeeklyHours             = body.WeeklyHours,
+            WorkdaysPerWeek         = body.WorkdaysPerWeek,
+            StartDate               = body.StartDate,
+            EndDate                 = body.EndDate,
+            ProbationEndDate        = body.ProbationEndDate,
+            EmployeeNoticeWeeks     = body.EmployeeNoticeWeeks,
+            SalaryType              = body.SalaryType,
+            GrossAmountCents        = body.GrossAmountCents,
+            CurrencyCode            = body.CurrencyCode,
+            BonusAmountCents        = body.BonusAmountCents,
+            BonusCurrencyCode       = body.BonusCurrencyCode,
+            PaymentCycleMonths      = body.PaymentCycleMonths,
+            EmploymentType          = body.EmploymentType,
+            EmployerNoticeWeeks     = body.EmployerNoticeWeeks,
+            AnnualVacationDays      = body.AnnualVacationDays,
+            FixedTermReason         = body.FixedTermReason,
+            FixedTermExtensionCount = body.FixedTermExtensionCount,
+            Has13thSalary           = body.Has13thSalary,
+            HasVacationBonus        = body.HasVacationBonus,
+            VariablePayCents        = body.VariablePayCents,
+            VariablePayDescription  = body.VariablePayDescription,
+            Notes                   = body.Notes,
+        }, ct);
+        return NoContent();
+    }
+
+    [HttpPost("employees/{id:guid}/contracts/{contractId:guid}/documents/{docId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AttachDocumentToContract(
+        Guid id, Guid contractId, Guid docId, CancellationToken ct)
+    {
+        await _mediator.Send(new AttachDocumentToContractCommand
+        {
+            EmployeeId = id,
+            ContractId = contractId,
+            DocumentId = docId,
+        }, ct);
+        return NoContent();
+    }
+
+    [HttpDelete("employees/{id:guid}/contracts/{contractId:guid}/documents/{docId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DetachDocumentFromContract(
+        Guid id, Guid contractId, Guid docId, CancellationToken ct)
+    {
+        await _mediator.Send(new DetachDocumentFromContractCommand
+        {
+            EmployeeId = id,
+            ContractId = contractId,
+            DocumentId = docId,
         }, ct);
         return NoContent();
     }
@@ -889,16 +951,6 @@ public record TerminateEmployeeRequest(
     DateOnly TerminationDate,
     string Reason);
 
-public record UpdateSalaryRequest(
-    int GrossAmountCents,
-    string CurrencyCode,
-    int BonusAmountCents,
-    string BonusCurrencyCode,
-    string SalaryType,
-    int PaymentCycleMonths,
-    DateTime ValidFrom,
-    string ChangeReason);
-
 public record CreateContractRequest(
     string ContractType,
     decimal WeeklyHours,
@@ -906,9 +958,50 @@ public record CreateContractRequest(
     DateOnly StartDate,
     DateOnly? EndDate,
     DateOnly? ProbationEndDate,
-    int NoticeWeeks,
+    int EmployeeNoticeWeeks,
     DateTime ValidFrom,
-    string ChangeReason);
+    string ChangeReason,
+    string SalaryType,
+    int GrossAmountCents,
+    string CurrencyCode,
+    int BonusAmountCents,
+    string BonusCurrencyCode,
+    int PaymentCycleMonths,
+    string? EmploymentType,
+    int EmployerNoticeWeeks,
+    int AnnualVacationDays,
+    string? FixedTermReason,
+    int FixedTermExtensionCount,
+    bool Has13thSalary,
+    bool HasVacationBonus,
+    int VariablePayCents,
+    string? VariablePayDescription,
+    string? Notes);
+
+public record UpdateContractRequest(
+    string ContractType,
+    decimal WeeklyHours,
+    int WorkdaysPerWeek,
+    DateOnly StartDate,
+    DateOnly? EndDate,
+    DateOnly? ProbationEndDate,
+    int EmployeeNoticeWeeks,
+    string SalaryType,
+    int GrossAmountCents,
+    string CurrencyCode,
+    int BonusAmountCents,
+    string BonusCurrencyCode,
+    int PaymentCycleMonths,
+    string? EmploymentType,
+    int EmployerNoticeWeeks,
+    int AnnualVacationDays,
+    string? FixedTermReason,
+    int FixedTermExtensionCount,
+    bool Has13thSalary,
+    bool HasVacationBonus,
+    int VariablePayCents,
+    string? VariablePayDescription,
+    string? Notes);
 
 public record RejectLeaveRequestRequest(string Reason);
 

@@ -35,15 +35,16 @@ public class GetSalaryBandsQueryHandler : IRequestHandler<GetSalaryBandsQuery, S
 
     public async Task<SalaryBandsDto> Handle(GetSalaryBandsQuery request, CancellationToken cancellationToken)
     {
-        // Single JOIN query: current salary entries for active employees in this entity
-        var sortedSalaries = await _db.SalaryHistories
-            .Where(s => s.ValidTo == null
-                     && _db.Employees.Any(e => e.Id == s.EmployeeId
+        // Use active contracts instead of salary_history for current salary data
+        var sortedSalaries = await _db.Contracts
+            .Where(c => c.ValidTo == null
+                     && c.GrossAmountCents > 0
+                     && _db.Employees.Any(e => e.Id == c.EmployeeId
                                             && e.EntityId == request.EntityId
                                             && e.Status != EmployeeStatus.Terminated
                                             && (!request.DepartmentId.HasValue || e.DepartmentId == request.DepartmentId.Value)))
-            .OrderBy(s => s.GrossAmountCents)
-            .Select(s => s.GrossAmountCents)
+            .OrderBy(c => c.GrossAmountCents)
+            .Select(c => c.GrossAmountCents)
             .ToListAsync(cancellationToken);
 
         if (sortedSalaries.Count == 0)
@@ -66,12 +67,6 @@ public class GetSalaryBandsQueryHandler : IRequestHandler<GetSalaryBandsQuery, S
             ? (salaries[mid - 1] + salaries[mid]) / 2
             : salaries[mid];
 
-        // Salary bands (in cents)
-        // 0-30k EUR = 0 to 2_999_999 cents
-        // 30-50k EUR = 3_000_000 to 4_999_999
-        // 50-70k EUR = 5_000_000 to 6_999_999
-        // 70-100k EUR = 7_000_000 to 9_999_999
-        // 100k+ EUR = 10_000_000+
         var bands = new List<SalaryBandDto>
         {
             new() { Label = "0-30k",   Count = salaries.Count(s => s <  3_000_000) },

@@ -3,21 +3,26 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   useEmployee,
-  useSalaryHistory,
   useContractHistory,
   useTerminateEmployee,
   useUpdateEmployee,
-  useUpdateSalary,
+  useCreateContract,
+  useUpdateContract,
+  useEmployeeDocuments,
+  useAttachDocToContract,
+  useDetachDocFromContract,
 } from '@/hooks/useHr';
 import { useAuth } from '@/hooks/useAuth';
 import { useEntity } from '@/hooks/useEntity';
-import type { SalaryEntry, ContractEntry, EmployeeDetail } from '@/types/hr';
+import type { ContractEntry, EmployeeDetail as EmployeeDetailType, CreateContractRequest, UpdateContractRequest } from '@/types/hr';
 import PageHeader from '@/components/shared/PageHeader';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Tabs,
   TabsList,
@@ -47,7 +52,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Loader2, Plus, Pencil } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { ArrowLeft, Loader2, Plus, Pencil, FileText, Link2, Unlink, ChevronDown, Download } from 'lucide-react';
 import EmployeeEditDialog from './EmployeeEditDialog';
 
 // ---------------------------------------------------------------------------
@@ -190,216 +200,462 @@ function CurrentBadge({ isCurrent }: { isCurrent: boolean }) {
 }
 
 // ---------------------------------------------------------------------------
-// Salary history tab
+// Contract form dialog
 // ---------------------------------------------------------------------------
 
-interface SalaryTabProps {
-  entries: SalaryEntry[];
-  isLoading: boolean;
-  employeeId: string;
+interface ContractFormData {
+  contractType: string;
+  employmentType: string;
+  weeklyHours: string;
+  workdaysPerWeek: string;
+  startDate: string;
+  endDate: string;
+  probationEndDate: string;
+  employeeNoticeWeeks: string;
+  employerNoticeWeeks: string;
+  salaryType: string;
+  grossAmountEur: string;
+  currencyCode: string;
+  bonusAmountEur: string;
+  paymentCycleMonths: string;
+  annualVacationDays: string;
+  fixedTermReason: string;
+  fixedTermExtensionCount: string;
+  has13thSalary: boolean;
+  hasVacationBonus: boolean;
+  variablePayEur: string;
+  variablePayDescription: string;
+  notes: string;
+  validFrom: string;
+  changeReason: string;
 }
 
-function SalaryTab({ entries, isLoading, employeeId }: SalaryTabProps) {
-  const { t, i18n } = useTranslation('hr');
-  const { hasPermission } = useAuth();
-  const updateSalary = useUpdateSalary();
-  const [open, setOpen] = useState(false);
-  const [salaryType, setSalaryType] = useState('Monthly');
-  const [grossAmountEur, setGrossAmountEur] = useState('');
-  const [validFrom, setValidFrom] = useState('');
-  const [changeReason, setChangeReason] = useState('');
+const emptyForm: ContractFormData = {
+  contractType: 'Permanent',
+  employmentType: '',
+  weeklyHours: '40',
+  workdaysPerWeek: '5',
+  startDate: '',
+  endDate: '',
+  probationEndDate: '',
+  employeeNoticeWeeks: '4',
+  employerNoticeWeeks: '4',
+  salaryType: 'Monthly',
+  grossAmountEur: '',
+  currencyCode: 'EUR',
+  bonusAmountEur: '0',
+  paymentCycleMonths: '12',
+  annualVacationDays: '20',
+  fixedTermReason: '',
+  fixedTermExtensionCount: '0',
+  has13thSalary: false,
+  hasVacationBonus: false,
+  variablePayEur: '0',
+  variablePayDescription: '',
+  notes: '',
+  validFrom: '',
+  changeReason: '',
+};
 
-  const canManageSalary = hasPermission('hr.salary.manage');
+function contractToForm(c: ContractEntry): ContractFormData {
+  return {
+    contractType: c.contractType,
+    employmentType: c.employmentType ?? '',
+    weeklyHours: String(c.weeklyHours),
+    workdaysPerWeek: String(c.workdaysPerWeek),
+    startDate: c.startDate,
+    endDate: c.endDate ?? '',
+    probationEndDate: c.probationEndDate ?? '',
+    employeeNoticeWeeks: String(c.employeeNoticeWeeks),
+    employerNoticeWeeks: String(c.employerNoticeWeeks),
+    salaryType: c.salaryType,
+    grossAmountEur: (c.grossAmountCents / 100).toFixed(2),
+    currencyCode: c.currencyCode,
+    bonusAmountEur: (c.bonusAmountCents / 100).toFixed(2),
+    paymentCycleMonths: String(c.paymentCycleMonths),
+    annualVacationDays: String(c.annualVacationDays),
+    fixedTermReason: c.fixedTermReason ?? '',
+    fixedTermExtensionCount: String(c.fixedTermExtensionCount),
+    has13thSalary: c.has13thSalary,
+    hasVacationBonus: c.hasVacationBonus,
+    variablePayEur: (c.variablePayCents / 100).toFixed(2),
+    variablePayDescription: c.variablePayDescription ?? '',
+    notes: c.notes ?? '',
+    validFrom: '',
+    changeReason: '',
+  };
+}
 
-  function resetForm() {
-    setSalaryType('Monthly');
-    setGrossAmountEur('');
-    setValidFrom('');
-    setChangeReason('');
-  }
+interface ContractFormDialogProps {
+  open: boolean;
+  onClose: () => void;
+  employeeId: string;
+  editContract?: ContractEntry;
+}
 
-  function handleClose() {
-    resetForm();
-    setOpen(false);
-  }
+function ContractFormDialog({ open, onClose, employeeId, editContract }: ContractFormDialogProps) {
+  const { t } = useTranslation('hr');
+  const isEdit = !!editContract;
+  const [form, setForm] = useState<ContractFormData>(
+    editContract ? contractToForm(editContract) : emptyForm,
+  );
+  const createContract = useCreateContract();
+  const updateContract = useUpdateContract();
+  const isPending = createContract.isPending || updateContract.isPending;
 
-  function handleSubmit(e: React.FormEvent) {
+  const set = (field: keyof ContractFormData, value: string | boolean) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleClose = () => {
+    setForm(emptyForm);
+    onClose();
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const cents = Math.round(parseFloat(grossAmountEur) * 100);
-    if (!cents || cents <= 0) return;
-    updateSalary.mutate(
-      {
-        employeeId,
-        salaryType,
-        grossAmountCents: cents,
-        currencyCode: 'EUR',
-        bonusAmountCents: 0,
-        bonusCurrencyCode: 'EUR',
-        paymentCycleMonths: 12,
-        validFrom,
-        changeReason,
-      },
-      { onSuccess: handleClose },
-    );
-  }
+    const grossCents = Math.round(parseFloat(form.grossAmountEur) * 100);
+    const bonusCents = Math.round(parseFloat(form.bonusAmountEur || '0') * 100);
+    const variableCents = Math.round(parseFloat(form.variablePayEur || '0') * 100);
 
-  function formatCents(cents: number): string {
-    return (cents / 100).toLocaleString(i18n.language, {
-      style: 'currency',
-      currency: 'EUR',
-    });
-  }
-
-  function formatDate(iso: string | undefined): string {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString(i18n.language);
-  }
-
-  function salaryTypeLabel(type: string): string {
-    switch (type) {
-      case 'Monthly':   return t('employees.salary.typeMonthly');
-      case 'Hourly':    return t('employees.salary.typeHourly');
-      case 'DailyRate': return t('employees.salary.typeDailyRate');
-      default:          return type;
+    if (isEdit && editContract) {
+      const req: UpdateContractRequest & { employeeId: string; contractId: string } = {
+        employeeId: employeeId,
+        contractId: editContract.id,
+        contractType: form.contractType,
+        weeklyHours: parseFloat(form.weeklyHours),
+        workdaysPerWeek: parseInt(form.workdaysPerWeek),
+        startDate: form.startDate,
+        endDate: form.endDate || undefined,
+        probationEndDate: form.probationEndDate || undefined,
+        employeeNoticeWeeks: parseInt(form.employeeNoticeWeeks),
+        salaryType: form.salaryType,
+        grossAmountCents: grossCents,
+        currencyCode: form.currencyCode,
+        bonusAmountCents: bonusCents,
+        bonusCurrencyCode: form.currencyCode,
+        paymentCycleMonths: parseInt(form.paymentCycleMonths),
+        employmentType: form.employmentType || undefined,
+        employerNoticeWeeks: parseInt(form.employerNoticeWeeks),
+        annualVacationDays: parseInt(form.annualVacationDays),
+        fixedTermReason: form.fixedTermReason || undefined,
+        fixedTermExtensionCount: parseInt(form.fixedTermExtensionCount),
+        has13thSalary: form.has13thSalary,
+        hasVacationBonus: form.hasVacationBonus,
+        variablePayCents: variableCents,
+        variablePayDescription: form.variablePayDescription || undefined,
+        notes: form.notes || undefined,
+      };
+      updateContract.mutate(req, { onSuccess: handleClose });
+    } else {
+      const req: CreateContractRequest & { employeeId: string } = {
+        employeeId: employeeId,
+        contractType: form.contractType,
+        weeklyHours: parseFloat(form.weeklyHours),
+        workdaysPerWeek: parseInt(form.workdaysPerWeek),
+        startDate: form.startDate,
+        endDate: form.endDate || undefined,
+        probationEndDate: form.probationEndDate || undefined,
+        employeeNoticeWeeks: parseInt(form.employeeNoticeWeeks),
+        validFrom: form.validFrom,
+        changeReason: form.changeReason,
+        salaryType: form.salaryType,
+        grossAmountCents: grossCents,
+        currencyCode: form.currencyCode,
+        bonusAmountCents: bonusCents,
+        bonusCurrencyCode: form.currencyCode,
+        paymentCycleMonths: parseInt(form.paymentCycleMonths),
+        employmentType: form.employmentType || undefined,
+        employerNoticeWeeks: parseInt(form.employerNoticeWeeks),
+        annualVacationDays: parseInt(form.annualVacationDays),
+        fixedTermReason: form.fixedTermReason || undefined,
+        fixedTermExtensionCount: parseInt(form.fixedTermExtensionCount),
+        has13thSalary: form.has13thSalary,
+        hasVacationBonus: form.hasVacationBonus,
+        variablePayCents: variableCents,
+        variablePayDescription: form.variablePayDescription || undefined,
+        notes: form.notes || undefined,
+      };
+      createContract.mutate(req, { onSuccess: handleClose });
     }
-  }
+  };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-10 w-full rounded" />
-        ))}
-      </div>
-    );
-  }
+  const isFixedTerm = form.contractType === 'FixedTerm';
 
   return (
-    <>
-      {canManageSalary && (
-        <div className="mb-4 flex justify-end">
-          <Button size="sm" onClick={() => setOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" />
-            {t('employees.salary.addButton')}
-          </Button>
-        </div>
-      )}
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>
+            {isEdit ? t('employees.contract.editTitle') : t('employees.contract.createTitle')}
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Section 1: Contract basics */}
+          <div>
+            <h4 className="mb-3 text-sm font-medium text-muted-foreground">{t('employees.contract.sectionBasics')}</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{t('employees.contracts.contractType')} *</Label>
+                <Select value={form.contractType} onValueChange={(v) => set('contractType', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Permanent">{t('employees.contracts.typePermanent')}</SelectItem>
+                    <SelectItem value="FixedTerm">{t('employees.contracts.typeFixedTerm')}</SelectItem>
+                    <SelectItem value="Freelance">{t('employees.contracts.typeFreelance')}</SelectItem>
+                    <SelectItem value="WorkingStudent">{t('employees.contracts.typeWorkingStudent')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.fields.employmentType')}</Label>
+                <Select value={form.employmentType || '_none'} onValueChange={(v) => set('employmentType', v === '_none' ? '' : v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">—</SelectItem>
+                    <SelectItem value="FullTime">{t('employees.employmentType.FullTime')}</SelectItem>
+                    <SelectItem value="PartTime">{t('employees.employmentType.PartTime')}</SelectItem>
+                    <SelectItem value="MiniJob">{t('employees.employmentType.MiniJob')}</SelectItem>
+                    <SelectItem value="Internship">{t('employees.employmentType.Internship')}</SelectItem>
+                    <SelectItem value="WorkingStudent">{t('employees.employmentType.WorkingStudent')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.contracts.startDate')} *</Label>
+                <Input type="date" value={form.startDate} onChange={(e) => set('startDate', e.target.value)} required />
+              </div>
+              {isFixedTerm && (
+                <div className="space-y-2">
+                  <Label>{t('employees.contract.endDate')} *</Label>
+                  <Input type="date" value={form.endDate} onChange={(e) => set('endDate', e.target.value)} required={isFixedTerm} />
+                </div>
+              )}
+              <div className="space-y-2">
+                <Label>{t('employees.contract.probationEndDate')}</Label>
+                <Input type="date" value={form.probationEndDate} onChange={(e) => set('probationEndDate', e.target.value)} />
+              </div>
+            </div>
+          </div>
 
-      {entries.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          {t('employees.salary.noEntries')}
-        </p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('employees.salary.type')}</TableHead>
-              <TableHead className="text-right">{t('employees.salary.grossAmount')}</TableHead>
-              <TableHead>{t('employees.salary.validFrom')}</TableHead>
-              <TableHead>{t('employees.salary.changeReason')}</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {entries.map((entry) => (
-              <TableRow key={entry.id}>
-                <TableCell className="text-sm text-muted-foreground">
-                  {salaryTypeLabel(entry.salaryType)}
-                </TableCell>
-                <TableCell className="text-right font-medium tabular-nums">
-                  {formatCents(entry.grossAmountCents)}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {formatDate(entry.validFrom)}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {entry.changeReason || '—'}
-                </TableCell>
-                <TableCell>
-                  <CurrentBadge isCurrent={entry.isCurrent} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+          {/* Section 2: Working time */}
+          <div>
+            <h4 className="mb-3 text-sm font-medium text-muted-foreground">{t('employees.contract.sectionWorkingTime')}</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{t('employees.contracts.weeklyHours')} *</Label>
+                <Input type="number" min="0.5" max="60" step="0.5" value={form.weeklyHours} onChange={(e) => set('weeklyHours', e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.contract.workdaysPerWeek')} *</Label>
+                <Input type="number" min="1" max="7" value={form.workdaysPerWeek} onChange={(e) => set('workdaysPerWeek', e.target.value)} required />
+              </div>
+            </div>
+          </div>
 
-      <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('employees.salary.dialogTitle')}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t('employees.salary.type')}</Label>
-              <Select value={salaryType} onValueChange={setSalaryType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Monthly">{t('employees.salary.typeMonthly')}</SelectItem>
-                  <SelectItem value="Hourly">{t('employees.salary.typeHourly')}</SelectItem>
-                  <SelectItem value="DailyRate">{t('employees.salary.typeDailyRate')}</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Section 3: Compensation */}
+          <div>
+            <h4 className="mb-3 text-sm font-medium text-muted-foreground">{t('employees.contract.sectionCompensation')}</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{t('employees.salary.type')} *</Label>
+                <Select value={form.salaryType} onValueChange={(v) => set('salaryType', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Monthly">{t('employees.salary.typeMonthly')}</SelectItem>
+                    <SelectItem value="Hourly">{t('employees.salary.typeHourly')}</SelectItem>
+                    <SelectItem value="DailyRate">{t('employees.salary.typeDailyRate')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.salary.grossAmountEur')} *</Label>
+                <Input type="number" min="0.01" step="0.01" value={form.grossAmountEur} onChange={(e) => set('grossAmountEur', e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.contract.bonusAmount')}</Label>
+                <Input type="number" min="0" step="0.01" value={form.bonusAmountEur} onChange={(e) => set('bonusAmountEur', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.contract.paymentCycle')}</Label>
+                <Input type="number" min="1" max="24" value={form.paymentCycleMonths} onChange={(e) => set('paymentCycleMonths', e.target.value)} />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="grossAmount">{t('employees.salary.grossAmountEur')} *</Label>
-              <Input
-                id="grossAmount"
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={grossAmountEur}
-                onChange={(e) => setGrossAmountEur(e.target.value)}
-                placeholder={t('employees.salary.grossAmountPlaceholder')}
-                required
-              />
+          </div>
+
+          {/* Section 4: Vacation & notice periods */}
+          <div>
+            <h4 className="mb-3 text-sm font-medium text-muted-foreground">{t('employees.contract.sectionConditions')}</h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>{t('employees.contract.annualVacationDays')}</Label>
+                <Input type="number" min="0" max="365" value={form.annualVacationDays} onChange={(e) => set('annualVacationDays', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.contract.employeeNoticeWeeks')}</Label>
+                <Input type="number" min="0" value={form.employeeNoticeWeeks} onChange={(e) => set('employeeNoticeWeeks', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.contract.employerNoticeWeeks')}</Label>
+                <Input type="number" min="0" value={form.employerNoticeWeeks} onChange={(e) => set('employerNoticeWeeks', e.target.value)} />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="salaryValidFrom">{t('employees.salary.validFrom')} *</Label>
-              <Input
-                id="salaryValidFrom"
-                type="date"
-                value={validFrom}
-                onChange={(e) => setValidFrom(e.target.value)}
-                required
-              />
+          </div>
+
+          {/* Section 5: Fixed-term (conditional) */}
+          {isFixedTerm && (
+            <div>
+              <h4 className="mb-3 text-sm font-medium text-muted-foreground">{t('employees.contract.sectionFixedTerm')}</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t('employees.contract.fixedTermReason')} *</Label>
+                  <Input value={form.fixedTermReason} onChange={(e) => set('fixedTermReason', e.target.value)} required={isFixedTerm} />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('employees.contract.extensionCount')}</Label>
+                  <Input type="number" min="0" max="4" value={form.fixedTermExtensionCount} onChange={(e) => set('fixedTermExtensionCount', e.target.value)} />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="changeReason">{t('employees.salary.changeReason')} *</Label>
-              <Input
-                id="changeReason"
-                value={changeReason}
-                onChange={(e) => setChangeReason(e.target.value)}
-                placeholder={t('employees.salary.changeReasonPlaceholder')}
-                required
-              />
+          )}
+
+          {/* Section 6: Special payments */}
+          <div>
+            <h4 className="mb-3 text-sm font-medium text-muted-foreground">{t('employees.contract.sectionSpecialPayments')}</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox id="has13th" checked={form.has13thSalary} onCheckedChange={(v) => set('has13thSalary', !!v)} />
+                <Label htmlFor="has13th">{t('employees.contract.has13thSalary')}</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox id="hasVacBonus" checked={form.hasVacationBonus} onCheckedChange={(v) => set('hasVacationBonus', !!v)} />
+                <Label htmlFor="hasVacBonus">{t('employees.contract.hasVacationBonus')}</Label>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.contract.variablePay')}</Label>
+                <Input type="number" min="0" step="0.01" value={form.variablePayEur} onChange={(e) => set('variablePayEur', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('employees.contract.variablePayDescription')}</Label>
+                <Input value={form.variablePayDescription} onChange={(e) => set('variablePayDescription', e.target.value)} />
+              </div>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
-                {t('common:buttons.cancel')}
-              </Button>
-              <Button type="submit" disabled={updateSalary.isPending}>
-                {updateSalary.isPending && (
-                  <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                )}
-                {t('common:buttons.save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
+          </div>
+
+          {/* Section 7: Notes */}
+          <div className="space-y-2">
+            <Label>{t('employees.contract.notes')}</Label>
+            <Textarea value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={3} />
+          </div>
+
+          {/* Section 8: Meta (only for create) */}
+          {!isEdit && (
+            <div>
+              <h4 className="mb-3 text-sm font-medium text-muted-foreground">{t('employees.contract.sectionMeta')}</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t('employees.salary.validFrom')} *</Label>
+                  <Input type="date" value={form.validFrom} onChange={(e) => set('validFrom', e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('employees.salary.changeReason')} *</Label>
+                  <Input value={form.changeReason} onChange={(e) => set('changeReason', e.target.value)} required />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={handleClose}>
+              {t('common:buttons.cancel')}
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              {t('common:buttons.save')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Contract history tab
+// Attach document dialog
 // ---------------------------------------------------------------------------
 
-function ContractTab({ entries }: { entries: ContractEntry[] }) {
+interface AttachDocDialogProps {
+  open: boolean;
+  onClose: () => void;
+  employeeId: string;
+  contractId: string;
+  existingDocIds: string[];
+}
+
+function AttachDocDialog({ open, onClose, employeeId, contractId, existingDocIds }: AttachDocDialogProps) {
+  const { t } = useTranslation('hr');
+  const { data: documents = [] } = useEmployeeDocuments(employeeId);
+  const attachDoc = useAttachDocToContract();
+  const unlinked = documents.filter((d) => !existingDocIds.includes(d.id));
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('employees.contract.attachDocument')}</DialogTitle>
+        </DialogHeader>
+        {unlinked.length === 0 ? (
+          <p className="py-4 text-center text-sm text-muted-foreground">{t('employees.contract.noUnlinkedDocs')}</p>
+        ) : (
+          <div className="space-y-2">
+            {unlinked.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between rounded border p-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{doc.title || doc.fileName}</span>
+                  <Badge variant="secondary" className="text-xs">{doc.documentType}</Badge>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={attachDoc.isPending}
+                  onClick={() => attachDoc.mutate({ employeeId, contractId, docId: doc.id }, { onSuccess: onClose })}
+                >
+                  <Link2 className="mr-1 h-3 w-3" />
+                  {t('employees.contract.link')}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Contract tab (new full version)
+// ---------------------------------------------------------------------------
+
+interface ContractTabProps {
+  entries: ContractEntry[];
+  employeeId: string;
+}
+
+function ContractTab({ entries, employeeId }: ContractTabProps) {
   const { t, i18n } = useTranslation('hr');
+  const { hasPermission } = useAuth();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
+  const detachDoc = useDetachDocFromContract();
+  const canManage = hasPermission('hr.manage');
+
+  const current = entries.find((c) => c.isCurrent);
+  const history = entries.filter((c) => !c.isCurrent);
+
+  function formatCents(cents: number, currency = 'EUR'): string {
+    return (cents / 100).toLocaleString(i18n.language, { style: 'currency', currency });
+  }
 
   function formatDate(iso: string | undefined): string {
     if (!iso) return '—';
@@ -416,47 +672,214 @@ function ContractTab({ entries }: { entries: ContractEntry[] }) {
     }
   }
 
-  if (entries.length === 0) {
-    return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
-        {t('employees.contracts.noEntries')}
-      </p>
-    );
+  function salaryTypeLabel(type: string): string {
+    switch (type) {
+      case 'Monthly':   return t('employees.salary.typeMonthly');
+      case 'Hourly':    return t('employees.salary.typeHourly');
+      case 'DailyRate': return t('employees.salary.typeDailyRate');
+      default:          return type;
+    }
+  }
+
+  function employmentTypeLabel(type: string | undefined): string {
+    if (!type) return '—';
+    return t(`employees.employmentType.${type}`, type);
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t('employees.contracts.contractType')}</TableHead>
-          <TableHead className="text-right">{t('employees.contracts.weeklyHours')}</TableHead>
-          <TableHead>{t('employees.contracts.startDate')}</TableHead>
-          <TableHead>{t('employees.contracts.validFrom')}</TableHead>
-          <TableHead />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {entries.map((entry) => (
-          <TableRow key={entry.id}>
-            <TableCell className="font-medium">
-              {contractTypeLabel(entry.contractType)}
-            </TableCell>
-            <TableCell className="text-right text-sm tabular-nums">
-              {entry.weeklyHours} h
-            </TableCell>
-            <TableCell className="text-sm">
-              {formatDate(entry.startDate)}
-            </TableCell>
-            <TableCell className="text-sm">
-              {formatDate(entry.validFrom)}
-            </TableCell>
-            <TableCell>
-              <CurrentBadge isCurrent={entry.isCurrent} />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <>
+      {/* Actions */}
+      {canManage && (
+        <div className="mb-4 flex justify-end gap-2">
+          {current && (
+            <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
+              <Pencil className="mr-1 h-4 w-4" />
+              {t('employees.contract.editButton')}
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus className="mr-1 h-4 w-4" />
+            {t('employees.contract.newButton')}
+          </Button>
+        </div>
+      )}
+
+      {/* Active contract */}
+      {current ? (
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Badge>{contractTypeLabel(current.contractType)}</Badge>
+              {current.employmentType && (
+                <Badge variant="outline">{employmentTypeLabel(current.employmentType)}</Badge>
+              )}
+              <CurrentBadge isCurrent />
+              <span className="ml-auto text-sm text-muted-foreground">
+                {formatDate(current.startDate)} – {current.endDate ? formatDate(current.endDate) : t('employees.contract.openEnded')}
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-3">
+              {/* Working time */}
+              <DetailRow label={t('employees.contracts.weeklyHours')} value={`${current.weeklyHours} h`} />
+              <DetailRow label={t('employees.contract.workdaysPerWeek')} value={current.workdaysPerWeek} />
+
+              {/* Compensation */}
+              <DetailRow label={t('employees.salary.grossAmount')} value={`${formatCents(current.grossAmountCents, current.currencyCode)} (${salaryTypeLabel(current.salaryType)})`} />
+              {current.bonusAmountCents > 0 && (
+                <DetailRow label={t('employees.contract.bonusAmount')} value={formatCents(current.bonusAmountCents, current.bonusCurrencyCode)} />
+              )}
+              {current.has13thSalary && <DetailRow label={t('employees.contract.has13thSalary')} value={t('employees.contract.yes')} />}
+              {current.hasVacationBonus && <DetailRow label={t('employees.contract.hasVacationBonus')} value={t('employees.contract.yes')} />}
+              {current.variablePayCents > 0 && (
+                <DetailRow label={t('employees.contract.variablePay')} value={`${formatCents(current.variablePayCents)} ${current.variablePayDescription ? `(${current.variablePayDescription})` : ''}`} />
+              )}
+              <DetailRow label={t('employees.contract.paymentCycle')} value={`${current.paymentCycleMonths}x`} />
+
+              {/* Conditions */}
+              <DetailRow label={t('employees.contract.annualVacationDays')} value={`${current.annualVacationDays} ${t('employees.contract.days')}`} />
+              <DetailRow label={t('employees.contract.employeeNoticeWeeks')} value={`${current.employeeNoticeWeeks} ${t('employees.contract.weeks')}`} />
+              <DetailRow label={t('employees.contract.employerNoticeWeeks')} value={`${current.employerNoticeWeeks} ${t('employees.contract.weeks')}`} />
+              {current.probationEndDate && (
+                <DetailRow label={t('employees.contract.probationEndDate')} value={formatDate(current.probationEndDate)} />
+              )}
+
+              {/* Fixed-term */}
+              {current.contractType === 'FixedTerm' && current.fixedTermReason && (
+                <>
+                  <DetailRow label={t('employees.contract.fixedTermReason')} value={current.fixedTermReason} />
+                  <DetailRow label={t('employees.contract.extensionCount')} value={current.fixedTermExtensionCount} />
+                </>
+              )}
+            </div>
+
+            {/* Notes (collapsible) */}
+            {current.notes && (
+              <Collapsible className="mt-4">
+                <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
+                  <ChevronDown className="h-4 w-4" />
+                  {t('employees.contract.notes')}
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2 rounded border p-3 text-sm whitespace-pre-wrap">
+                  {current.notes}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
+            {/* Documents */}
+            <div className="mt-4 border-t pt-4">
+              <div className="mb-2 flex items-center justify-between">
+                <h4 className="text-sm font-medium">{t('employees.contract.linkedDocuments')}</h4>
+                {canManage && (
+                  <Button size="sm" variant="outline" onClick={() => setAttachOpen(true)}>
+                    <Link2 className="mr-1 h-3 w-3" />
+                    {t('employees.contract.attachDocument')}
+                  </Button>
+                )}
+              </div>
+              {current.documents.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t('employees.contract.noDocuments')}</p>
+              ) : (
+                <div className="space-y-1">
+                  {current.documents.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between rounded border p-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{doc.title || doc.fileName}</span>
+                        <Badge variant="secondary" className="text-xs">{doc.documentType}</Badge>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="ghost" asChild>
+                          <a href={`/api/hr/employees/${employeeId}/documents/${doc.id}/download`} target="_blank" rel="noreferrer">
+                            <Download className="h-3 w-3" />
+                          </a>
+                        </Button>
+                        {canManage && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            disabled={detachDoc.isPending}
+                            onClick={() => detachDoc.mutate({ employeeId, contractId: current.id, docId: doc.id })}
+                          >
+                            <Unlink className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          {t('employees.contracts.noEntries')}
+        </p>
+      )}
+
+      {/* Contract history */}
+      {history.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">{t('employees.contract.history')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('employees.contracts.contractType')}</TableHead>
+                  <TableHead className="text-right">{t('employees.salary.grossAmount')}</TableHead>
+                  <TableHead>{t('employees.contracts.startDate')}</TableHead>
+                  <TableHead>{t('employees.salary.changeReason')}</TableHead>
+                  <TableHead>{t('employees.contract.status')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {history.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell className="font-medium">{contractTypeLabel(entry.contractType)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{formatCents(entry.grossAmountCents, entry.currencyCode)}</TableCell>
+                    <TableCell className="text-sm">{formatDate(entry.startDate)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{entry.changeReason || '—'}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{t('employees.contract.closed')}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Dialogs */}
+      {createOpen && (
+        <ContractFormDialog
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          employeeId={employeeId}
+        />
+      )}
+      {editOpen && current && (
+        <ContractFormDialog
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          employeeId={employeeId}
+          editContract={current}
+        />
+      )}
+      {attachOpen && current && (
+        <AttachDocDialog
+          open={attachOpen}
+          onClose={() => setAttachOpen(false)}
+          employeeId={employeeId}
+          contractId={current.id}
+          existingDocIds={current.documents.map((d) => d.id)}
+        />
+      )}
+    </>
   );
 }
 
@@ -464,7 +887,7 @@ function ContractTab({ entries }: { entries: ContractEntry[] }) {
 // Bank details tab
 // ---------------------------------------------------------------------------
 
-function BankDetailsTab({ employee }: { employee: EmployeeDetail }) {
+function BankDetailsTab({ employee }: { employee: EmployeeDetailType }) {
   const { t } = useTranslation('hr');
   const updateEmployee = useUpdateEmployee();
   const [iban, setIban] = useState(employee.iban ?? '');
@@ -537,7 +960,6 @@ export function Component() {
   const updateEmployee = useUpdateEmployee();
 
   const { data: employee, isLoading } = useEmployee(id ?? '');
-  const { data: salaryHistory = [], isLoading: salaryLoading } = useSalaryHistory(id ?? '');
   const { data: contractHistory = [] } = useContractHistory(id ?? '');
 
   function formatDate(iso: string | undefined): string {
@@ -598,8 +1020,7 @@ export function Component() {
       <Tabs defaultValue="profil">
         <TabsList className="mb-6">
           <TabsTrigger value="profil">{t('employees.tabs.profile')}</TabsTrigger>
-          <TabsTrigger value="gehalt">{t('employees.tabs.salary')}</TabsTrigger>
-          <TabsTrigger value="vertraege">{t('employees.tabs.contracts')}</TabsTrigger>
+          <TabsTrigger value="vertrag">{t('employees.tabs.contract')}</TabsTrigger>
           <TabsTrigger value="bank">{t('employees.tabs.bank')}</TabsTrigger>
         </TabsList>
 
@@ -759,29 +1180,10 @@ export function Component() {
         </TabsContent>
 
         {/* ----------------------------------------------------------------- */}
-        {/* Salary tab                                                         */}
+        {/* Contract tab                                                       */}
         {/* ----------------------------------------------------------------- */}
-        <TabsContent value="gehalt">
-          <Card>
-            <CardContent className="pt-6">
-              <SalaryTab
-                entries={salaryHistory}
-                isLoading={salaryLoading}
-                employeeId={id ?? ''}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ----------------------------------------------------------------- */}
-        {/* Contracts tab                                                      */}
-        {/* ----------------------------------------------------------------- */}
-        <TabsContent value="vertraege">
-          <Card>
-            <CardContent className="pt-6">
-              <ContractTab entries={contractHistory} />
-            </CardContent>
-          </Card>
+        <TabsContent value="vertrag">
+          <ContractTab entries={contractHistory} employeeId={id ?? ''} />
         </TabsContent>
 
         {/* ----------------------------------------------------------------- */}

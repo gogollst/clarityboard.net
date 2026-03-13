@@ -15,6 +15,7 @@ public class EmployeeDocument
     public DateTime? ExpiresAt { get; private set; }
     public bool IsConfidential { get; private set; }
     public DateTime? DeletionScheduledAt { get; private set; }
+    public Guid? ContractId { get; private set; }
 
     private EmployeeDocument() { }
 
@@ -42,5 +43,7 @@ public class EmployeeDocument
         };
     }
 
+    public void LinkToContract(Guid contractId) => ContractId = contractId;
+    public void UnlinkFromContract() => ContractId = null;
     public void ScheduleDeletion(DateTime scheduledAt) => DeletionScheduledAt = scheduledAt;
 }

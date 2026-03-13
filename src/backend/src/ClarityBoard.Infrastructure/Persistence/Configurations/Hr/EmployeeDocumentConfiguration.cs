@@ -15,5 +15,7 @@ public class EmployeeDocumentConfiguration : IEntityTypeConfiguration<EmployeeDo
         builder.Property(e => e.FileName).HasMaxLength(500).IsRequired();
         builder.Property(e => e.StoragePath).HasMaxLength(1000).IsRequired();
         builder.Property(e => e.MimeType).HasMaxLength(100).IsRequired();
+
+        builder.HasIndex(e => e.ContractId).HasFilter("\"ContractId\" IS NOT NULL");
     }
 }

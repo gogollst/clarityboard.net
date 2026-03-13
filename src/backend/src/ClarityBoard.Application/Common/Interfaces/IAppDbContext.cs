@@ -80,6 +80,7 @@ public interface IAppDbContext
 
     // AI Management
     DbSet<AiProviderConfig> AiProviderConfigs { get; }
+    DbSet<AiProviderModel> AiProviderModels { get; }
     DbSet<AiPrompt> AiPrompts { get; }
     DbSet<AiPromptVersion> AiPromptVersions { get; }
     DbSet<AiCallLog> AiCallLogs { get; }

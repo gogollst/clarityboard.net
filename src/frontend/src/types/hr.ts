@@ -60,6 +60,15 @@ export interface SalaryEntry {
   isCurrent: boolean;
 }
 
+// Contract Document DTO
+export interface ContractDocumentDto {
+  id: string;
+  title: string;
+  fileName: string;
+  documentType: string;
+  uploadedAt: string;
+}
+
 // Contract DTO
 export interface ContractEntry {
   id: string;
@@ -69,11 +78,30 @@ export interface ContractEntry {
   startDate: string;
   endDate?: string;
   probationEndDate?: string;
-  noticeWeeks: number;
+  employeeNoticeWeeks: number;
   validFrom: string;
   validTo?: string;
   changeReason: string;
   isCurrent: boolean;
+  // Salary fields
+  salaryType: string;         // "Monthly" | "Hourly" | "DailyRate"
+  grossAmountCents: number;
+  currencyCode: string;
+  bonusAmountCents: number;
+  bonusCurrencyCode: string;
+  paymentCycleMonths: number;
+  // Extended fields
+  employmentType?: string;    // "FullTime" | "PartTime" | "MiniJob" | "Internship" | "WorkingStudent"
+  employerNoticeWeeks: number;
+  annualVacationDays: number;
+  fixedTermReason?: string;
+  fixedTermExtensionCount: number;
+  has13thSalary: boolean;
+  hasVacationBonus: boolean;
+  variablePayCents: number;
+  variablePayDescription?: string;
+  notes?: string;
+  documents: ContractDocumentDto[];
 }
 
 // Department DTO
@@ -135,17 +163,6 @@ export interface TerminateEmployeeRequest {
   reason: string;
 }
 
-export interface UpdateSalaryRequest {
-  grossAmountCents: number;
-  currencyCode: string;
-  bonusAmountCents?: number;
-  bonusCurrencyCode?: string;
-  salaryType: string;
-  paymentCycleMonths?: number;
-  validFrom: string;
-  changeReason: string;
-}
-
 export interface CreateContractRequest {
   contractType: string;
   weeklyHours: number;
@@ -153,9 +170,51 @@ export interface CreateContractRequest {
   startDate: string;
   endDate?: string;
   probationEndDate?: string;
-  noticeWeeks: number;
+  employeeNoticeWeeks: number;
   validFrom: string;
   changeReason: string;
+  salaryType: string;
+  grossAmountCents: number;
+  currencyCode: string;
+  bonusAmountCents: number;
+  bonusCurrencyCode: string;
+  paymentCycleMonths: number;
+  employmentType?: string;
+  employerNoticeWeeks: number;
+  annualVacationDays: number;
+  fixedTermReason?: string;
+  fixedTermExtensionCount: number;
+  has13thSalary: boolean;
+  hasVacationBonus: boolean;
+  variablePayCents: number;
+  variablePayDescription?: string;
+  notes?: string;
+}
+
+export interface UpdateContractRequest {
+  contractType: string;
+  weeklyHours: number;
+  workdaysPerWeek: number;
+  startDate: string;
+  endDate?: string;
+  probationEndDate?: string;
+  employeeNoticeWeeks: number;
+  salaryType: string;
+  grossAmountCents: number;
+  currencyCode: string;
+  bonusAmountCents: number;
+  bonusCurrencyCode: string;
+  paymentCycleMonths: number;
+  employmentType?: string;
+  employerNoticeWeeks: number;
+  annualVacationDays: number;
+  fixedTermReason?: string;
+  fixedTermExtensionCount: number;
+  has13thSalary: boolean;
+  hasVacationBonus: boolean;
+  variablePayCents: number;
+  variablePayDescription?: string;
+  notes?: string;
 }
 
 export interface CreateDepartmentRequest {

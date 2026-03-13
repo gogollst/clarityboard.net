@@ -13,8 +13,8 @@ import type {
   CreateEmployeeRequest,
   UpdateEmployeeRequest,
   TerminateEmployeeRequest,
-  UpdateSalaryRequest,
   CreateContractRequest,
+  UpdateContractRequest,
   CreateDepartmentRequest,
   UpdateDepartmentRequest,
   EmployeeListParams,
@@ -161,27 +161,6 @@ export function useSalaryHistory(employeeId: string) {
   });
 }
 
-export function useUpdateSalary() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      employeeId,
-      ...request
-    }: UpdateSalaryRequest & { employeeId: string }) => {
-      await api.post(`/hr/employees/${employeeId}/salary`, request);
-    },
-    onSuccess: (_data, variables) => {
-      toast.success(i18n.t('hr:toast.salaryUpdated'));
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.hr.salaryHistory(variables.employeeId),
-      });
-    },
-    onError: () => {
-      toast.error(i18n.t('hr:toast.salaryUpdateError'));
-    },
-  });
-}
 
 // ---------------------------------------------------------------------------
 // Contracts
@@ -208,7 +187,8 @@ export function useCreateContract() {
       employeeId,
       ...request
     }: CreateContractRequest & { employeeId: string }) => {
-      await api.post(`/hr/employees/${employeeId}/contracts`, request);
+      const { data } = await api.post<{ id: string }>(`/hr/employees/${employeeId}/contracts`, request);
+      return data;
     },
     onSuccess: (_data, variables) => {
       toast.success(i18n.t('hr:toast.contractCreated'));
@@ -218,6 +198,65 @@ export function useCreateContract() {
     },
     onError: () => {
       toast.error(i18n.t('hr:toast.contractCreateError'));
+    },
+  });
+}
+
+export function useUpdateContract() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      employeeId,
+      contractId,
+      ...request
+    }: UpdateContractRequest & { employeeId: string; contractId: string }) => {
+      await api.put(`/hr/employees/${employeeId}/contracts/${contractId}`, request);
+    },
+    onSuccess: (_data, variables) => {
+      toast.success(i18n.t('hr:toast.contractUpdated'));
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.hr.contracts(variables.employeeId),
+      });
+    },
+    onError: () => {
+      toast.error(i18n.t('hr:toast.contractUpdateError'));
+    },
+  });
+}
+
+export function useAttachDocToContract() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ employeeId, contractId, docId }: { employeeId: string; contractId: string; docId: string }) => {
+      await api.post(`/hr/employees/${employeeId}/contracts/${contractId}/documents/${docId}`);
+    },
+    onSuccess: (_data, variables) => {
+      toast.success(i18n.t('hr:toast.documentAttached'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.contracts(variables.employeeId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.documents(variables.employeeId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('hr:toast.documentAttachError'));
+    },
+  });
+}
+
+export function useDetachDocFromContract() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ employeeId, contractId, docId }: { employeeId: string; contractId: string; docId: string }) => {
+      await api.delete(`/hr/employees/${employeeId}/contracts/${contractId}/documents/${docId}`);
+    },
+    onSuccess: (_data, variables) => {
+      toast.success(i18n.t('hr:toast.documentDetached'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.contracts(variables.employeeId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.documents(variables.employeeId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('hr:toast.documentDetachError'));
     },
   });
 }
