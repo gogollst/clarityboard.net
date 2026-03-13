@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useRef } from 'react';
 import {
   useEmployee,
   useContractHistory,
@@ -9,6 +10,7 @@ import {
   useCreateContract,
   useUpdateContract,
   useEmployeeDocuments,
+  useUploadDocument,
   useAttachDocToContract,
   useDetachDocFromContract,
 } from '@/hooks/useHr';
@@ -57,7 +59,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { ArrowLeft, Loader2, Plus, Pencil, FileText, Link2, Unlink, ChevronDown, Download } from 'lucide-react';
+import { ArrowLeft, Loader2, Plus, Pencil, FileText, Link2, Unlink, ChevronDown, Download, Upload } from 'lucide-react';
 import EmployeeEditDialog from './EmployeeEditDialog';
 
 // ---------------------------------------------------------------------------
@@ -595,18 +597,106 @@ function AttachDocDialog({ open, onClose, employeeId, contractId, existingDocIds
   const { t } = useTranslation('hr');
   const { data: documents = [] } = useEmployeeDocuments(employeeId);
   const attachDoc = useAttachDocToContract();
+  const uploadDoc = useUploadDocument(employeeId);
   const unlinked = documents.filter((d) => !existingDocIds.includes(d.id));
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [uploadType, setUploadType] = useState('Contract');
+
+  const resetUpload = () => {
+    setUploadFile(null);
+    setUploadTitle('');
+    setUploadType('Contract');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleUploadAndAttach = () => {
+    if (!uploadFile) return;
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    formData.append('documentType', uploadType);
+    formData.append('title', uploadTitle || uploadFile.name);
+    uploadDoc.mutate(formData, {
+      onSuccess: (data: { id: string }) => {
+        attachDoc.mutate({ employeeId, contractId, docId: data.id }, {
+          onSuccess: () => { resetUpload(); onClose(); },
+        });
+      },
+    });
+  };
+
+  const busy = uploadDoc.isPending || attachDoc.isPending;
+
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { resetUpload(); onClose(); } }}>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{t('employees.contract.attachDocument')}</DialogTitle>
         </DialogHeader>
-        {unlinked.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">{t('employees.contract.noUnlinkedDocs')}</p>
-        ) : (
+
+        {/* Upload new document */}
+        <div className="space-y-3 border-b pb-4">
+          <h4 className="text-sm font-medium">{t('employees.contract.uploadNew')}</h4>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              setUploadFile(file);
+              if (file && !uploadTitle) setUploadTitle(file.name);
+            }}
+          />
+          <div className="flex items-center gap-2">
+            <Button type="button" size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-1 h-3 w-3" />
+              {t('documents.upload.selectFile')}
+            </Button>
+            {uploadFile && (
+              <span className="truncate max-w-[200px] text-sm text-muted-foreground">{uploadFile.name}</span>
+            )}
+          </div>
+          {uploadFile && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <Label>{t('documents.upload.title')}</Label>
+                <Input
+                  value={uploadTitle}
+                  onChange={(e) => setUploadTitle(e.target.value)}
+                  placeholder={t('documents.upload.titlePlaceholder')}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label>{t('documents.upload.documentType')}</Label>
+                <Select value={uploadType} onValueChange={setUploadType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Contract">{t('documents.documentType.Contract')}</SelectItem>
+                    <SelectItem value="Certificate">{t('documents.documentType.Certificate')}</SelectItem>
+                    <SelectItem value="IdCopy">{t('documents.documentType.IdCopy')}</SelectItem>
+                    <SelectItem value="Payslip">{t('documents.documentType.Payslip')}</SelectItem>
+                    <SelectItem value="Other">{t('documents.documentType.Other')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          {uploadFile && (
+            <Button size="sm" disabled={busy} onClick={handleUploadAndAttach}>
+              {busy && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+              {t('employees.contract.uploadAndAttach')}
+            </Button>
+          )}
+        </div>
+
+        {/* Link existing unlinked documents */}
+        {unlinked.length > 0 && (
           <div className="space-y-2">
+            <h4 className="text-sm font-medium">{t('employees.contract.linkExisting')}</h4>
             {unlinked.map((doc) => (
               <div key={doc.id} className="flex items-center justify-between rounded border p-2">
                 <div className="flex items-center gap-2">
