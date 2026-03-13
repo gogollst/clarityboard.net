@@ -430,7 +430,7 @@ export function Component() {
             </div>
             <div className="flex items-center gap-2">
               {doc.bookedJournalEntryId && (
-                <Link to={`/accounting/journal/${doc.bookedJournalEntryId}`}>
+                <Link to={`/accounting/journal-entries/${doc.bookedJournalEntryId}`}>
                   <Button variant="outline" size="sm">
                     <FileText className="mr-1 h-4 w-4" />
                     {t('detail.viewJournalEntry')}
