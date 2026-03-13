@@ -121,14 +121,24 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
             .FirstOrDefaultAsync(c => c.EmployeeId == request.EmployeeId && c.ValidTo == null, cancellationToken);
 
         if (current != null)
-            current.Close(validFrom);
+        {
+            if (validFrom > current.ValidFrom)
+                current.Close(validFrom);
+            else
+                _db.Contracts.Remove(current); // same-day replacement
+        }
 
         // Also close current active salary record
         var currentSalary = await _db.SalaryHistories
             .FirstOrDefaultAsync(s => s.EmployeeId == request.EmployeeId && s.ValidTo == null, cancellationToken);
 
         if (currentSalary != null)
-            currentSalary.Close(validFrom);
+        {
+            if (validFrom > currentSalary.ValidFrom)
+                currentSalary.Close(validFrom);
+            else
+                _db.SalaryHistories.Remove(currentSalary); // same-day replacement
+        }
 
         var contractType = Enum.Parse<ContractType>(request.ContractType, ignoreCase: true);
         var salaryType   = Enum.Parse<Domain.Entities.Hr.SalaryType>(request.SalaryType, ignoreCase: true);
