@@ -817,7 +817,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             creditAccountId: creditAccount.Id,
             amount: suggestion.Amount,
             vatCode: suggestion.VatCode,
-            vatAmount: null,
+            vatAmount: document.TaxAmount,
             description: suggestion.Description,
             confidence: suggestion.Confidence,
             aiReasoning: aiReasoningJson,
