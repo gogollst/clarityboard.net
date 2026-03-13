@@ -39,6 +39,7 @@
     "auditLog": "Журнал аудита",
     "mailConfig": "Конфигурация почты",
     "providers": "Провайдеры",
+    "models": "Модели",
     "prompts": "Промпты",
     "callLogs": "Журнал запросов",
     "journalEntries": "Журнальные проводки",

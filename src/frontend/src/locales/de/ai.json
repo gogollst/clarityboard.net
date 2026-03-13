@@ -62,10 +62,12 @@
       "systemBadge": "System",
       "primaryProvider": "Primärer Anbieter",
       "primaryModel": "Primäres Modell",
-      "primaryModelPlaceholder": "z.B. claude-sonnet-4-20250514",
+      "primaryModelPlaceholder": "Modell auswählen…",
       "fallbackProvider": "Fallback-Anbieter",
       "fallbackModel": "Fallback-Modell",
-      "fallbackModelPlaceholder": "z.B. gpt-4o",
+      "fallbackModelPlaceholder": "Modell auswählen…",
+      "modelDeprecated": "veraltet",
+      "modelDeprecatedHint": "Modell \"{{model}}\" ist nicht mehr in der aktiven Modellliste. Bitte wählen Sie ein aktuelles Modell.",
       "temperature": "Temperatur",
       "maxTokens": "Max. Token",
       "systemPrompt": "System-Prompt",
@@ -105,6 +107,42 @@
       "enhanceError": "Prompt-Verbesserung fehlgeschlagen",
       "restoreSuccess": "Version wiederhergestellt",
       "restoreError": "Version konnte nicht wiederhergestellt werden"
+    }
+  },
+  "providerModels": {
+    "title": "KI-Modelle",
+    "description": "Verfügbare Modelle pro KI-Anbieter verwalten. Diese erscheinen als Dropdown-Optionen bei der Prompt-Konfiguration.",
+    "addModel": "Modell hinzufügen",
+    "add": "Hinzufügen",
+    "noModels": "Keine Modelle für diesen Anbieter konfiguriert.",
+    "editTitle": "Modell bearbeiten",
+    "addTitle": "Modell hinzufügen",
+    "deleteTitle": "Modell löschen",
+    "deleteConfirm": "Sind Sie sicher, dass Sie \"{{model}}\" ({{modelId}}) löschen möchten? Dies kann nicht rückgängig gemacht werden.",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
+    "columns": {
+      "modelId": "Modell-ID",
+      "displayName": "Anzeigename",
+      "description": "Beschreibung",
+      "sort": "Reihenf.",
+      "status": "Status"
+    },
+    "form": {
+      "provider": "Anbieter",
+      "modelId": "Modell-ID",
+      "displayName": "Anzeigename",
+      "sortOrder": "Sortierung",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Kurze Beschreibung des Einsatzzwecks…"
+    },
+    "toast": {
+      "addSuccess": "Modell hinzugefügt",
+      "addError": "Modell konnte nicht hinzugefügt werden",
+      "updateSuccess": "Modell aktualisiert",
+      "updateError": "Modell konnte nicht aktualisiert werden",
+      "deleteSuccess": "Modell gelöscht",
+      "deleteError": "Modell konnte nicht gelöscht werden"
     }
   },
   "callLogs": {

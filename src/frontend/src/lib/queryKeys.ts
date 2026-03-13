@@ -127,6 +127,7 @@ export const queryKeys = {
   ai: {
     all: ['ai'] as const,
     providers: () => ['ai', 'providers'] as const,
+    providerModels: (provider?: string) => ['ai', 'provider-models', provider ?? 'all'] as const,
     prompts: (module?: string) => ['ai', 'prompts', module ?? 'all'] as const,
     promptDetail: (promptKey: string) => ['ai', 'prompt', promptKey] as const,
     promptVersions: (promptKey: string) => ['ai', 'prompt-versions', promptKey] as const,

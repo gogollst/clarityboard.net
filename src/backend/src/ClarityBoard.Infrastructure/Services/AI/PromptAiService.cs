@@ -42,7 +42,8 @@ public sealed class PromptAiService : IPromptAiService
     private const string GeminiRelativePath = "v1beta/openai/chat/completions";
     private const string ZaiUrl = "https://api.z.ai/api/paas/v4/chat/completions";
     private const string ZaiRelativePath = "api/paas/v4/chat/completions";
-    private const string ManusUrl = "https://api.manus.im/v1/chat/completions";
+    private const string ManusUrl = "https://api.manus.im/v1/responses";
+    private const string ManusRelativePath = "v1/responses";
 
     public PromptAiService(
         IServiceProvider sp,
@@ -181,7 +182,7 @@ public sealed class PromptAiService : IPromptAiService
             AiProvider.Grok      => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, GrokUrl, OpenAiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
             AiProvider.Gemini    => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, GeminiUrl, GeminiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
             AiProvider.ZAI       => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, ZaiUrl, ZaiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
-            AiProvider.Manus     => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, ManusUrl, OpenAiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
+            AiProvider.Manus     => await CallManusAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, ManusUrl, ManusRelativePath), modelToUse, systemPrompt, userMessage, ct),
             _                    => throw new NotSupportedException($"Provider {provider} is not supported."),
         };
     }
@@ -263,6 +264,71 @@ public sealed class PromptAiService : IPromptAiService
         var outputTok  = GetInt32OrDefault(usage, "completion_tokens");
 
         return new AiCallResult(text, inputTok, outputTok);
+    }
+
+    private async Task<AiCallResult> CallManusAsync(
+        string apiKey, string url, string agentProfile, string systemPrompt, string userMessage,
+        CancellationToken ct)
+    {
+        using var client = _httpClientFactory.CreateClient("ai_prompt");
+        client.DefaultRequestHeaders.TryAddWithoutValidation("API_KEY", apiKey);
+        // Manus requires a dummy Bearer token when using OpenAI SDK compatibility
+        client.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "**");
+
+        var combinedMessage = string.IsNullOrWhiteSpace(systemPrompt)
+            ? userMessage
+            : $"{systemPrompt}\n\n{userMessage}";
+
+        var body = JsonSerializer.Serialize(new
+        {
+            input = new[]
+            {
+                new
+                {
+                    role    = "user",
+                    content = new[] { new { type = "input_text", text = combinedMessage } },
+                },
+            },
+            extra_body = new
+            {
+                task_mode     = "agent",
+                agent_profile = agentProfile,
+            },
+        }, SnakeCaseOptions);
+
+        using var httpContent = new StringContent(body, Encoding.UTF8, "application/json");
+        using var response    = await client.PostAsync(url, httpContent, ct);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var err = await response.Content.ReadAsStringAsync(ct);
+            throw new HttpRequestException($"Manus API {response.StatusCode}: {err}");
+        }
+
+        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
+        var root      = doc.RootElement;
+
+        // Manus returns a task-like response with id, status, and output
+        var content = string.Empty;
+        if (root.TryGetProperty("output", out var output) && output.ValueKind == JsonValueKind.Array)
+        {
+            content = string.Join("\n", output.EnumerateArray()
+                .Where(item => item.TryGetProperty("content", out _))
+                .SelectMany(item => item.GetProperty("content").EnumerateArray())
+                .Where(c => c.TryGetProperty("text", out _))
+                .Select(c => c.GetProperty("text").GetString())
+                .Where(t => !string.IsNullOrWhiteSpace(t)));
+        }
+
+        // If output is empty but we got a valid response (task created), treat as success
+        if (string.IsNullOrWhiteSpace(content) && root.TryGetProperty("id", out _))
+            content = "OK";
+
+        var inputTok  = root.TryGetProperty("usage", out var usage) ? GetInt32OrDefault(usage, "input_tokens") : 0;
+        var outputTok = root.TryGetProperty("usage", out _) ? GetInt32OrDefault(usage, "output_tokens") : 0;
+
+        return new AiCallResult(content, inputTok, outputTok);
     }
 
     private async Task<ProviderRuntimeSettings?> TryGetProviderSettingsAsync(AiProvider provider, CancellationToken ct)
@@ -429,7 +495,7 @@ public sealed class PromptAiService : IPromptAiService
         AiProvider.Grok      => "grok-3-mini",
         AiProvider.Gemini    => "gemini-2.5-flash",
         AiProvider.ZAI       => "glm-5",
-        AiProvider.Manus     => "manus-default",
+        AiProvider.Manus     => "manus-1.6",
         _                    => "unknown",
     };
 

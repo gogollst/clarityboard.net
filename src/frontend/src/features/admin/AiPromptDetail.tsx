@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Sparkles, Save, RotateCcw, Loader2, History, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   useAiPromptDetail, useUpdateAiPrompt, useEnhancePrompt, useRestorePromptVersion,
+  useProviderModels,
 } from '@/hooks/useAiManagement';
 import { AI_PROVIDERS } from '@/types/ai';
 import type { AiPromptDetail, UpdateAiPromptRequest } from '@/types/ai';
@@ -55,9 +56,13 @@ export function Component() {
   const navigate       = useNavigate();
 
   const { data: prompt, isLoading } = useAiPromptDetail(promptKey!);
+  const { data: allModels }        = useProviderModels();
   const update  = useUpdateAiPrompt();
   const enhance = useEnhancePrompt();
   const restore = useRestorePromptVersion();
+
+  const modelsForProvider = (provider: string) =>
+    allModels?.filter(m => m.provider === provider) ?? [];
 
   const [form, setForm]             = useState<FormState | null>(null);
 
@@ -146,7 +151,12 @@ export function Component() {
         </div>
         <div className="space-y-1.5">
           <Label>{t('prompts.detail.primaryModel')}</Label>
-          <Input value={form.primaryModel} onChange={e => set('primaryModel', e.target.value)} placeholder={t('prompts.detail.primaryModelPlaceholder')} />
+          <ModelSelect
+            value={form.primaryModel}
+            models={modelsForProvider(form.primaryProvider)}
+            onChange={v => set('primaryModel', v)}
+            placeholder={t('prompts.detail.primaryModelPlaceholder')}
+          />
         </div>
         <div className="space-y-1.5">
           <Label>{t('prompts.detail.fallbackProvider')}</Label>
@@ -157,7 +167,12 @@ export function Component() {
         </div>
         <div className="space-y-1.5">
           <Label>{t('prompts.detail.fallbackModel')}</Label>
-          <Input value={form.fallbackModel} onChange={e => set('fallbackModel', e.target.value)} placeholder={t('prompts.detail.fallbackModelPlaceholder')} />
+          <ModelSelect
+            value={form.fallbackModel}
+            models={modelsForProvider(form.fallbackProvider)}
+            onChange={v => set('fallbackModel', v)}
+            placeholder={t('prompts.detail.fallbackModelPlaceholder')}
+          />
         </div>
         <div className="space-y-1.5">
           <Label>{t('prompts.detail.temperature')} <span className="text-muted-foreground">({form.temperature})</span></Label>
@@ -289,6 +304,42 @@ export function Component() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+/** Dropdown for model selection with stale-value warning */
+function ModelSelect({ value, models, onChange, placeholder }: {
+  value: string;
+  models: { modelId: string; displayName: string }[];
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const { t } = useTranslation('ai');
+  const isStale = value && models.length > 0 && !models.some(m => m.modelId === value);
+
+  return (
+    <div className="space-y-1">
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className={isStale ? 'border-amber-500' : ''}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {isStale && (
+            <SelectItem value={value} className="text-amber-600">
+              ⚠ {value} ({t('prompts.detail.modelDeprecated')})
+            </SelectItem>
+          )}
+          {models.map(m => (
+            <SelectItem key={m.modelId} value={m.modelId}>
+              {m.displayName} <span className="text-muted-foreground ml-1 text-xs font-mono">{m.modelId}</span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {isStale && (
+        <p className="text-amber-600 text-xs">{t('prompts.detail.modelDeprecatedHint', { model: value })}</p>
+      )}
     </div>
   );
 }

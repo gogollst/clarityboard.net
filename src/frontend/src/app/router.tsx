@@ -86,6 +86,7 @@ export const router = createBrowserRouter([
 
       // Admin – AI Management
       { path: 'admin/ai/providers', lazy: () => import('@/features/admin/AiProviders') },
+      { path: 'admin/ai/models', lazy: () => import('@/features/admin/AiProviderModels') },
       { path: 'admin/ai/prompts', lazy: () => import('@/features/admin/AiPrompts') },
       { path: 'admin/ai/prompts/:promptKey', lazy: () => import('@/features/admin/AiPromptDetail') },
       { path: 'admin/ai/logs', lazy: () => import('@/features/admin/AiCallLogs') },

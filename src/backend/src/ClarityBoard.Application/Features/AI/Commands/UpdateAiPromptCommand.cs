@@ -8,7 +8,7 @@ namespace ClarityBoard.Application.Features.AI.Commands;
 
 public record UpdateAiPromptCommand : IRequest<Unit>
 {
-    public required string PromptKey { get; init; }
+    public string PromptKey { get; init; } = string.Empty;
     public required string SystemPrompt { get; init; }
     public string? UserPromptTemplate { get; init; }
     public AiProvider PrimaryProvider { get; init; }

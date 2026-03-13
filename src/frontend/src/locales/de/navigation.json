@@ -39,6 +39,7 @@
     "auditLog": "Audit-Log",
     "mailConfig": "Mail-Konfiguration",
     "providers": "Anbieter",
+    "models": "Modelle",
     "prompts": "Prompts",
     "callLogs": "Aufrufprotokolle",
     "journalEntries": "Buchungssätze",

@@ -6,6 +6,7 @@ import i18n from '@/i18n';
 import type {
   AiProviderConfig,
   AiProvider,
+  AiProviderModel,
   AiCallLogFilters,
   AiCallLog,
   AiCallLogStats,
@@ -16,6 +17,8 @@ import type {
   ProviderTestResult,
   UpdateAiPromptRequest,
   UpsertProviderRequest,
+  AddProviderModelRequest,
+  UpdateProviderModelRequest,
 } from '@/types/ai';
 import type { PaginatedResponse } from '@/types/api';
 
@@ -72,6 +75,75 @@ export function useTestAiProvider() {
       qc.invalidateQueries({ queryKey: queryKeys.ai.providers() });
     },
     onError: () => toast.error(i18n.t('ai:providers.toast.testError')),
+  });
+}
+
+// ── Provider Models ──────────────────────────────────────────────────────────
+
+export function useProviderModels(provider?: AiProvider, activeOnly = true) {
+  return useQuery({
+    queryKey: queryKeys.ai.providerModels(provider),
+    queryFn: async () => {
+      const { data } = await api.get<AiProviderModel[]>('/AiManagement/provider-models', {
+        params: { ...(provider ? { provider } : {}), activeOnly },
+      });
+      return data;
+    },
+  });
+}
+
+export function useAddProviderModel() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (request: AddProviderModelRequest) => {
+      const { data } = await api.post<string>('/AiManagement/provider-models', request);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success(i18n.t('ai:providerModels.toast.addSuccess'));
+      qc.invalidateQueries({ queryKey: queryKeys.ai.providerModels() });
+    },
+    onError: () => toast.error(i18n.t('ai:providerModels.toast.addError')),
+  });
+}
+
+export function useUpdateProviderModel() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, request }: { id: string; request: UpdateProviderModelRequest }) => {
+      await api.put(`/AiManagement/provider-models/${id}`, request);
+    },
+    onSuccess: () => {
+      toast.success(i18n.t('ai:providerModels.toast.updateSuccess'));
+      qc.invalidateQueries({ queryKey: queryKeys.ai.providerModels() });
+    },
+    onError: () => toast.error(i18n.t('ai:providerModels.toast.updateError')),
+  });
+}
+
+export function useDeleteProviderModel() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/AiManagement/provider-models/${id}`);
+    },
+    onSuccess: () => {
+      toast.success(i18n.t('ai:providerModels.toast.deleteSuccess'));
+      qc.invalidateQueries({ queryKey: queryKeys.ai.providerModels() });
+    },
+    onError: () => toast.error(i18n.t('ai:providerModels.toast.deleteError')),
+  });
+}
+
+export function useToggleProviderModel() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      await api.patch(`/AiManagement/provider-models/${id}/toggle`, { isActive });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.ai.providerModels() });
+    },
   });
 }
 

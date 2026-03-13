@@ -62,10 +62,12 @@
       "systemBadge": "System",
       "primaryProvider": "Primary Provider",
       "primaryModel": "Primary Model",
-      "primaryModelPlaceholder": "e.g. claude-sonnet-4-20250514",
+      "primaryModelPlaceholder": "Select a model…",
       "fallbackProvider": "Fallback Provider",
       "fallbackModel": "Fallback Model",
-      "fallbackModelPlaceholder": "e.g. gpt-4o",
+      "fallbackModelPlaceholder": "Select a model…",
+      "modelDeprecated": "deprecated",
+      "modelDeprecatedHint": "Model \"{{model}}\" is no longer in the active model list. Please select a current model.",
       "temperature": "Temperature",
       "maxTokens": "Max Tokens",
       "systemPrompt": "System Prompt",
@@ -105,6 +107,42 @@
       "enhanceError": "Prompt enhancement failed",
       "restoreSuccess": "Version restored",
       "restoreError": "Failed to restore version"
+    }
+  },
+  "providerModels": {
+    "title": "AI Models",
+    "description": "Manage the available models per AI provider. These appear as dropdown options when configuring prompts.",
+    "addModel": "Add Model",
+    "add": "Add",
+    "noModels": "No models configured for this provider.",
+    "editTitle": "Edit Model",
+    "addTitle": "Add Model",
+    "deleteTitle": "Delete Model",
+    "deleteConfirm": "Are you sure you want to delete \"{{model}}\" ({{modelId}})? This cannot be undone.",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "columns": {
+      "modelId": "Model ID",
+      "displayName": "Display Name",
+      "description": "Description",
+      "sort": "Sort",
+      "status": "Status"
+    },
+    "form": {
+      "provider": "Provider",
+      "modelId": "Model ID",
+      "displayName": "Display Name",
+      "sortOrder": "Sort Order",
+      "description": "Description",
+      "descriptionPlaceholder": "Short description of this model's purpose…"
+    },
+    "toast": {
+      "addSuccess": "Model added",
+      "addError": "Failed to add model",
+      "updateSuccess": "Model updated",
+      "updateError": "Failed to update model",
+      "deleteSuccess": "Model deleted",
+      "deleteError": "Failed to delete model"
     }
   },
   "callLogs": {

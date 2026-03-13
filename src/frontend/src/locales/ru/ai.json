@@ -62,10 +62,12 @@
       "systemBadge": "Система",
       "primaryProvider": "Основной поставщик",
       "primaryModel": "Основная модель",
-      "primaryModelPlaceholder": "например, claude-sonnet-4-20250514",
+      "primaryModelPlaceholder": "Выберите модель…",
       "fallbackProvider": "Резервный поставщик",
       "fallbackModel": "Резервная модель",
-      "fallbackModelPlaceholder": "например, gpt-4o",
+      "fallbackModelPlaceholder": "Выберите модель…",
+      "modelDeprecated": "устарела",
+      "modelDeprecatedHint": "Модель \"{{model}}\" больше не в списке активных моделей. Пожалуйста, выберите актуальную модель.",
       "temperature": "Температура",
       "maxTokens": "Макс. токенов",
       "systemPrompt": "Системный промпт",
@@ -105,6 +107,42 @@
       "enhanceError": "Улучшение промпта завершилось ошибкой",
       "restoreSuccess": "Версия восстановлена",
       "restoreError": "Не удалось восстановить версию"
+    }
+  },
+  "providerModels": {
+    "title": "Модели ИИ",
+    "description": "Управление доступными моделями по поставщикам. Они отображаются как варианты выбора при настройке промптов.",
+    "addModel": "Добавить модель",
+    "add": "Добавить",
+    "noModels": "Нет моделей для этого поставщика.",
+    "editTitle": "Редактировать модель",
+    "addTitle": "Добавить модель",
+    "deleteTitle": "Удалить модель",
+    "deleteConfirm": "Вы уверены, что хотите удалить \"{{model}}\" ({{modelId}})? Это действие необратимо.",
+    "activate": "Активировать",
+    "deactivate": "Деактивировать",
+    "columns": {
+      "modelId": "ID модели",
+      "displayName": "Отображаемое имя",
+      "description": "Описание",
+      "sort": "Сорт.",
+      "status": "Статус"
+    },
+    "form": {
+      "provider": "Поставщик",
+      "modelId": "ID модели",
+      "displayName": "Отображаемое имя",
+      "sortOrder": "Порядок сортировки",
+      "description": "Описание",
+      "descriptionPlaceholder": "Краткое описание назначения модели…"
+    },
+    "toast": {
+      "addSuccess": "Модель добавлена",
+      "addError": "Не удалось добавить модель",
+      "updateSuccess": "Модель обновлена",
+      "updateError": "Не удалось обновить модель",
+      "deleteSuccess": "Модель удалена",
+      "deleteError": "Не удалось удалить модель"
     }
   },
   "callLogs": {

@@ -62,6 +62,76 @@ public class AiManagementController : ControllerBase
         return Ok(result);
     }
 
+    // ── Provider Models (model registry) ──────────────────────────────────
+
+    /// <summary>Returns available models, optionally filtered by provider. Active models only by default.</summary>
+    [HttpGet("provider-models")]
+    [ProducesResponseType(typeof(IReadOnlyList<ProviderModelDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<ProviderModelDto>>> GetProviderModels(
+        [FromQuery] AiProvider? provider,
+        [FromQuery] bool activeOnly = true,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetProviderModelsQuery { Provider = provider, ActiveOnly = activeOnly }, ct);
+        return Ok(result);
+    }
+
+    /// <summary>Adds a new model to a provider's model list.</summary>
+    [HttpPost("provider-models")]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AddProviderModel(
+        [FromBody] AddProviderModelRequest request, CancellationToken ct)
+    {
+        var id = await _mediator.Send(new AddProviderModelCommand
+        {
+            Provider    = request.Provider,
+            ModelId     = request.ModelId,
+            DisplayName = request.DisplayName,
+            SortOrder   = request.SortOrder,
+            Description = request.Description,
+        }, ct);
+        return Created($"provider-models/{id}", id);
+    }
+
+    /// <summary>Updates a provider model's display name, sort order, or description.</summary>
+    [HttpPut("provider-models/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateProviderModel(
+        Guid id, [FromBody] UpdateProviderModelRequest request, CancellationToken ct)
+    {
+        await _mediator.Send(new UpdateProviderModelCommand
+        {
+            Id          = id,
+            DisplayName = request.DisplayName,
+            SortOrder   = request.SortOrder,
+            Description = request.Description,
+        }, ct);
+        return NoContent();
+    }
+
+    /// <summary>Deletes a provider model from the registry.</summary>
+    [HttpDelete("provider-models/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteProviderModel(Guid id, CancellationToken ct)
+    {
+        await _mediator.Send(new DeleteProviderModelCommand(id), ct);
+        return NoContent();
+    }
+
+    /// <summary>Toggles a provider model's active state.</summary>
+    [HttpPatch("provider-models/{id:guid}/toggle")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ToggleProviderModel(
+        Guid id, [FromBody] ToggleProviderModelRequest request, CancellationToken ct)
+    {
+        await _mediator.Send(new ToggleProviderModelCommand(id, request.IsActive), ct);
+        return NoContent();
+    }
+
     // ── Prompt Management ─────────────────────────────────────────────────
 
     /// <summary>Returns a list of all AI prompts, optionally filtered by module.</summary>
@@ -206,5 +276,26 @@ public record EnhancePromptRequestDto
 public record EnhancePromptResponseDto
 {
     public string EnhancedSystemPrompt { get; init; } = default!;
+}
+
+public record AddProviderModelRequest
+{
+    public required AiProvider Provider { get; init; }
+    public required string ModelId { get; init; }
+    public required string DisplayName { get; init; }
+    public int SortOrder { get; init; }
+    public string? Description { get; init; }
+}
+
+public record UpdateProviderModelRequest
+{
+    public required string DisplayName { get; init; }
+    public int SortOrder { get; init; }
+    public string? Description { get; init; }
+}
+
+public record ToggleProviderModelRequest
+{
+    public bool IsActive { get; init; }
 }
 

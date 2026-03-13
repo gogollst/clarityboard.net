@@ -2,6 +2,32 @@ export type AiProvider = 'Anthropic' | 'OpenAI' | 'Grok' | 'Gemini' | 'ZAI' | 'M
 
 export const AI_PROVIDERS: AiProvider[] = ['Anthropic', 'OpenAI', 'Grok', 'Gemini', 'ZAI', 'Manus', 'DeepL'];
 
+// ── Provider Models (fetched from DB) ─────────────────────────────────────────
+
+export interface AiProviderModel {
+  id: string;
+  provider: AiProvider;
+  modelId: string;
+  displayName: string;
+  sortOrder: number;
+  description: string | null;
+  isActive: boolean;
+}
+
+export interface AddProviderModelRequest {
+  provider: AiProvider;
+  modelId: string;
+  displayName: string;
+  sortOrder: number;
+  description?: string;
+}
+
+export interface UpdateProviderModelRequest {
+  displayName: string;
+  sortOrder: number;
+  description?: string;
+}
+
 // ── Provider ──────────────────────────────────────────────────────────────────
 
 export interface AiProviderConfig {

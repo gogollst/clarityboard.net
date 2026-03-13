@@ -155,6 +155,7 @@ export default function Sidebar() {
     label: t('navigation:groups.aiManagement'),
     items: [
       { label: t('navigation:items.providers'), path: '/admin/ai/providers', icon: KeyRound },
+      { label: t('navigation:items.models'), path: '/admin/ai/models', icon: Layers },
       { label: t('navigation:items.prompts'), path: '/admin/ai/prompts', icon: MessageSquareCode },
       { label: t('navigation:items.callLogs'), path: '/admin/ai/logs', icon: ScrollText },
     ],
