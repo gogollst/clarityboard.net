@@ -15,7 +15,6 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
 {
     private const decimal LowConfidenceThreshold = 0.70m;
     private const decimal AutoBookConfidenceThreshold = 0.85m;
-    private const decimal AzureMinConfidenceThreshold = 0.70m;
 
     private readonly ILogger<DocumentProcessingConsumer> _logger;
     private readonly IAppDbContext _db;
@@ -381,107 +380,59 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
     }
 
     /// <summary>
-    /// Hybrid extraction: try Azure Document Intelligence first (OCR + structured extraction in one call).
-    /// On failure or low confidence, fall back to the standard pipeline (native/vision OCR → AI extraction).
+    /// Two-stage extraction:
+    /// 1. OCR: Azure Document Intelligence (primary) or native/vision OCR (fallback)
+    /// 2. AI: Structured field extraction from the OCR text (always via AI provider)
     /// </summary>
     private async Task<(string DocumentText, DocumentExtractionResult Extraction, DocumentTextAcquisitionResult? TextResult)>
         AcquireTextAndExtractAsync(
             Stream fileStream, Document document, Guid documentId, Guid entityId,
             List<string> reviewReasons, CancellationToken ct)
     {
-        // ── Try Azure Document Intelligence ──────────────────────────────────
-        var azureStopwatch = Stopwatch.StartNew();
-        try
+        // ── Stage 3: OCR — try Azure first, then fall back to native/vision ──
+        string documentText;
+        DocumentTextAcquisitionResult? textResult = null;
+
+        // Buffer stream for potential reuse
+        using var bufferedStream = new MemoryStream();
+        await fileStream.CopyToAsync(bufferedStream, ct);
+        bufferedStream.Position = 0;
+
+        var azureText = await TryAzureOcrAsync(bufferedStream, documentId, reviewReasons, ct);
+
+        if (azureText is not null)
         {
-            // Buffer the stream so we can reuse it if Azure fails
-            using var bufferedStream = new MemoryStream();
-            await fileStream.CopyToAsync(bufferedStream, ct);
-            bufferedStream.Position = 0;
-
-            var azureResult = await _azureDocIntelligence.AnalyzeDocumentAsync(
-                bufferedStream, document.ContentType, document.DocumentType,
-                documentId, ct);
-
-            azureStopwatch.Stop();
-
-            if (azureResult is not null && azureResult.Confidence >= AzureMinConfidenceThreshold)
-            {
-                _logger.LogInformation(
-                    "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — model {Model} confidence {Confidence} warnings {Warnings}",
-                    "azure_doc_intelligence", azureStopwatch.ElapsedMilliseconds, "success",
-                    azureResult.ModelUsed, azureResult.Confidence, azureResult.Warnings.Count);
-
-                if (azureResult.Extraction.Confidence < LowConfidenceThreshold)
-                    reviewReasons.Add("low_extraction_confidence");
-
-                return (azureResult.OcrText, azureResult.Extraction, null);
-            }
-
-            // Azure returned null (not configured) or low confidence — fall back
-            if (azureResult is not null)
-            {
-                _logger.LogInformation(
-                    "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — confidence {Confidence} below threshold {Threshold}, falling back to standard pipeline",
-                    "azure_doc_intelligence", azureStopwatch.ElapsedMilliseconds, "low_confidence",
-                    azureResult.Confidence, AzureMinConfidenceThreshold);
-                reviewReasons.Add("azure_doc_intelligence_low_confidence");
-            }
-            else
-            {
-                _logger.LogDebug("Azure Document Intelligence not configured, using standard pipeline");
-            }
-
-            // Rewind stream for standard pipeline
-            bufferedStream.Position = 0;
-            return await StandardPipelineAsync(bufferedStream, document, documentId, entityId, reviewReasons, ct);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            azureStopwatch.Stop();
-            _logger.LogWarning(ex,
-                "Document processing stage {Stage} failed in {DurationMs}ms — falling back to standard pipeline",
-                "azure_doc_intelligence", azureStopwatch.ElapsedMilliseconds);
-            reviewReasons.Add("azure_doc_intelligence_failed");
-
-            // Re-download from MinIO since the stream may be consumed
-            using var freshStream = await _documentStorage.DownloadAsync(entityId, document.StoragePath, ct);
-            return await StandardPipelineAsync(freshStream, document, documentId, entityId, reviewReasons, ct);
-        }
-    }
-
-    /// <summary>
-    /// Standard pipeline: native/vision OCR text acquisition → AI field extraction.
-    /// </summary>
-    private async Task<(string DocumentText, DocumentExtractionResult Extraction, DocumentTextAcquisitionResult? TextResult)>
-        StandardPipelineAsync(
-            Stream fileStream, Document document, Guid documentId, Guid entityId,
-            List<string> reviewReasons, CancellationToken ct)
-    {
-        // Stage 3: Acquire text
-        var acquireTextStopwatch = Stopwatch.StartNew();
-        var textResult = await _textAcquisitionService.AcquireTextAsync(
-            fileStream, document.ContentType, documentId, entityId, document.FileName, ct);
-        acquireTextStopwatch.Stop();
-
-        var documentText = textResult.Text;
-        reviewReasons.AddRange(textResult.ReviewReasons);
-
-        if (string.IsNullOrWhiteSpace(documentText))
-        {
-            LogStageWarning("acquire_text", acquireTextStopwatch.ElapsedMilliseconds, "empty_text",
-                "source {Source} usedVision {UsedVision} contentType {ContentType}",
-                textResult.Source, textResult.UsedVision, document.ContentType);
-            documentText = "[No text could be extracted from this document]";
+            documentText = azureText;
         }
         else
         {
-            LogStageInformation("acquire_text", acquireTextStopwatch.ElapsedMilliseconds, "text_acquired",
-                "source {Source} usedVision {UsedVision} confidence {Confidence} nativeLen {NativeLen} visionLen {VisionLen}",
-                textResult.Source, textResult.UsedVision, textResult.Confidence,
-                textResult.NativeTextLength, textResult.VisionTextLength);
+            // Fallback: native/vision OCR
+            bufferedStream.Position = 0;
+            var acquireTextStopwatch = Stopwatch.StartNew();
+            textResult = await _textAcquisitionService.AcquireTextAsync(
+                bufferedStream, document.ContentType, documentId, entityId, document.FileName, ct);
+            acquireTextStopwatch.Stop();
+
+            documentText = textResult.Text;
+            reviewReasons.AddRange(textResult.ReviewReasons);
+
+            if (string.IsNullOrWhiteSpace(documentText))
+            {
+                LogStageWarning("acquire_text", acquireTextStopwatch.ElapsedMilliseconds, "empty_text",
+                    "source {Source} usedVision {UsedVision} contentType {ContentType}",
+                    textResult.Source, textResult.UsedVision, document.ContentType);
+                documentText = "[No text could be extracted from this document]";
+            }
+            else
+            {
+                LogStageInformation("acquire_text", acquireTextStopwatch.ElapsedMilliseconds, "text_acquired",
+                    "source {Source} usedVision {UsedVision} confidence {Confidence} nativeLen {NativeLen} visionLen {VisionLen}",
+                    textResult.Source, textResult.UsedVision, textResult.Confidence,
+                    textResult.NativeTextLength, textResult.VisionTextLength);
+            }
         }
 
-        // Stage 4: AI field extraction
+        // ── Stage 4: AI field extraction (always via AI, regardless of OCR source) ──
         var extractFieldsStopwatch = Stopwatch.StartNew();
         var extraction = await _aiService.ExtractDocumentFieldsAsync(
             documentText, document.ContentType, ct);
@@ -493,6 +444,52 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             reviewReasons.Add("low_extraction_confidence");
 
         return (documentText, extraction, textResult);
+    }
+
+    /// <summary>
+    /// Try Azure Document Intelligence for OCR text extraction.
+    /// Returns the extracted text, or null if Azure is not configured or fails.
+    /// </summary>
+    private async Task<string?> TryAzureOcrAsync(
+        Stream stream, Guid documentId, List<string> reviewReasons, CancellationToken ct)
+    {
+        var azureStopwatch = Stopwatch.StartNew();
+        try
+        {
+            var result = await _azureDocIntelligence.ExtractTextAsync(stream, documentId, ct);
+            azureStopwatch.Stop();
+
+            if (result is null)
+            {
+                _logger.LogDebug("Azure Document Intelligence not configured, using fallback OCR");
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(result.OcrText))
+            {
+                _logger.LogWarning(
+                    "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — empty text, falling back",
+                    "azure_ocr", azureStopwatch.ElapsedMilliseconds, "empty_text");
+                reviewReasons.Add("azure_doc_intelligence_empty_text");
+                return null;
+            }
+
+            _logger.LogInformation(
+                "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — {PageCount} pages, {TextLength} chars, confidence {Confidence}",
+                "azure_ocr", azureStopwatch.ElapsedMilliseconds, "success",
+                result.PageCount, result.OcrText.Length, result.Confidence);
+
+            return result.OcrText;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            azureStopwatch.Stop();
+            _logger.LogWarning(ex,
+                "Document processing stage {Stage} failed in {DurationMs}ms — falling back to standard OCR",
+                "azure_ocr", azureStopwatch.ElapsedMilliseconds);
+            reviewReasons.Add("azure_doc_intelligence_failed");
+            return null;
+        }
     }
 
     private void LogStageInformation(string stage, long durationMs, string result,
