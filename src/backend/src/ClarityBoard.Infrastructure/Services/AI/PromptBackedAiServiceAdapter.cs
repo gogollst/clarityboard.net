@@ -76,13 +76,19 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
     public async Task<BookingSuggestionResult> SuggestBookingAsync(
         DocumentExtractionResult extraction,
         Guid entityId,
+        string chartOfAccounts,
+        IReadOnlyList<AccountInfo> accounts,
         CancellationToken ct)
     {
+        var accountsSummary = string.Join("\n", accounts.Select(a => $"{a.AccountNumber} {a.Name} ({a.AccountType})"));
+
         var response = await promptAiService.ExecuteAsync(
             "document.booking_suggestion",
             new Dictionary<string, string>
             {
                 ["entity_id"] = entityId.ToString(),
+                ["chart_of_accounts"] = chartOfAccounts,
+                ["accounts_json"] = accountsSummary,
                 ["extraction_json"] = JsonSerializer.Serialize(extraction),
             },
             ct);

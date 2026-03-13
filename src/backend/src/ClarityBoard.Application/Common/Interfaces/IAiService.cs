@@ -9,7 +9,9 @@ public interface IAiService
         string documentText, string? mimeType, CancellationToken ct);
 
     Task<BookingSuggestionResult> SuggestBookingAsync(
-        DocumentExtractionResult extraction, Guid entityId, CancellationToken ct);
+        DocumentExtractionResult extraction, Guid entityId,
+        string chartOfAccounts, IReadOnlyList<AccountInfo> accounts,
+        CancellationToken ct);
 
     Task<string> AnalyzeKpiAsync(
         string kpiId, decimal value, decimal? previousValue, string? context, CancellationToken ct);
@@ -65,3 +67,5 @@ public record BookingSuggestionResult
     public decimal Confidence { get; init; }
     public string? Reasoning { get; init; }
 }
+
+public record AccountInfo(string AccountNumber, string Name, string AccountType, string? VatDefault);

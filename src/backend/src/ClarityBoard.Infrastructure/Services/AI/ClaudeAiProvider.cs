@@ -65,7 +65,9 @@ public partial class ClaudeAiProvider : IAiService
     }
 
     public async Task<BookingSuggestionResult> SuggestBookingAsync(
-        DocumentExtractionResult extraction, Guid entityId, CancellationToken ct)
+        DocumentExtractionResult extraction, Guid entityId,
+        string chartOfAccounts, IReadOnlyList<AccountInfo> accounts,
+        CancellationToken ct)
     {
         var tool = new ClaudeTool
         {
@@ -75,12 +77,15 @@ public partial class ClaudeAiProvider : IAiService
         };
 
         var systemPrompt =
-            "You are a German accounting expert familiar with SKR03 and SKR04 charts of accounts. " +
-            "Given extracted document fields, suggest the appropriate debit and credit accounts, " +
-            "VAT code (VSt19, VSt7, USt19, USt7, etc.), and amount. Always use the suggest_booking tool to return results.";
+            $"You are a German accounting expert familiar with {chartOfAccounts} chart of accounts. " +
+            "Given extracted document fields and the entity's available accounts, suggest the appropriate debit and credit accounts. " +
+            "For incoming invoices (Eingangsrechnung): debit an expense account, credit the payables account (1600 SKR03 / 3300 SKR04). " +
+            "For outgoing invoices (Ausgangsrechnung): debit the receivables account (1400 SKR03 / 1200 SKR04), credit a revenue account. " +
+            "ONLY use account numbers from the provided list. Always use the suggest_booking tool to return results.";
 
+        var accountsSummary = string.Join("\n", accounts.Select(a => $"{a.AccountNumber} {a.Name} ({a.AccountType})"));
         var extractionJson = JsonSerializer.Serialize(extraction, JsonOptions);
-        var userMessage = $"Suggest a booking entry for this extracted document data:\n\n{extractionJson}";
+        var userMessage = $"Chart of accounts: {chartOfAccounts}\n\nAvailable accounts:\n{accountsSummary}\n\nExtracted document data:\n{extractionJson}";
 
         var response = await SendMessageWithToolAsync(systemPrompt, userMessage, tool, ct);
 
