@@ -5,7 +5,9 @@ import { ArrowLeft, Send, RotateCcw, Pencil, Plus, Trash2, Loader2 } from 'lucid
 import { useEntity } from '@/hooks/useEntity';
 import { useJournalEntry, usePostJournalEntry, useReverseJournalEntry, useUpdateJournalEntry, useAccounts } from '@/hooks/useAccounting';
 import { getLocalizedAccountName } from '@/lib/accountUtils';
+import { formatCurrency } from '@/lib/format';
 import DataTable from '@/components/shared/DataTable';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,14 +38,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' {
   if (status === 'posted') return 'default';
   if (status === 'reversed') return 'destructive';
@@ -54,19 +48,19 @@ interface EditLineState {
   key: number;
   accountId: string;
   side: 'debit' | 'credit';
-  netAmount: string;
+  netAmount: number;
   vatCode: string;
-  vatAmount: string;
+  vatAmount: number;
   costCenter: string;
   description: string;
 }
 
 function emptyEditLine(key: number): EditLineState {
-  return { key, accountId: '', side: 'debit', netAmount: '', vatCode: '', vatAmount: '', costCenter: '', description: '' };
+  return { key, accountId: '', side: 'debit', netAmount: 0, vatCode: '', vatAmount: 0, costCenter: '', description: '' };
 }
 
 function lineGross(line: EditLineState): number {
-  return (parseFloat(line.netAmount) || 0) + (parseFloat(line.vatAmount) || 0);
+  return line.netAmount + line.vatAmount;
 }
 
 export function Component() {
@@ -98,9 +92,9 @@ export function Component() {
         key: i,
         accountId: l.accountId,
         side,
-        netAmount: net > 0 ? String(net) : '',
+        netAmount: net > 0 ? net : 0,
         vatCode: l.vatCode ?? '',
-        vatAmount: l.vatAmount > 0 ? String(l.vatAmount) : '',
+        vatAmount: l.vatAmount > 0 ? l.vatAmount : 0,
         costCenter: l.costCenter ?? '',
         description: l.description ?? '',
       };
@@ -113,6 +107,10 @@ export function Component() {
   };
 
   const updateEditLine = (key: number, field: keyof EditLineState, value: string) => {
+    setEditLines((prev) => prev.map((l) => (l.key === key ? { ...l, [field]: value } : l)));
+  };
+
+  const updateEditLineAmount = (key: number, field: 'netAmount' | 'vatAmount', value: number) => {
     setEditLines((prev) => prev.map((l) => (l.key === key ? { ...l, [field]: value } : l)));
   };
 
@@ -162,7 +160,7 @@ export function Component() {
               debitAmount: l.side === 'debit' ? gross : 0,
               creditAmount: l.side === 'credit' ? gross : 0,
               vatCode: l.vatCode || undefined,
-              vatAmount: l.vatAmount ? parseFloat(l.vatAmount) : undefined,
+              vatAmount: l.vatAmount || undefined,
               costCenter: l.costCenter || undefined,
               description: l.description || undefined,
             };
@@ -509,11 +507,10 @@ export function Component() {
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.netAmount')}</Label>
-                          <Input
-                            type="number" min="0" step="0.01"
+                          <CurrencyInput
                             className="h-8 text-right text-xs tabular-nums"
                             value={line.netAmount}
-                            onChange={(e) => updateEditLine(line.key, 'netAmount', e.target.value)}
+                            onValueChange={(v) => updateEditLineAmount(line.key, 'netAmount', v)}
                           />
                         </div>
                         <div>
@@ -526,11 +523,10 @@ export function Component() {
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.vatAmount')}</Label>
-                          <Input
-                            type="number" min="0" step="0.01"
+                          <CurrencyInput
                             className="h-8 text-right text-xs tabular-nums"
                             value={line.vatAmount}
-                            onChange={(e) => updateEditLine(line.key, 'vatAmount', e.target.value)}
+                            onValueChange={(v) => updateEditLineAmount(line.key, 'vatAmount', v)}
                           />
                         </div>
                         <div className="flex items-center pt-4">

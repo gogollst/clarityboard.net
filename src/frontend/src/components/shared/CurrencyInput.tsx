@@ -1,5 +1,6 @@
-import { useState, useCallback, useRef, type ComponentProps } from 'react';
+import { useState, useCallback, type ComponentProps } from 'react';
 import { Input } from '@/components/ui/input';
+import { formatDecimal2, parseDecimal, roundTo2 } from '@/lib/format';
 
 interface CurrencyInputProps extends Omit<ComponentProps<typeof Input>, 'value' | 'onChange' | 'type'> {
   value: number;
@@ -8,28 +9,25 @@ interface CurrencyInputProps extends Omit<ComponentProps<typeof Input>, 'value' 
 
 /**
  * Decimal currency input that:
- * - Displays values with exactly 2 decimal places (on blur)
+ * - Displays values with exactly 2 decimal places using locale-aware separator
  * - Allows free-form editing while focused
  * - Limits to max 2 decimal places on input
- * - Uses comma as decimal separator for display (German format)
+ * - Accepts both comma and dot as decimal separator during input
  * - Normalizes internally to number with 2 decimal precision
  */
 export function CurrencyInput({ value, onValueChange, onFocus, onBlur, ...props }: CurrencyInputProps) {
   const [editValue, setEditValue] = useState<string | null>(null);
-  const isFocused = useRef(false);
 
   // When not focused, display formatted value from props; when focused, show editValue
-  const displayValue = editValue !== null ? editValue : formatForDisplay(value);
+  const displayValue = editValue !== null ? editValue : formatDecimal2(value);
 
   const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    isFocused.current = true;
-    setEditValue(value === 0 ? '' : value.toFixed(2).replace('.', ','));
+    setEditValue(value === 0 ? '' : formatDecimal2(value));
     onFocus?.(e);
   }, [value, onFocus]);
 
   const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    isFocused.current = false;
-    const parsed = parseInput(editValue ?? '');
+    const parsed = parseDecimal(editValue ?? '');
     const rounded = roundTo2(parsed);
     onValueChange(rounded);
     setEditValue(null); // revert to displaying formatted prop value
@@ -40,7 +38,7 @@ export function CurrencyInput({ value, onValueChange, onFocus, onBlur, ...props 
     const raw = e.target.value;
 
     // Allow empty, minus, or partial input while typing
-    if (raw === '' || raw === '-' || raw === ',' || raw === '-,') {
+    if (raw === '' || raw === '-' || raw === ',' || raw === '.' || raw === '-,' || raw === '-.') {
       setEditValue(raw);
       return;
     }
@@ -73,19 +71,4 @@ export function CurrencyInput({ value, onValueChange, onFocus, onBlur, ...props 
       onChange={handleChange}
     />
   );
-}
-
-function formatForDisplay(value: number): string {
-  return value.toFixed(2).replace('.', ',');
-}
-
-function parseInput(input: string): number {
-  if (!input || input === '-' || input === ',' || input === '-,') return 0;
-  const normalized = input.replace(',', '.');
-  const num = parseFloat(normalized);
-  return isNaN(num) ? 0 : num;
-}
-
-function roundTo2(value: number): number {
-  return Math.round(value * 100) / 100;
 }

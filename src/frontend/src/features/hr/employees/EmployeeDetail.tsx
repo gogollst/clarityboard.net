@@ -17,6 +17,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/stores/authStore';
 import type { ContractEntry, EmployeeDetail as EmployeeDetailType, CreateContractRequest, UpdateContractRequest } from '@/types/hr';
+import { formatCurrency } from '@/lib/format';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -744,7 +745,7 @@ function ContractTab({ entries, employeeId }: ContractTabProps) {
   const history = entries.filter((c) => !c.isCurrent);
 
   function formatCents(cents: number, currency = 'EUR'): string {
-    return (cents / 100).toLocaleString(i18n.language, { style: 'currency', currency });
+    return formatCurrency(cents / 100, currency);
   }
 
   function formatDate(iso: string | undefined): string {

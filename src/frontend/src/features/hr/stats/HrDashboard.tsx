@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useHeadcountStats, useTurnoverStats, useSalaryBands, useDepartments } from '@/hooks/useHr';
+import { formatCurrency } from '@/lib/format';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,7 +27,7 @@ import {
 } from 'recharts';
 
 export function Component() {
-  const { t, i18n } = useTranslation('hr');
+  const { t } = useTranslation('hr');
   const { selectedEntityId } = useEntity();
   const entityId = selectedEntityId ?? '';
   const [departmentId, setDepartmentId] = useState('');
@@ -38,7 +39,7 @@ export function Component() {
 
   function formatCents(cents: number | null | undefined): string {
     if (cents == null) return '—';
-    return (cents / 100).toLocaleString(i18n.language, { style: 'currency', currency: 'EUR' });
+    return formatCurrency(cents / 100);
   }
 
   if (!selectedEntityId) {

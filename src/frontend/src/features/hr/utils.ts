@@ -1,4 +1,5 @@
 import i18n from '@/i18n';
+import { formatCurrency } from '@/lib/format';
 
 export function formatDate(iso: string | undefined): string {
   if (!iso) return '—';
@@ -6,5 +7,5 @@ export function formatDate(iso: string | undefined): string {
 }
 
 export function formatEur(cents: number): string {
-  return (cents / 100).toLocaleString(i18n.language, { style: 'currency', currency: 'EUR' });
+  return formatCurrency(cents / 100);
 }

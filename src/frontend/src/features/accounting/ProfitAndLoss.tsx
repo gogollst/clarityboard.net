@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
+import { formatCurrency } from '@/lib/format';
 import { useProfitAndLoss } from '@/hooks/useAccounting';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,14 +24,6 @@ function buildMonths(locale: string) {
   }));
 }
 
-function formatCurrency(value: number, locale: string): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
 const now = new Date();
 const currentYear = now.getFullYear();
 const currentMonth = now.getMonth() + 1;
@@ -39,7 +32,6 @@ export function Component() {
   const { t, i18n } = useTranslation(['accounting', 'common']);
   const { selectedEntityId } = useEntity();
   const months = useMemo(() => buildMonths(i18n.language), [i18n.language]);
-  const fmtCurrency = (value: number) => formatCurrency(value, i18n.language);
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
   const [compare, setCompare] = useState(false);
@@ -150,11 +142,11 @@ export function Component() {
                       <tr key={item.label} className="border-b border-border/50">
                         <td className="py-1.5">{t(`accounting:profitAndLoss.items.${item.label}`, item.label)}</td>
                         <td className={`py-1.5 text-right tabular-nums ${item.amount < 0 ? 'text-destructive' : ''}`}>
-                          {fmtCurrency(item.amount)}
+                          {formatCurrency(item.amount)}
                         </td>
                         {showPrior && (
                           <td className={`py-1.5 text-right tabular-nums ${(item.priorAmount ?? 0) < 0 ? 'text-destructive' : ''}`}>
-                            {item.priorAmount != null ? fmtCurrency(item.priorAmount) : '–'}
+                            {item.priorAmount != null ? formatCurrency(item.priorAmount) : '–'}
                           </td>
                         )}
                       </tr>
@@ -162,11 +154,11 @@ export function Component() {
                     <tr className="font-semibold">
                       <td className="py-2">{t('accounting:profitAndLoss.subtotal')}</td>
                       <td className={`py-2 text-right tabular-nums ${section.subtotal < 0 ? 'text-destructive' : ''}`}>
-                        {fmtCurrency(section.subtotal)}
+                        {formatCurrency(section.subtotal)}
                       </td>
                       {showPrior && (
                         <td className={`py-2 text-right tabular-nums ${(section.priorSubtotal ?? 0) < 0 ? 'text-destructive' : ''}`}>
-                          {section.priorSubtotal != null ? fmtCurrency(section.priorSubtotal) : '–'}
+                          {section.priorSubtotal != null ? formatCurrency(section.priorSubtotal) : '–'}
                         </td>
                       )}
                     </tr>
@@ -181,11 +173,11 @@ export function Component() {
               <span className="text-lg font-bold">{t('accounting:profitAndLoss.netIncome')}</span>
               <div className="flex gap-8">
                 <span className={`text-lg font-bold tabular-nums ${data.netIncome < 0 ? 'text-destructive' : ''}`}>
-                  {fmtCurrency(data.netIncome)}
+                  {formatCurrency(data.netIncome)}
                 </span>
                 {showPrior && data.priorNetIncome != null && (
                   <span className={`text-lg tabular-nums text-muted-foreground ${data.priorNetIncome < 0 ? 'text-destructive' : ''}`}>
-                    {fmtCurrency(data.priorNetIncome)}
+                    {formatCurrency(data.priorNetIncome)}
                   </span>
                 )}
               </div>
