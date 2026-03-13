@@ -101,20 +101,23 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
         using var doc = JsonDocument.Parse(ExtractJsonObject(response.Content));
         var root = doc.RootElement;
 
+        var rawVatCode = GetString(root, "vat_code", "vatCode", "tax_code");
+        var rawTaxKey = GetString(root, "tax_key", "taxKey", "bu_schluessel");
+
         return new BookingSuggestionResult
         {
             // Existing fields (backward compatible)
             DebitAccountNumber = GetString(root, "debit_account_number", "debitAccountNumber", "debit_account"),
             CreditAccountNumber = GetString(root, "credit_account_number", "creditAccountNumber", "credit_account"),
             Amount = GetDecimal(root, "amount") ?? extraction.TotalAmount ?? 0m,
-            VatCode = GetString(root, "vat_code", "vatCode", "tax_code"),
+            VatCode = NormalizeVatCode(rawVatCode, rawTaxKey),
             Description = GetString(root, "description", "booking_text"),
             Confidence = GetDecimal(root, "confidence") ?? 0m,
             Reasoning = GetString(root, "reasoning", "rationale"),
 
             // New classification fields
             InvoiceType = GetString(root, "invoice_type", "invoiceType"),
-            TaxKey = GetString(root, "tax_key", "taxKey", "bu_schluessel"),
+            TaxKey = NormalizeTaxKey(rawTaxKey),
             AssignedEntity = GetString(root, "assigned_entity", "assignedEntity"),
             Notes = GetString(root, "notes"),
             VatTreatment = ParseVatTreatment(root),
@@ -228,6 +231,55 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
 
     private static string? GetString(JsonElement element, params string[] names)
         => TryGetProperty(element, out var property, names) ? property.ToString() : null;
+
+    /// <summary>
+    /// Normalize tax key: strip "BU " prefix, return just the number (e.g. "BU 9" → "9").
+    /// </summary>
+    private static string? NormalizeTaxKey(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        var trimmed = raw.Trim();
+        if (trimmed.StartsWith("BU ", StringComparison.OrdinalIgnoreCase))
+            trimmed = trimmed[3..].Trim();
+        return trimmed;
+    }
+
+    private static readonly HashSet<string> ValidVatCodes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "VSt19", "VSt7", "USt19", "USt7", "steuerfrei", "§13b",
+    };
+
+    private static readonly Dictionary<string, string> TaxKeyToVatCode = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["9"] = "VSt19", ["BU 9"] = "VSt19",
+        ["5"] = "VSt7",  ["BU 5"] = "VSt7",  ["8"] = "VSt7", ["BU 8"] = "VSt7",
+        ["3"] = "USt19", ["BU 3"] = "USt19",
+        ["2"] = "USt7",  ["BU 2"] = "USt7",
+        ["19"] = "§13b", ["BU 19"] = "§13b",
+        ["10"] = "steuerfrei", ["BU 10"] = "steuerfrei",
+        ["11"] = "steuerfrei", ["BU 11"] = "steuerfrei",
+        ["0"] = "steuerfrei", ["BU 0"] = "steuerfrei",
+    };
+
+    /// <summary>
+    /// Normalize VatCode: if the AI returned a BU key instead of a proper VatCode, map it.
+    /// </summary>
+    private static string? NormalizeVatCode(string? rawVatCode, string? rawTaxKey)
+    {
+        // If vat_code is already a valid value, use it
+        if (!string.IsNullOrWhiteSpace(rawVatCode) && ValidVatCodes.Contains(rawVatCode.Trim()))
+            return rawVatCode.Trim();
+
+        // If vat_code looks like a BU key (e.g. "BU 9"), map it
+        if (!string.IsNullOrWhiteSpace(rawVatCode) && TaxKeyToVatCode.TryGetValue(rawVatCode.Trim(), out var mapped))
+            return mapped;
+
+        // Fall back: derive from tax_key if vat_code is missing/invalid
+        if (!string.IsNullOrWhiteSpace(rawTaxKey) && TaxKeyToVatCode.TryGetValue(rawTaxKey.Trim(), out var derived))
+            return derived;
+
+        return rawVatCode?.Trim();
+    }
 
     private static JsonElement? GetNestedObject(JsonElement root, params string[] names)
     {
