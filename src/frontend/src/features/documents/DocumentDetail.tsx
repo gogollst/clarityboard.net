@@ -55,6 +55,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AccountCombobox } from '@/components/shared/AccountCombobox';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { getReviewReasonDisplay } from '@/lib/reviewReasonUtils';
 import {
   ArrowLeft,
@@ -186,34 +187,39 @@ export function Component() {
 
   const amountMismatch = Math.abs(modifyGross - (modifyNet + modifyTax)) > 0.02;
 
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+
   const handleGrossChange = useCallback((value: number) => {
-    setModifyGross(value);
-    setModifyNet(+(value - modifyTax).toFixed(2));
-    modifyForm.setValue('amount', value);
+    const v = round2(value);
+    setModifyGross(v);
+    setModifyNet(round2(v - modifyTax));
+    modifyForm.setValue('amount', v);
   }, [modifyTax, modifyForm]);
 
   const handleNetChange = useCallback((value: number) => {
-    setModifyNet(value);
-    const newGross = +(value + modifyTax).toFixed(2);
+    const v = round2(value);
+    setModifyNet(v);
+    const newGross = round2(v + modifyTax);
     setModifyGross(newGross);
     modifyForm.setValue('amount', newGross);
   }, [modifyTax, modifyForm]);
 
   const handleTaxChange = useCallback((value: number) => {
-    setModifyTax(value);
-    const newGross = +(modifyNet + value).toFixed(2);
+    const v = round2(value);
+    setModifyTax(v);
+    const newGross = round2(modifyNet + v);
     setModifyGross(newGross);
     modifyForm.setValue('amount', newGross);
-    modifyForm.setValue('vatAmount', value);
+    modifyForm.setValue('vatAmount', v);
   }, [modifyNet, modifyForm]);
 
   const handleVatCodeChangeInModify = useCallback((code: string | undefined) => {
     modifyForm.setValue('vatCode', code);
     if (code && VAT_RATES[code] !== undefined) {
       const rate = VAT_RATES[code];
-      const newTax = +(modifyNet * rate).toFixed(2);
+      const newTax = round2(modifyNet * rate);
       setModifyTax(newTax);
-      const newGross = +(modifyNet + newTax).toFixed(2);
+      const newGross = round2(modifyNet + newTax);
       setModifyGross(newGross);
       modifyForm.setValue('amount', newGross);
       modifyForm.setValue('vatAmount', newTax);
@@ -1099,34 +1105,28 @@ export function Component() {
 
             <div>
               <Label>{t('detail.bookingSuggestion.grossAmount')}</Label>
-              <Input
-                type="number"
-                step="0.01"
+              <CurrencyInput
                 className="mt-1"
                 value={modifyGross}
-                onChange={(e) => handleGrossChange(+e.target.value)}
+                onValueChange={handleGrossChange}
               />
             </div>
 
             <div>
               <Label>{t('detail.bookingSuggestion.netAmount')}</Label>
-              <Input
-                type="number"
-                step="0.01"
+              <CurrencyInput
                 className="mt-1"
                 value={modifyNet}
-                onChange={(e) => handleNetChange(+e.target.value)}
+                onValueChange={handleNetChange}
               />
             </div>
 
             <div>
               <Label>{t('detail.bookingSuggestion.taxAmount')}</Label>
-              <Input
-                type="number"
-                step="0.01"
+              <CurrencyInput
                 className="mt-1"
                 value={modifyTax}
-                onChange={(e) => handleTaxChange(+e.target.value)}
+                onValueChange={handleTaxChange}
               />
             </div>
 
