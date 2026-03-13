@@ -241,11 +241,6 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             string? companyContext = null;
             try
             {
-                var allEntities = await _db.LegalEntities
-                    .Where(e => e.IsActive)
-                    .Select(e => new { e.Name, e.LegalForm, e.VatId, e.ParentEntityId })
-                    .ToListAsync(ct);
-
                 var holdingEntity = allEntities.FirstOrDefault(e => e.ParentEntityId == null);
                 var holdingName = holdingEntity?.Name ?? legalEntity?.Name ?? "Unknown";
 
