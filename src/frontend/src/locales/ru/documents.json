@@ -30,12 +30,21 @@
     "createNewPartner": "Создать нового контрагента",
     "modifyBooking": "Изменить",
     "rejectBooking": "Отклонить",
-    "confirmApproval": "Подтвердить и провести"
+    "confirmApproval": "Подтвердить и провести",
+    "reprocess": "Обработать заново"
   },
   "detail": {
     "title": "Детали документа",
     "backToArchive": "Назад к архиву",
     "notFound": "Документ не найден.",
+    "processing": "Документ обрабатывается...",
+    "processingHint": "OCR, извлечение и ИИ-анализ выполняются.",
+    "failedTitle": "Обработка не удалась",
+    "failedHint": "Документ не удалось обработать.",
+    "bookedTitle": "Успешно проведено",
+    "bookedHint": "Бухгалтерская запись создана.",
+    "viewJournalEntry": "Перейти к проводке",
+    "uploadAnother": "Загрузить ещё документ",
     "fields": {
       "fileName": "Имя файла",
       "contentType": "Тип файла",
@@ -50,6 +59,20 @@
       "businessPartner": "Контрагент",
       "suggestedPartner": "Предложенный контрагент",
       "reviewReasons": "Причины проверки"
+    },
+    "fieldsPanel": {
+      "title": "Извлечённые поля",
+      "fieldName": "Поле",
+      "fieldValue": "Значение",
+      "confidence": "Уверенность",
+      "verified": "Проверено"
+    },
+    "ocrPanel": {
+      "title": "Данные OCR / извлечения",
+      "ocrText": "Текст OCR",
+      "source": "Источник",
+      "vision": "Использовано Vision OCR",
+      "provider": "Провайдер"
     },
     "bookingSuggestion": {
       "title": "ИИ-предложение проводки",
@@ -79,6 +102,25 @@
       "fuzzyMatchHint": "ИИ предлагает этого контрагента на основе нечёткого совпадения. Подтвердите или выберите другого.",
       "assigned": "Контрагент успешно назначен",
       "confirmed": "Предложение контрагента подтверждено"
+    }
+  },
+  "reviewReasons": {
+    "lowExtraction": "Низкая уверенность извлечения",
+    "lowExtractionHint": "ИИ не смог уверенно извлечь данные. Проверьте вручную.",
+    "lowBooking": "Низкая уверенность проводки",
+    "lowBookingHint": "Предложение проводки с низкой уверенностью. Проверьте счета.",
+    "fuzzyPartner": "Предложение контрагента (нечёткое совпадение)",
+    "fuzzyPartnerHint": "Подтвердите или назначьте контрагента вручную.",
+    "bookingFailed": "Ошибка предложения проводки",
+    "bookingFailedHint": "ИИ не смог создать предложение. Требуется ручная проводка.",
+    "unresolvedAccounts": "Счета не определены",
+    "unresolvedAccountsHint": "Предложенные номера счетов не найдены."
+  },
+  "archive": {
+    "quickFilters": {
+      "review": "Требует проверки",
+      "failed": "Ошибки",
+      "processing": "В обработке"
     }
   },
   "toast": {

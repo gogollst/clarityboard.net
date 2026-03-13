@@ -30,12 +30,21 @@
     "createNewPartner": "Neuen Partner anlegen",
     "modifyBooking": "Anpassen",
     "rejectBooking": "Ablehnen",
-    "confirmApproval": "Bestätigen & Buchen"
+    "confirmApproval": "Bestätigen & Buchen",
+    "reprocess": "Erneut verarbeiten"
   },
   "detail": {
     "title": "Dokumentdetail",
     "backToArchive": "Zurück zum Archiv",
     "notFound": "Dokument nicht gefunden.",
+    "processing": "Dokument wird verarbeitet...",
+    "processingHint": "OCR, Extraktion und KI-Analyse laufen.",
+    "failedTitle": "Verarbeitung fehlgeschlagen",
+    "failedHint": "Das Dokument konnte nicht verarbeitet werden.",
+    "bookedTitle": "Erfolgreich gebucht",
+    "bookedHint": "Der Buchungssatz wurde erstellt.",
+    "viewJournalEntry": "Zum Buchungssatz",
+    "uploadAnother": "Weiteres Dokument hochladen",
     "fields": {
       "fileName": "Dateiname",
       "contentType": "Dateityp",
@@ -50,6 +59,20 @@
       "businessPartner": "Geschäftspartner",
       "suggestedPartner": "Vorgeschlagener Partner",
       "reviewReasons": "Prüfgründe"
+    },
+    "fieldsPanel": {
+      "title": "Extrahierte Felder",
+      "fieldName": "Feld",
+      "fieldValue": "Wert",
+      "confidence": "Konfidenz",
+      "verified": "Verifiziert"
+    },
+    "ocrPanel": {
+      "title": "OCR-/Extraktionsdaten",
+      "ocrText": "OCR-Text",
+      "source": "Quelle",
+      "vision": "Vision-OCR verwendet",
+      "provider": "Provider"
     },
     "bookingSuggestion": {
       "title": "KI-Buchungsvorschlag",
@@ -79,6 +102,25 @@
       "fuzzyMatchHint": "Die KI schlägt diesen Partner aufgrund einer Ähnlichkeitssuche vor. Bitte bestätigen Sie oder wählen Sie einen anderen.",
       "assigned": "Partner erfolgreich zugeordnet",
       "confirmed": "Partnervorschlag bestätigt"
+    }
+  },
+  "reviewReasons": {
+    "lowExtraction": "Niedrige Extraktions-Konfidenz",
+    "lowExtractionHint": "Die KI konnte die Daten nicht sicher extrahieren. Bitte manuell prüfen.",
+    "lowBooking": "Niedrige Buchungs-Konfidenz",
+    "lowBookingHint": "Der Buchungsvorschlag hat eine niedrige Konfidenz. Bitte Konten prüfen.",
+    "fuzzyPartner": "Partner-Vorschlag (Ähnlichkeitssuche)",
+    "fuzzyPartnerHint": "Bitte Partner bestätigen oder manuell zuweisen.",
+    "bookingFailed": "Buchungsvorschlag fehlgeschlagen",
+    "bookingFailedHint": "Die KI konnte keinen Vorschlag erstellen. Manuelle Buchung erforderlich.",
+    "unresolvedAccounts": "Konten nicht aufgelöst",
+    "unresolvedAccountsHint": "Die vorgeschlagenen Kontonummern konnten nicht zugeordnet werden."
+  },
+  "archive": {
+    "quickFilters": {
+      "review": "Prüfung erforderlich",
+      "failed": "Fehlgeschlagen",
+      "processing": "In Verarbeitung"
     }
   },
   "toast": {

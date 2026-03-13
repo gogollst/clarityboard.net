@@ -4,7 +4,8 @@ import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
 import type { PaginatedResponse } from '@/types/api';
 import type {
-  Document,
+  DocumentListItem,
+  DocumentDetail,
   DocumentListParams,
   UploadDocumentRequest,
   DocumentDownloadUrl,
@@ -19,7 +20,7 @@ export function useDocuments(params: DocumentListParams) {
   return useQuery({
     queryKey: [...queryKeys.documents.list(params.entityId), params],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<Document>>(
+      const { data } = await api.get<PaginatedResponse<DocumentListItem>>(
         '/documents',
         { params },
       );
@@ -29,14 +30,16 @@ export function useDocuments(params: DocumentListParams) {
   });
 }
 
-export function useDocument(id: string | null) {
+export function useDocument(entityId: string | null, id: string | null) {
   return useQuery({
-    queryKey: queryKeys.documents.detail(id ?? ''),
+    queryKey: queryKeys.documents.detail(entityId ?? '', id ?? ''),
     queryFn: async () => {
-      const { data } = await api.get<Document>(`/documents/${id}`);
+      const { data } = await api.get<DocumentDetail>(`/documents/${id}`, {
+        params: { entityId },
+      });
       return data;
     },
-    enabled: !!id,
+    enabled: !!entityId && !!id,
   });
 }
 
@@ -76,16 +79,52 @@ export function useUploadDocument() {
 // Download URL
 // ---------------------------------------------------------------------------
 
-export function useDocumentDownloadUrl(id: string | null) {
+export function useDocumentDownloadUrl(entityId: string | null, id: string | null) {
   return useQuery({
-    queryKey: queryKeys.documents.downloadUrl(id ?? ''),
+    queryKey: queryKeys.documents.downloadUrl(entityId ?? '', id ?? ''),
     queryFn: async () => {
       const { data } = await api.get<DocumentDownloadUrl>(
         `/documents/${id}/download`,
+        { params: { entityId } },
       );
       return data;
     },
-    enabled: !!id,
+    enabled: !!entityId && !!id,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Reprocess Document
+// ---------------------------------------------------------------------------
+
+export function useReprocessDocument() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      documentId,
+      entityId,
+    }: {
+      documentId: string;
+      entityId: string;
+    }) => {
+      await api.post(`/documents/${documentId}/reprocess`, null, {
+        params: { entityId },
+      });
+      return { documentId, entityId };
+    },
+    onSuccess: ({ documentId, entityId }) => {
+      toast.success('Document reprocessing started');
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documents.detail(entityId, documentId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documents.list(entityId),
+      });
+    },
+    onError: () => {
+      toast.error('Failed to reprocess document');
+    },
   });
 }
 
@@ -114,7 +153,7 @@ export function useConfirmPartnerMatch() {
     onSuccess: ({ documentId, entityId }) => {
       toast.success('Business partner confirmed');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.documents.detail(documentId),
+        queryKey: queryKeys.documents.detail(entityId, documentId),
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.documents.list(entityId),
@@ -143,16 +182,17 @@ export function useApproveBooking() {
       entityId: string;
       hrEmployeeId?: string;
     }) => {
-      const { data } = await api.post<Document>(
+      const { data } = await api.post<string>(
         `/documents/${documentId}/approve-booking`,
         hrEmployeeId ? { hrEmployeeId } : undefined,
+        { params: { entityId } },
       );
-      return { document: data, entityId };
+      return { journalEntryId: data, documentId, entityId };
     },
-    onSuccess: ({ document, entityId }) => {
+    onSuccess: ({ documentId, entityId }) => {
       toast.success('Booking suggestion approved');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.documents.detail(document.id),
+        queryKey: queryKeys.documents.detail(entityId, documentId),
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.documents.list(entityId),
@@ -186,13 +226,14 @@ export function useModifyBooking() {
       const { data } = await api.post<string>(
         `/documents/${documentId}/modify-booking`,
         request,
+        { params: { entityId } },
       );
       return { journalEntryId: data, documentId, entityId };
     },
     onSuccess: ({ documentId, entityId }) => {
       toast.success('Booking created with modifications');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.documents.detail(documentId),
+        queryKey: queryKeys.documents.detail(entityId, documentId),
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.documents.list(entityId),
@@ -227,13 +268,17 @@ export function useRejectBooking() {
       entityId: string;
       reason?: string;
     }) => {
-      await api.post(`/documents/${documentId}/reject-booking`, reason ? { reason } : undefined);
+      await api.post(
+        `/documents/${documentId}/reject-booking`,
+        reason ? { reason } : undefined,
+        { params: { entityId } },
+      );
       return { documentId, entityId };
     },
     onSuccess: ({ documentId, entityId }) => {
       toast.success('Booking suggestion rejected');
       queryClient.invalidateQueries({
-        queryKey: queryKeys.documents.detail(documentId),
+        queryKey: queryKeys.documents.detail(entityId, documentId),
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.documents.list(entityId),

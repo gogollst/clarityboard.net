@@ -57,6 +57,7 @@ export function useSignalR({
 
   const kpiHubRef = useRef<HubConnection | null>(null);
   const alertHubRef = useRef<HubConnection | null>(null);
+  const accountingHubRef = useRef<HubConnection | null>(null);
   const currentEntityRef = useRef<string | null>(null);
 
   // -----------------------------------------------------------------------
@@ -107,8 +108,10 @@ export function useSignalR({
       // Disconnect if disabled
       kpiHubRef.current?.stop();
       alertHubRef.current?.stop();
+      accountingHubRef.current?.stop();
       kpiHubRef.current = null;
       alertHubRef.current = null;
+      accountingHubRef.current = null;
       setConnectionStatus('disconnected');
       clearAll();
       return;
@@ -116,6 +119,7 @@ export function useSignalR({
 
     const kpiHub = buildConnection('/hubs/kpi');
     const alertHub = buildConnection('/hubs/alerts');
+    const accountingHub = buildConnection('/hubs/accounting');
 
     // -- KPI Hub handlers --
     kpiHub.on('KpiUpdated', (update: KpiUpdateMessage) => {
@@ -166,11 +170,37 @@ export function useSignalR({
       }
     });
 
+    // -- Accounting Hub handlers --
+    accountingHub.on('DocumentStatusChanged', (event: { documentId: string; status: string }) => {
+      if (currentEntityRef.current) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.documents.detail(currentEntityRef.current, event.documentId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.documents.list(currentEntityRef.current),
+        });
+      }
+    });
+
+    accountingHub.on('JournalEntryCreated', () => {
+      if (currentEntityRef.current) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.accounting.journalEntries(currentEntityRef.current),
+        });
+      }
+    });
+
+    // AccountingHub uses auto-join via entity_id claim — no manual JoinEntityGroup needed
+    accountingHub.onreconnected(async () => {
+      // Auto-join happens on connect via entity_id claim
+    });
+
     // -- Start connections --
     const startConnections = async () => {
       const results = await Promise.allSettled([
         kpiHub.start(),
         alertHub.start(),
+        accountingHub.start(),
       ]);
       const anyConnected = results.some((r) => r.status === 'fulfilled');
       setConnectionStatus(anyConnected ? 'connected' : 'disconnected');
@@ -182,18 +212,22 @@ export function useSignalR({
           await joinEntityGroup(kpiHub, entityId);
         if (results[1].status === 'fulfilled')
           await joinEntityGroup(alertHub, entityId);
+        // accountingHub auto-joins via JWT claim
       }
     };
 
     kpiHubRef.current = kpiHub;
     alertHubRef.current = alertHub;
+    accountingHubRef.current = accountingHub;
     startConnections();
 
     return () => {
       kpiHub.stop();
       alertHub.stop();
+      accountingHub.stop();
       kpiHubRef.current = null;
       alertHubRef.current = null;
+      accountingHubRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);

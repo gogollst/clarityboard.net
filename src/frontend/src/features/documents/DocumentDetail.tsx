@@ -8,6 +8,7 @@ import {
   useApproveBooking,
   useModifyBooking,
   useRejectBooking,
+  useReprocessDocument,
 } from '@/hooks/useDocuments';
 import { useAccounts } from '@/hooks/useAccounting';
 import { useSearchBusinessPartners, useAssignDocumentPartner } from '@/hooks/useAccounting';
@@ -24,6 +25,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
   Dialog,
   DialogContent,
@@ -49,17 +55,23 @@ import {
 import {
   ArrowLeft,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
+  FileText,
   Handshake,
   Loader2,
   Pencil,
   Plus,
+  RefreshCw,
   Search,
+  Upload,
   X,
+  XCircle,
   Zap,
+  AlertTriangle,
 } from 'lucide-react';
-import type { ModifyBookingRequest } from '@/types/document';
+import type { ModifyBookingRequest, DocumentField } from '@/types/document';
 
 const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'info'> = {
   uploaded: 'info',
@@ -68,6 +80,14 @@ const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'de
   review: 'warning',
   booked: 'success',
   failed: 'destructive',
+};
+
+const REVIEW_REASON_MAP: Record<string, { labelKey: string; hintKey: string }> = {
+  low_extraction_confidence: { labelKey: 'reviewReasons.lowExtraction', hintKey: 'reviewReasons.lowExtractionHint' },
+  low_booking_confidence: { labelKey: 'reviewReasons.lowBooking', hintKey: 'reviewReasons.lowBookingHint' },
+  partner_fuzzy_match: { labelKey: 'reviewReasons.fuzzyPartner', hintKey: 'reviewReasons.fuzzyPartnerHint' },
+  booking_suggestion_failed: { labelKey: 'reviewReasons.bookingFailed', hintKey: 'reviewReasons.bookingFailedHint' },
+  booking_suggestion_unresolved_accounts: { labelKey: 'reviewReasons.unresolvedAccounts', hintKey: 'reviewReasons.unresolvedAccountsHint' },
 };
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -106,18 +126,25 @@ function ConfidenceBar({ confidence }: { confidence: number }) {
   );
 }
 
+function FieldConfidenceBadge({ confidence }: { confidence: number }) {
+  const pct = Math.round(confidence * 100);
+  const variant = confidence >= 0.85 ? 'default' : confidence >= 0.7 ? 'secondary' : 'destructive';
+  return <Badge variant={variant}>{pct}%</Badge>;
+}
+
 export function Component() {
   const { t, i18n } = useTranslation('documents');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { selectedEntityId } = useEntity();
 
-  const { data: doc, isLoading } = useDocument(id ?? null);
+  const { data: doc, isLoading } = useDocument(selectedEntityId, id ?? null);
   const approveBooking = useApproveBooking();
   const modifyBooking = useModifyBooking();
   const rejectBooking = useRejectBooking();
   const confirmPartnerMatch = useConfirmPartnerMatch();
   const assignPartner = useAssignDocumentPartner();
+  const reprocessDocument = useReprocessDocument();
 
   // Account & employee data for modify form
   const { data: accounts = [] } = useAccounts(selectedEntityId);
@@ -139,6 +166,7 @@ export function Component() {
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
+  const [showOcrPanel, setShowOcrPanel] = useState(false);
 
   // Modify form
   const modifyForm = useForm<ModifyBookingRequest>();
@@ -246,10 +274,21 @@ export function Component() {
     );
   });
 
+  const handleReprocess = () => {
+    if (!selectedEntityId) return;
+    reprocessDocument.mutate({
+      documentId: doc.id,
+      entityId: selectedEntityId,
+    });
+  };
+
   const bs = doc.bookingSuggestion;
   const canAct =
     (doc.status === 'review' || doc.status === 'extracted') &&
     bs?.status === 'suggested';
+  const isProcessing = doc.status === 'uploaded' || doc.status === 'processing';
+  const isFailed = doc.status === 'failed';
+  const isBooked = doc.status === 'booked';
 
   return (
     <div>
@@ -258,6 +297,9 @@ export function Component() {
         actions={
           <div className="flex items-center gap-2">
             <StatusBadge status={doc.status} variantMap={STATUS_VARIANT_MAP} />
+            {doc.confidence != null && (
+              <ConfidenceBar confidence={doc.confidence} />
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -269,6 +311,120 @@ export function Component() {
           </div>
         }
       />
+
+      {/* Processing Banner */}
+      {isProcessing && (
+        <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+          <CardContent className="flex items-center gap-3 py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+            <div>
+              <p className="font-medium text-blue-700 dark:text-blue-300">
+                {t('detail.processing')}
+              </p>
+              <p className="text-sm text-blue-600 dark:text-blue-400">
+                {t('detail.processingHint')}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Failed Banner */}
+      {isFailed && (
+        <Card className="mb-6 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950">
+          <CardContent className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-3">
+              <XCircle className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="font-medium text-red-700 dark:text-red-300">
+                  {t('detail.failedTitle')}
+                </p>
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {t('detail.failedHint')}
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleReprocess}
+              disabled={reprocessDocument.isPending}
+            >
+              {reprocessDocument.isPending ? (
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-1 h-4 w-4" />
+              )}
+              {t('actions.reprocess')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Booked Success Banner */}
+      {isBooked && (
+        <Card className="mb-6 border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950">
+          <CardContent className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              <div>
+                <p className="font-medium text-emerald-700 dark:text-emerald-300">
+                  {t('detail.bookedTitle')}
+                </p>
+                <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                  {t('detail.bookedHint')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {doc.bookedJournalEntryId && (
+                <Link to={`/accounting/journal/${doc.bookedJournalEntryId}`}>
+                  <Button variant="outline" size="sm">
+                    <FileText className="mr-1 h-4 w-4" />
+                    {t('detail.viewJournalEntry')}
+                  </Button>
+                </Link>
+              )}
+              <Link to="/documents/upload">
+                <Button variant="outline" size="sm">
+                  <Upload className="mr-1 h-4 w-4" />
+                  {t('detail.uploadAnother')}
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Review Reasons Panel */}
+      {doc.reviewReasons && doc.reviewReasons.length > 0 && doc.status === 'review' && (
+        <Card className="mb-6 border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2 text-amber-700 dark:text-amber-300">
+              <AlertTriangle className="h-4 w-4" />
+              {t('detail.fields.reviewReasons')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {doc.reviewReasons.map((reason) => {
+                const mapped = REVIEW_REASON_MAP[reason];
+                return (
+                  <div key={reason} className="rounded-md border border-amber-200 bg-white p-3 dark:border-amber-700 dark:bg-amber-900/30">
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                      {mapped ? t(mapped.labelKey) : reason}
+                    </p>
+                    {mapped && (
+                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                        {t(mapped.hintKey)}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Document Info */}
@@ -294,19 +450,6 @@ export function Component() {
                 }
               />
             </dl>
-
-            {doc.reviewReasons && doc.reviewReasons.length > 0 && (
-              <div className="mt-6 border-t pt-4">
-                <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
-                  {t('detail.fields.reviewReasons')}
-                </dt>
-                <div className="flex flex-wrap gap-2">
-                  {doc.reviewReasons.map((reason) => (
-                    <Badge key={reason} variant="outline">{reason}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 
@@ -425,6 +568,127 @@ export function Component() {
             )}
           </CardContent>
         </Card>
+
+        {/* Extracted Fields */}
+        {doc.fields && doc.fields.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t('detail.fieldsPanel.title')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="pb-2 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        {t('detail.fieldsPanel.fieldName')}
+                      </th>
+                      <th className="pb-2 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        {t('detail.fieldsPanel.fieldValue')}
+                      </th>
+                      <th className="pb-2 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        {t('detail.fieldsPanel.confidence')}
+                      </th>
+                      <th className="pb-2 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        {t('detail.fieldsPanel.verified')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {doc.fields.map((field: DocumentField) => (
+                      <tr key={field.id} className="border-b last:border-0">
+                        <td className="py-2 font-medium">{field.fieldName}</td>
+                        <td className="py-2">
+                          {field.correctedValue ?? field.fieldValue ?? '—'}
+                          {field.correctedValue && field.fieldValue && (
+                            <span className="ml-2 text-xs text-muted-foreground line-through">
+                              {field.fieldValue}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2">
+                          <FieldConfidenceBadge confidence={field.confidence} />
+                        </td>
+                        <td className="py-2">
+                          {field.isVerified ? (
+                            <Check className="h-4 w-4 text-emerald-500" />
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* OCR Panel */}
+        {(doc.ocrText || doc.ocrMetadata) && (
+          <Card>
+            <Collapsible open={showOcrPanel} onOpenChange={setShowOcrPanel}>
+              <CardHeader>
+                <CollapsibleTrigger asChild>
+                  <button className="flex w-full items-center justify-between">
+                    <CardTitle className="text-base">{t('detail.ocrPanel.title')}</CardTitle>
+                    {showOcrPanel ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </button>
+                </CollapsibleTrigger>
+              </CardHeader>
+              <CollapsibleContent>
+                <CardContent>
+                  {doc.ocrMetadata && (
+                    <dl className="grid grid-cols-2 gap-4 mb-4 sm:grid-cols-4">
+                      {doc.ocrMetadata.source && (
+                        <DetailRow label={t('detail.ocrPanel.source')} value={doc.ocrMetadata.source} />
+                      )}
+                      {doc.ocrMetadata.usedProvider && (
+                        <DetailRow label={t('detail.ocrPanel.provider')} value={doc.ocrMetadata.usedProvider} />
+                      )}
+                      <DetailRow
+                        label={t('detail.ocrPanel.vision')}
+                        value={doc.ocrMetadata.usedVision ? 'Yes' : 'No'}
+                      />
+                      {doc.ocrMetadata.confidence != null && (
+                        <div>
+                          <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                            {t('detail.fieldsPanel.confidence')}
+                          </dt>
+                          <dd className="mt-1">
+                            <ConfidenceBar confidence={doc.ocrMetadata.confidence} />
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  )}
+                  {doc.ocrMetadata?.warnings && doc.ocrMetadata.warnings.length > 0 && (
+                    <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
+                      {doc.ocrMetadata.warnings.map((w, i) => (
+                        <p key={i} className="text-sm text-amber-700 dark:text-amber-300">{w}</p>
+                      ))}
+                    </div>
+                  )}
+                  {doc.ocrText && (
+                    <div>
+                      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
+                        {t('detail.ocrPanel.ocrText')}
+                      </dt>
+                      <pre className="max-h-64 overflow-auto rounded-md bg-muted p-3 text-xs whitespace-pre-wrap">
+                        {doc.ocrText}
+                      </pre>
+                    </div>
+                  )}
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
+        )}
 
         {/* Booking Suggestion */}
         {bs && (

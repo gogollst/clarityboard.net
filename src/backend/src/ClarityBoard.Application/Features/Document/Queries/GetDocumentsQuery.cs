@@ -12,7 +12,7 @@ public record GetDocumentsQuery : IRequest<PagedResult<DocumentListDto>>, IEntit
     public string? Status { get; init; }
     public DateOnly? DateFrom { get; init; }
     public DateOnly? DateTo { get; init; }
-    public string? VendorName { get; init; }
+    public string? Search { get; init; }
     public int Page { get; init; } = 1;
     public int PageSize { get; init; } = 25;
 }
@@ -36,9 +36,14 @@ public class GetDocumentsQueryHandler : IRequestHandler<GetDocumentsQuery, Paged
         if (request.DateTo.HasValue)
             query = query.Where(d => d.InvoiceDate <= request.DateTo.Value);
 
-        if (!string.IsNullOrEmpty(request.VendorName))
-            query = query.Where(d => d.VendorName != null
-                                     && d.VendorName.ToLower().Contains(request.VendorName.ToLower()));
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            var term = request.Search.ToLower();
+            query = query.Where(d =>
+                (d.VendorName != null && d.VendorName.ToLower().Contains(term)) ||
+                (d.InvoiceNumber != null && d.InvoiceNumber.ToLower().Contains(term)) ||
+                d.FileName.ToLower().Contains(term));
+        }
 
         var totalCount = await query.CountAsync(ct);
 

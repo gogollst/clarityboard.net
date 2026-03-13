@@ -74,23 +74,29 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
             };
         }
 
-        // Resolve business partner names
+        // Resolve business partner names + numbers
         string? businessPartnerName = null;
+        string? businessPartnerNumber = null;
         if (document.BusinessPartnerId.HasValue)
         {
-            businessPartnerName = await _db.BusinessPartners
+            var bp = await _db.BusinessPartners
                 .Where(bp => bp.Id == document.BusinessPartnerId.Value)
-                .Select(bp => bp.Name)
+                .Select(bp => new { bp.Name, bp.PartnerNumber })
                 .FirstOrDefaultAsync(ct);
+            businessPartnerName = bp?.Name;
+            businessPartnerNumber = bp?.PartnerNumber;
         }
 
         string? suggestedBusinessPartnerName = null;
+        string? suggestedBusinessPartnerNumber = null;
         if (document.SuggestedBusinessPartnerId.HasValue)
         {
-            suggestedBusinessPartnerName = await _db.BusinessPartners
+            var sbp = await _db.BusinessPartners
                 .Where(bp => bp.Id == document.SuggestedBusinessPartnerId.Value)
-                .Select(bp => bp.Name)
+                .Select(bp => new { bp.Name, bp.PartnerNumber })
                 .FirstOrDefaultAsync(ct);
+            suggestedBusinessPartnerName = sbp?.Name;
+            suggestedBusinessPartnerNumber = sbp?.PartnerNumber;
         }
 
         return new DocumentDetailDto
@@ -111,8 +117,12 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
             BookedJournalEntryId = document.BookedJournalEntryId,
             BusinessPartnerId = document.BusinessPartnerId,
             BusinessPartnerName = businessPartnerName,
+            BusinessPartnerNumber = businessPartnerNumber,
             SuggestedBusinessPartnerId = document.SuggestedBusinessPartnerId,
             SuggestedBusinessPartnerName = suggestedBusinessPartnerName,
+            SuggestedBusinessPartnerNumber = suggestedBusinessPartnerNumber,
+            OcrText = document.OcrText,
+            OcrMetadata = DocumentExtractedDataReader.ReadOcrMetadata(document.ExtractedData),
             CreatedAt = document.CreatedAt,
             ProcessedAt = document.ProcessedAt,
             ReviewReasons = DocumentExtractedDataReader.ReadReviewReasons(document.ExtractedData),

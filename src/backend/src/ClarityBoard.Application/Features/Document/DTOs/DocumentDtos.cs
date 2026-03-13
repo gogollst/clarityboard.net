@@ -36,13 +36,28 @@ public record DocumentDetailDto
     public Guid? BookedJournalEntryId { get; init; }
     public Guid? BusinessPartnerId { get; init; }
     public string? BusinessPartnerName { get; init; }
+    public string? BusinessPartnerNumber { get; init; }
     public Guid? SuggestedBusinessPartnerId { get; init; }
     public string? SuggestedBusinessPartnerName { get; init; }
+    public string? SuggestedBusinessPartnerNumber { get; init; }
+    public string? OcrText { get; init; }
+    public OcrMetadataDto? OcrMetadata { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? ProcessedAt { get; init; }
     public IReadOnlyList<string> ReviewReasons { get; init; } = [];
     public IReadOnlyList<DocumentFieldDto> Fields { get; init; } = [];
     public BookingSuggestionDto? BookingSuggestion { get; init; }
+}
+
+public record OcrMetadataDto
+{
+    public string? Source { get; init; }
+    public decimal? Confidence { get; init; }
+    public bool UsedVision { get; init; }
+    public string? UsedProvider { get; init; }
+    public string[]? Warnings { get; init; }
+    public int? NativeTextLength { get; init; }
+    public int? VisionTextLength { get; init; }
 }
 
 public record DocumentFieldDto

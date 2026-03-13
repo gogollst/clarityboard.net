@@ -30,12 +30,21 @@
     "createNewPartner": "Create New Partner",
     "modifyBooking": "Modify",
     "rejectBooking": "Reject",
-    "confirmApproval": "Confirm & Book"
+    "confirmApproval": "Confirm & Book",
+    "reprocess": "Reprocess"
   },
   "detail": {
     "title": "Document Detail",
     "backToArchive": "Back to Archive",
     "notFound": "Document not found.",
+    "processing": "Document is being processed...",
+    "processingHint": "OCR, extraction and AI analysis in progress.",
+    "failedTitle": "Processing failed",
+    "failedHint": "The document could not be processed.",
+    "bookedTitle": "Successfully booked",
+    "bookedHint": "The journal entry has been created.",
+    "viewJournalEntry": "View journal entry",
+    "uploadAnother": "Upload another document",
     "fields": {
       "fileName": "File Name",
       "contentType": "Content Type",
@@ -50,6 +59,20 @@
       "businessPartner": "Business Partner",
       "suggestedPartner": "Suggested Partner",
       "reviewReasons": "Review Reasons"
+    },
+    "fieldsPanel": {
+      "title": "Extracted Fields",
+      "fieldName": "Field",
+      "fieldValue": "Value",
+      "confidence": "Confidence",
+      "verified": "Verified"
+    },
+    "ocrPanel": {
+      "title": "OCR / Extraction Data",
+      "ocrText": "OCR Text",
+      "source": "Source",
+      "vision": "Used Vision OCR",
+      "provider": "Provider"
     },
     "bookingSuggestion": {
       "title": "AI Booking Suggestion",
@@ -79,6 +102,25 @@
       "fuzzyMatchHint": "AI suggests this partner based on a fuzzy match. Please confirm or select a different one.",
       "assigned": "Partner assigned successfully",
       "confirmed": "Partner match confirmed"
+    }
+  },
+  "reviewReasons": {
+    "lowExtraction": "Low extraction confidence",
+    "lowExtractionHint": "AI could not confidently extract data. Please review manually.",
+    "lowBooking": "Low booking confidence",
+    "lowBookingHint": "Booking suggestion has low confidence. Please check accounts.",
+    "fuzzyPartner": "Partner suggestion (fuzzy match)",
+    "fuzzyPartnerHint": "Please confirm or manually assign partner.",
+    "bookingFailed": "Booking suggestion failed",
+    "bookingFailedHint": "AI could not create suggestion. Manual booking required.",
+    "unresolvedAccounts": "Accounts not resolved",
+    "unresolvedAccountsHint": "Suggested account numbers could not be matched."
+  },
+  "archive": {
+    "quickFilters": {
+      "review": "Needs review",
+      "failed": "Failed",
+      "processing": "Processing"
     }
   },
   "toast": {

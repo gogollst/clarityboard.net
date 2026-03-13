@@ -1,16 +1,14 @@
-import { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDropzone } from 'react-dropzone';
 import { useEntity } from '@/hooks/useEntity';
 import { useUploadDocument } from '@/hooks/useDocuments';
 import PageHeader from '@/components/shared/PageHeader';
-import StatusBadge from '@/components/shared/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Upload, FileText, Check, X, Loader2 } from 'lucide-react';
+import { Upload, FileText, X, Loader2 } from 'lucide-react';
 
 const ACCEPTED_TYPES = {
   'application/pdf': ['.pdf'],
@@ -24,11 +22,8 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export function Component() {
   const { t } = useTranslation('documents');
   const { selectedEntityId } = useEntity();
+  const navigate = useNavigate();
   const uploadMutation = useUploadDocument();
-  const [uploadedDoc, setUploadedDoc] = useState<{
-    id: string;
-    status: string;
-  } | null>(null);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -39,12 +34,12 @@ export function Component() {
         { file, entityId: selectedEntityId },
         {
           onSuccess: (doc) => {
-            setUploadedDoc({ id: doc.id, status: doc.status });
+            navigate(`/documents/${doc.id}`);
           },
         },
       );
     },
-    [selectedEntityId, uploadMutation],
+    [selectedEntityId, uploadMutation, navigate],
   );
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } =
@@ -82,40 +77,6 @@ export function Component() {
                 <Loader2 className="mb-4 h-12 w-12 animate-spin text-primary" />
                 <p className="text-lg font-medium">{t('uploadPage.uploading')}</p>
                 <Progress value={65} className="mt-4 w-64" />
-              </>
-            ) : uploadMutation.isSuccess && uploadedDoc ? (
-              <>
-                <Check className="mb-4 h-12 w-12 text-green-500" />
-                <p className="text-lg font-medium">{t('uploadPage.success')}</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {t('uploadPage.statusLabel')}
-                  </span>
-                  <StatusBadge
-                    status={uploadedDoc.status}
-                    variantMap={{
-                      uploaded: 'info',
-                      processing: 'warning',
-                      extracted: 'success',
-                      review: 'warning',
-                      booked: 'success',
-                      failed: 'destructive',
-                    }}
-                  />
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <Link to="/documents">
-                    <Button variant="outline">{t('uploadPage.backToArchive')}</Button>
-                  </Link>
-                  <Button
-                    onClick={() => {
-                      setUploadedDoc(null);
-                      uploadMutation.reset();
-                    }}
-                  >
-                    {t('uploadPage.uploadAnother')}
-                  </Button>
-                </div>
               </>
             ) : (
               <>

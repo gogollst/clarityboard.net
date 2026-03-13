@@ -110,7 +110,7 @@ public class DocumentController : ControllerBase
         [FromQuery] string? status,
         [FromQuery] DateOnly? dateFrom,
         [FromQuery] DateOnly? dateTo,
-        [FromQuery] string? vendorName,
+        [FromQuery] string? search,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 25,
         CancellationToken ct = default)
@@ -121,7 +121,7 @@ public class DocumentController : ControllerBase
             Status = status,
             DateFrom = dateFrom,
             DateTo = dateTo,
-            VendorName = vendorName,
+            Search = search,
             Page = page,
             PageSize = pageSize,
         }, ct);

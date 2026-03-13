@@ -1,26 +1,55 @@
 export type DocumentStatus = 'uploaded' | 'processing' | 'extracted' | 'review' | 'booked' | 'failed';
 
-export interface Document {
+export interface DocumentListItem {
   id: string;
-  entityId: string;
   fileName: string;
   contentType: string;
   fileSize: number;
+  documentType: string;
   status: DocumentStatus;
   vendorName?: string;
   invoiceNumber?: string;
   invoiceDate?: string;
   totalAmount?: number;
   currency?: string;
+  confidence?: number;
+  createdAt: string;
+  processedAt?: string;
+}
+
+export interface DocumentDetail extends DocumentListItem {
+  entityId: string;
+  bookedJournalEntryId?: string;
   businessPartnerId?: string;
   businessPartnerName?: string;
   businessPartnerNumber?: string;
   suggestedBusinessPartnerId?: string;
   suggestedBusinessPartnerName?: string;
   suggestedBusinessPartnerNumber?: string;
+  ocrText?: string;
+  ocrMetadata?: OcrMetadata;
   reviewReasons?: string[];
+  fields?: DocumentField[];
   bookingSuggestion?: BookingSuggestion;
-  createdAt: string;
+}
+
+export interface OcrMetadata {
+  source?: string;
+  confidence?: number;
+  usedVision: boolean;
+  usedProvider?: string;
+  warnings?: string[];
+  nativeTextLength?: number;
+  visionTextLength?: number;
+}
+
+export interface DocumentField {
+  id: string;
+  fieldName: string;
+  fieldValue?: string;
+  confidence: number;
+  isVerified: boolean;
+  correctedValue?: string;
 }
 
 export interface BookingSuggestion {
@@ -59,7 +88,6 @@ export interface UploadDocumentRequest {
 
 export interface DocumentDownloadUrl {
   url: string;
-  expiresAt: string;
 }
 
 export interface ModifyBookingRequest {

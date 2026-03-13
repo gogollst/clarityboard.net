@@ -802,7 +802,7 @@ export function useAssignDocumentPartner() {
     },
     onSuccess: ({ entityId, documentId }) => {
       toast.success(i18n.t('accounting:businessPartners.toast.partnerAssigned'));
-      queryClient.invalidateQueries({ queryKey: queryKeys.documents.detail(documentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents.detail(entityId, documentId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.documents.list(entityId) });
     },
     onError: () => {

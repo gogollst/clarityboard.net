@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
-import { useDocuments } from '@/hooks/useDocuments';
+import { useDocuments, useReprocessDocument } from '@/hooks/useDocuments';
+import { api } from '@/lib/api';
 import type { DocumentStatus } from '@/types/document';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,7 +19,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { formatCurrency } from '@/lib/format';
-import { Upload, Search, Download, Eye } from 'lucide-react';
+import { Upload, Search, Download, Eye, RefreshCw, Loader2 } from 'lucide-react';
 
 const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'info'> = {
   uploaded: 'info',
@@ -36,6 +38,7 @@ export function Component() {
   const [status, setStatus] = useState<DocumentStatus | 'all'>('all');
   const [search, setSearch] = useState('');
   const pageSize = 20;
+  const reprocessDocument = useReprocessDocument();
 
   const { data, isLoading } = useDocuments({
     entityId: selectedEntityId ?? '',
@@ -44,6 +47,30 @@ export function Component() {
     status: status === 'all' ? undefined : status,
     search: search || undefined,
   });
+
+  const handleDownload = async (id: string) => {
+    if (!selectedEntityId) return;
+    try {
+      const { data: result } = await api.get<{ url: string }>(
+        `/documents/${id}/download`,
+        { params: { entityId: selectedEntityId } },
+      );
+      window.open(result.url, '_blank');
+    } catch {
+      // Error handled by interceptor
+    }
+  };
+
+  const handleReprocess = (id: string) => {
+    if (!selectedEntityId) return;
+    reprocessDocument.mutate({ documentId: id, entityId: selectedEntityId });
+  };
+
+  // Count items by status for quick filters
+  const items = data?.items ?? [];
+  const reviewCount = items.filter((d) => d.status === 'review').length;
+  const failedCount = items.filter((d) => d.status === 'failed').length;
+  const processingCount = items.filter((d) => d.status === 'processing').length;
 
   const columns = [
     {
@@ -102,9 +129,29 @@ export function Component() {
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" title={t('actions.download')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            title={t('actions.download')}
+            onClick={() => handleDownload(String(item.id ?? ''))}
+          >
             <Download className="h-4 w-4" />
           </Button>
+          {String(item.status) === 'failed' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              title={t('actions.reprocess')}
+              onClick={() => handleReprocess(String(item.id ?? ''))}
+              disabled={reprocessDocument.isPending}
+            >
+              {reprocessDocument.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+            </Button>
+          )}
         </div>
       ),
     },
@@ -123,6 +170,38 @@ export function Component() {
           </Link>
         }
       />
+
+      {/* Quick Filter Badges */}
+      <div className="mb-3 flex flex-wrap gap-2">
+        {reviewCount > 0 && (
+          <button onClick={() => { setStatus('review'); setPage(1); }}>
+            <Badge variant="secondary" className="cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900">
+              {t('archive.quickFilters.review')} ({reviewCount})
+            </Badge>
+          </button>
+        )}
+        {failedCount > 0 && (
+          <button onClick={() => { setStatus('failed'); setPage(1); }}>
+            <Badge variant="destructive" className="cursor-pointer">
+              {t('archive.quickFilters.failed')} ({failedCount})
+            </Badge>
+          </button>
+        )}
+        {processingCount > 0 && (
+          <button onClick={() => { setStatus('processing'); setPage(1); }}>
+            <Badge variant="secondary" className="cursor-pointer">
+              {t('archive.quickFilters.processing')} ({processingCount})
+            </Badge>
+          </button>
+        )}
+        {status !== 'all' && (
+          <button onClick={() => { setStatus('all'); setPage(1); }}>
+            <Badge variant="outline" className="cursor-pointer">
+              {t('allStatuses')} &times;
+            </Badge>
+          </button>
+        )}
+      </div>
 
       {/* Filters */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">

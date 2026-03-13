@@ -63,9 +63,9 @@ export const queryKeys = {
   documents: {
     all: ['documents'] as const,
     list: (entityId: string) => ['documents', 'list', entityId] as const,
-    detail: (id: string) => ['documents', 'detail', id] as const,
-    downloadUrl: (id: string) =>
-      ['documents', 'download-url', id] as const,
+    detail: (entityId: string, id: string) => ['documents', 'detail', entityId, id] as const,
+    downloadUrl: (entityId: string, id: string) =>
+      ['documents', 'download-url', entityId, id] as const,
   },
 
   datev: {
