@@ -263,7 +263,7 @@ public class DocumentController : ControllerBase
     }
 
     /// <summary>
-    /// Re-trigger document processing for a document stuck in uploaded/failed status.
+    /// Re-trigger document processing for a document stuck in uploaded/failed/processing status.
     /// </summary>
     [HttpPost("{id:guid}/reprocess")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
@@ -276,7 +276,7 @@ public class DocumentController : ControllerBase
         if (document is null)
             return NotFound();
 
-        if (document.Status is not ("uploaded" or "failed"))
+        if (document.Status is not ("uploaded" or "failed" or "processing"))
             return BadRequest($"Cannot reprocess document in status '{document.Status}'.");
 
         await _messagePublisher.PublishAsync(new ProcessDocument(id, entityId), ct);

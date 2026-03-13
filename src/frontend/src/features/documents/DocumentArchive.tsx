@@ -137,7 +137,7 @@ export function Component() {
           >
             <Download className="h-4 w-4" />
           </Button>
-          {String(item.status) === 'failed' && (
+          {(String(item.status) === 'failed' || String(item.status) === 'processing') && (
             <Button
               variant="ghost"
               size="sm"

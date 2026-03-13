@@ -315,16 +315,31 @@ export function Component() {
       {/* Processing Banner */}
       {isProcessing && (
         <Card className="mb-6 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-          <CardContent className="flex items-center gap-3 py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
-            <div>
-              <p className="font-medium text-blue-700 dark:text-blue-300">
-                {t('detail.processing')}
-              </p>
-              <p className="text-sm text-blue-600 dark:text-blue-400">
-                {t('detail.processingHint')}
-              </p>
+          <CardContent className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+              <div>
+                <p className="font-medium text-blue-700 dark:text-blue-300">
+                  {t('detail.processing')}
+                </p>
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  {t('detail.processingHint')}
+                </p>
+              </div>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReprocess}
+              disabled={reprocessDocument.isPending}
+            >
+              {reprocessDocument.isPending ? (
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-1 h-4 w-4" />
+              )}
+              {t('actions.reprocess')}
+            </Button>
           </CardContent>
         </Card>
       )}
