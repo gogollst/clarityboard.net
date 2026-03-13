@@ -483,7 +483,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
     private async Task<(string DocumentText, DocumentExtractionResult Extraction, DocumentTextAcquisitionResult? TextResult)>
         AcquireTextAndExtractAsync(
             Stream fileStream, Document document, Guid documentId, Guid entityId,
-            List<string> reviewReasons, CancellationToken ct)
+            List<ReviewReason> reviewReasons, CancellationToken ct)
     {
         // Buffer stream for potential reuse
         using var bufferedStream = new MemoryStream();
@@ -556,7 +556,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
     /// </summary>
     private async Task<AzureDocIntelligenceResult?> TryAzureAnalyzeAsync(
         Stream stream, string documentType, Guid documentId,
-        List<string> reviewReasons, CancellationToken ct)
+        List<ReviewReason> reviewReasons, CancellationToken ct)
     {
         var azureStopwatch = Stopwatch.StartNew();
         try
