@@ -243,11 +243,14 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
         }
 
         // Calculate confidence from field confidences (Confidence is float, not nullable)
+        // Filter out NaN/Infinity which would throw OverflowException on decimal cast
         var confidences = fields.Values
-            .Select(f => (decimal)f.Confidence)
+            .Select(f => f.Confidence)
+            .Where(c => float.IsFinite(c))
+            .Select(c => (decimal)c)
             .ToList();
         var fieldConfidence = confidences.Count > 0 ? confidences.Average() : 0.5m;
-        var docConfidence = (decimal)doc.Confidence;
+        var docConfidence = float.IsFinite(doc.Confidence) ? (decimal)doc.Confidence : 0.5m;
         var overallConfidence = Math.Min(docConfidence, fieldConfidence);
 
         // Build raw fields from all Azure fields for transparency
@@ -337,7 +340,9 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
 
         var allConfidences = result.Pages
             .SelectMany(p => p.Words ?? Enumerable.Empty<DocumentWord>())
-            .Select(w => (decimal)w.Confidence)
+            .Select(w => w.Confidence)
+            .Where(c => float.IsFinite(c))
+            .Select(c => (decimal)c)
             .ToList();
 
         return allConfidences.Count > 0 ? allConfidences.Average() : 0.5m;
