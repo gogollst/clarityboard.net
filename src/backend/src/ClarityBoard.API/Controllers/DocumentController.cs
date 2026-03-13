@@ -4,6 +4,7 @@ using ClarityBoard.Application.Common.Models;
 using ClarityBoard.Application.Features.Document.Commands;
 using ClarityBoard.Application.Features.Document.DTOs;
 using ClarityBoard.Application.Features.Document.Queries;
+using DeleteDocumentPreflightResult = ClarityBoard.Application.Features.Document.Commands.DeleteDocumentPreflightResult;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -281,6 +282,52 @@ public class DocumentController : ControllerBase
 
         await _messagePublisher.PublishAsync(new ProcessDocument(id, entityId), ct);
         return Accepted();
+    }
+
+    /// <summary>
+    /// Get preflight information about what deleting a document will do.
+    /// </summary>
+    [HttpGet("{id:guid}/delete-preflight")]
+    [ProducesResponseType(typeof(DeleteDocumentPreflightResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<DeleteDocumentPreflightResult>> GetDeletePreflight(
+        Guid id, [FromQuery] Guid entityId, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetDocumentDeletePreflightQuery(entityId, id), ct);
+        if (result is null)
+            return NotFound();
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Delete a document and all its artifacts. Reverses journal entries if needed.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(
+        Guid id, [FromQuery] Guid entityId, CancellationToken ct = default)
+    {
+        var userId = GetUserId();
+        if (userId is null)
+            return Unauthorized();
+
+        try
+        {
+            await _mediator.Send(new DeleteDocumentCommand
+            {
+                EntityId = entityId,
+                DocumentId = id,
+                UserId = userId.Value,
+            }, ct);
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
