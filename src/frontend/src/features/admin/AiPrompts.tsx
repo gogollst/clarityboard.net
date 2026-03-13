@@ -24,6 +24,7 @@ const PROVIDER_BADGE_CLASS: Record<AiProvider, string> = {
   ZAI:       'bg-secondary text-secondary-foreground',
   Manus:     'bg-rose-100 text-rose-800',
   DeepL:     'bg-sky-100 text-sky-800',
+  AzureDocIntelligence: 'bg-cyan-100 text-cyan-800',
 };
 
 function ProviderBadge({ provider }: { provider: AiProvider }) {

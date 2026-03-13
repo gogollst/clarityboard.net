@@ -115,7 +115,11 @@
     "bookingFailed": "Ошибка предложения проводки",
     "bookingFailedHint": "ИИ не смог создать предложение. Требуется ручная проводка.",
     "unresolvedAccounts": "Счета не определены",
-    "unresolvedAccountsHint": "Предложенные номера счетов не найдены."
+    "unresolvedAccountsHint": "Предложенные номера счетов не найдены.",
+    "azureFailed": "Azure Document Intelligence — ошибка",
+    "azureFailedHint": "Анализ Azure завершился ошибкой. Использован стандартный конвейер OCR + ИИ.",
+    "azureLowConfidence": "Azure Document Intelligence — низкая уверенность",
+    "azureLowConfidenceHint": "Azure вернул результаты с низкой уверенностью. Использован стандартный конвейер."
   },
   "archive": {
     "quickFilters": {

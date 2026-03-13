@@ -115,7 +115,11 @@
     "bookingFailed": "Booking suggestion failed",
     "bookingFailedHint": "AI could not create suggestion. Manual booking required.",
     "unresolvedAccounts": "Accounts not resolved",
-    "unresolvedAccountsHint": "Suggested account numbers could not be matched."
+    "unresolvedAccountsHint": "Suggested account numbers could not be matched.",
+    "azureFailed": "Azure Document Intelligence failed",
+    "azureFailedHint": "Azure analysis failed. Standard OCR + AI pipeline was used instead.",
+    "azureLowConfidence": "Azure Document Intelligence low confidence",
+    "azureLowConfidenceHint": "Azure returned low confidence results. Standard pipeline was used as fallback."
   },
   "archive": {
     "quickFilters": {

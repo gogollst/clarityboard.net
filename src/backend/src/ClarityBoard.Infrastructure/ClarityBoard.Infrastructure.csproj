@@ -21,6 +21,7 @@
     <PackageReference Include="StackExchange.Redis" Version="2.11.8" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.3" />
+    <PackageReference Include="Azure.AI.DocumentIntelligence" Version="1.0.0" />
     <PackageReference Include="Docnet.Core" Version="2.6.0" />
   </ItemGroup>
 

@@ -183,6 +183,8 @@ public sealed class PromptAiService : IPromptAiService
             AiProvider.Gemini    => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, GeminiUrl, GeminiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
             AiProvider.ZAI       => await CallOpenAiCompatibleAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, ZaiUrl, ZaiRelativePath), modelToUse, systemPrompt, userMessage, temperature, maxTokens, ct),
             AiProvider.Manus     => await CallManusAsync(settings.ApiKey, ResolveEndpoint(settings.BaseUrl, ManusUrl, ManusRelativePath), modelToUse, systemPrompt, userMessage, ct),
+            AiProvider.AzureDocIntelligence => throw new NotSupportedException("Azure Document Intelligence does not support chat completions. Use IAzureDocIntelligenceService instead."),
+            AiProvider.DeepL     => throw new NotSupportedException("DeepL does not support chat completions. Use ITranslationService instead."),
             _                    => throw new NotSupportedException($"Provider {provider} is not supported."),
         };
     }
@@ -496,6 +498,7 @@ public sealed class PromptAiService : IPromptAiService
         AiProvider.Gemini    => "gemini-2.5-flash",
         AiProvider.ZAI       => "glm-5",
         AiProvider.Manus     => "manus-1.6",
+        AiProvider.AzureDocIntelligence => "prebuilt-invoice",
         _                    => "unknown",
     };
 

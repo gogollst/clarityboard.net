@@ -120,6 +120,7 @@ public static class DependencyInjection
         services.AddSingleton<IDocumentPageRasterizer, PdfPageRasterizer>();
         services.AddScoped<IDocumentVisionService, DocumentVisionService>();
         services.AddScoped<IDocumentTextAcquisitionService, DocumentTextAcquisitionService>();
+        services.AddScoped<IAzureDocIntelligenceService, AzureDocIntelligenceService>();
         services.AddScoped<DocumentStatusChangeNotifier>();
         services.AddScoped<IBusinessPartnerMatchingService, BusinessPartnerMatchingService>();
         services.AddScoped<IBookingPatternLearner, BookingPatternLearnerService>();

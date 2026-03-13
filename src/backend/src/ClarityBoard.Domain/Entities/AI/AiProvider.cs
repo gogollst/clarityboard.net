@@ -12,5 +12,6 @@ public enum AiProvider
     ZAI       = 5,
     Manus     = 6,
     DeepL     = 7,
+    AzureDocIntelligence = 8,
 }
 

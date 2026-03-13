@@ -99,3 +99,12 @@ export interface ModifyBookingRequest {
   description?: string;
   hrEmployeeId?: string;
 }
+
+export interface DeleteDocumentPreflight {
+  canDelete: boolean;
+  blockReason?: string;
+  hasBookingSuggestion: boolean;
+  hasJournalEntry: boolean;
+  journalEntryWillBeReversed: boolean;
+  fieldCount: number;
+}

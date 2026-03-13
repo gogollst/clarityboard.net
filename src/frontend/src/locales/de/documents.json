@@ -115,7 +115,11 @@
     "bookingFailed": "Buchungsvorschlag fehlgeschlagen",
     "bookingFailedHint": "Die KI konnte keinen Vorschlag erstellen. Manuelle Buchung erforderlich.",
     "unresolvedAccounts": "Konten nicht aufgelöst",
-    "unresolvedAccountsHint": "Die vorgeschlagenen Kontonummern konnten nicht zugeordnet werden."
+    "unresolvedAccountsHint": "Die vorgeschlagenen Kontonummern konnten nicht zugeordnet werden.",
+    "azureFailed": "Azure Document Intelligence fehlgeschlagen",
+    "azureFailedHint": "Azure-Analyse fehlgeschlagen. Standard-OCR + KI-Pipeline wurde stattdessen verwendet.",
+    "azureLowConfidence": "Azure Document Intelligence niedrige Konfidenz",
+    "azureLowConfidenceHint": "Azure lieferte Ergebnisse mit niedriger Konfidenz. Standard-Pipeline wurde als Fallback verwendet."
   },
   "archive": {
     "quickFilters": {

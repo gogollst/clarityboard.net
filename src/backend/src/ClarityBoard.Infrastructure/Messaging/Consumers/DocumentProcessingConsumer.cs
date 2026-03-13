@@ -15,12 +15,14 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
 {
     private const decimal LowConfidenceThreshold = 0.70m;
     private const decimal AutoBookConfidenceThreshold = 0.85m;
+    private const decimal AzureMinConfidenceThreshold = 0.70m;
 
     private readonly ILogger<DocumentProcessingConsumer> _logger;
     private readonly IAppDbContext _db;
     private readonly IAiService _aiService;
     private readonly IDocumentStorage _documentStorage;
     private readonly IDocumentTextAcquisitionService _textAcquisitionService;
+    private readonly IAzureDocIntelligenceService _azureDocIntelligence;
     private readonly IBusinessPartnerMatchingService _partnerMatchingService;
     private readonly DocumentStatusChangeNotifier _documentStatusChangeNotifier;
     private readonly IAccountingRepository _accountingRepo;
@@ -31,6 +33,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         IAiService aiService,
         IDocumentStorage documentStorage,
         IDocumentTextAcquisitionService textAcquisitionService,
+        IAzureDocIntelligenceService azureDocIntelligence,
         IBusinessPartnerMatchingService partnerMatchingService,
         DocumentStatusChangeNotifier documentStatusChangeNotifier,
         IAccountingRepository accountingRepo)
@@ -40,6 +43,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         _aiService = aiService;
         _documentStorage = documentStorage;
         _textAcquisitionService = textAcquisitionService;
+        _azureDocIntelligence = azureDocIntelligence;
         _partnerMatchingService = partnerMatchingService;
         _documentStatusChangeNotifier = documentStatusChangeNotifier;
         _accountingRepo = accountingRepo;
@@ -95,42 +99,9 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             LogStageInformation(currentStage, downloadStopwatch.ElapsedMilliseconds, "downloaded",
                 "contentType {ContentType} fileSizeBytes {FileSizeBytes}", document.ContentType, document.FileSize);
 
-            // 3. Acquire text (native extraction → quality check → vision OCR fallback)
-            currentStage = "acquire_text";
-            var acquireTextStopwatch = Stopwatch.StartNew();
-            var textResult = await _textAcquisitionService.AcquireTextAsync(
-                fileStream, document.ContentType, documentId, entityId, document.FileName, ct);
-            acquireTextStopwatch.Stop();
-
-            var documentText = textResult.Text;
-            reviewReasons.AddRange(textResult.ReviewReasons);
-
-            if (string.IsNullOrWhiteSpace(documentText))
-            {
-                LogStageWarning(currentStage, acquireTextStopwatch.ElapsedMilliseconds, "empty_text",
-                    "source {Source} usedVision {UsedVision} contentType {ContentType}",
-                    textResult.Source, textResult.UsedVision, document.ContentType);
-                documentText = "[No text could be extracted from this document]";
-            }
-            else
-            {
-                LogStageInformation(currentStage, acquireTextStopwatch.ElapsedMilliseconds, "text_acquired",
-                    "source {Source} usedVision {UsedVision} confidence {Confidence} nativeLen {NativeLen} visionLen {VisionLen}",
-                    textResult.Source, textResult.UsedVision, textResult.Confidence,
-                    textResult.NativeTextLength, textResult.VisionTextLength);
-            }
-
-            // 4. Send extracted text to AI for field extraction
-            currentStage = "extract_fields";
-            var extractFieldsStopwatch = Stopwatch.StartNew();
-            var extraction = await _aiService.ExtractDocumentFieldsAsync(
-                documentText, document.ContentType, ct);
-            extractFieldsStopwatch.Stop();
-            LogConfidenceStage(currentStage, extractFieldsStopwatch.ElapsedMilliseconds, extraction.Confidence,
-                "fieldsDetected {FieldsDetected} lineItems {LineItemCount} rawFieldCount {RawFieldCount}",
-                CountDetectedFields(extraction), extraction.LineItems.Count, extraction.RawFields.Count);
-            if (extraction.Confidence < LowConfidenceThreshold)
-                reviewReasons.Add("low_extraction_confidence");
+            // 3–4. Try Azure Document Intelligence first, then fall back to standard pipeline
+            var (documentText, extraction, textResult) = await AcquireTextAndExtractAsync(
+                fileStream, document, documentId, entityId, reviewReasons, ct);
 
             // 5. Store DocumentFields from extraction result
             currentStage = "persist_extraction";
@@ -407,6 +378,121 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             pattern.Id, suggestion.Confidence, pattern.MatchCount);
 
         return true;
+    }
+
+    /// <summary>
+    /// Hybrid extraction: try Azure Document Intelligence first (OCR + structured extraction in one call).
+    /// On failure or low confidence, fall back to the standard pipeline (native/vision OCR → AI extraction).
+    /// </summary>
+    private async Task<(string DocumentText, DocumentExtractionResult Extraction, DocumentTextAcquisitionResult? TextResult)>
+        AcquireTextAndExtractAsync(
+            Stream fileStream, Document document, Guid documentId, Guid entityId,
+            List<string> reviewReasons, CancellationToken ct)
+    {
+        // ── Try Azure Document Intelligence ──────────────────────────────────
+        var azureStopwatch = Stopwatch.StartNew();
+        try
+        {
+            // Buffer the stream so we can reuse it if Azure fails
+            using var bufferedStream = new MemoryStream();
+            await fileStream.CopyToAsync(bufferedStream, ct);
+            bufferedStream.Position = 0;
+
+            var azureResult = await _azureDocIntelligence.AnalyzeDocumentAsync(
+                bufferedStream, document.ContentType, document.DocumentType,
+                documentId, ct);
+
+            azureStopwatch.Stop();
+
+            if (azureResult is not null && azureResult.Confidence >= AzureMinConfidenceThreshold)
+            {
+                _logger.LogInformation(
+                    "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — model {Model} confidence {Confidence} warnings {Warnings}",
+                    "azure_doc_intelligence", azureStopwatch.ElapsedMilliseconds, "success",
+                    azureResult.ModelUsed, azureResult.Confidence, azureResult.Warnings.Count);
+
+                if (azureResult.Extraction.Confidence < LowConfidenceThreshold)
+                    reviewReasons.Add("low_extraction_confidence");
+
+                return (azureResult.OcrText, azureResult.Extraction, null);
+            }
+
+            // Azure returned null (not configured) or low confidence — fall back
+            if (azureResult is not null)
+            {
+                _logger.LogInformation(
+                    "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — confidence {Confidence} below threshold {Threshold}, falling back to standard pipeline",
+                    "azure_doc_intelligence", azureStopwatch.ElapsedMilliseconds, "low_confidence",
+                    azureResult.Confidence, AzureMinConfidenceThreshold);
+                reviewReasons.Add("azure_doc_intelligence_low_confidence");
+            }
+            else
+            {
+                _logger.LogDebug("Azure Document Intelligence not configured, using standard pipeline");
+            }
+
+            // Rewind stream for standard pipeline
+            bufferedStream.Position = 0;
+            return await StandardPipelineAsync(bufferedStream, document, documentId, entityId, reviewReasons, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            azureStopwatch.Stop();
+            _logger.LogWarning(ex,
+                "Document processing stage {Stage} failed in {DurationMs}ms — falling back to standard pipeline",
+                "azure_doc_intelligence", azureStopwatch.ElapsedMilliseconds);
+            reviewReasons.Add("azure_doc_intelligence_failed");
+
+            // Re-download from MinIO since the stream may be consumed
+            using var freshStream = await _documentStorage.DownloadAsync(entityId, document.StoragePath, ct);
+            return await StandardPipelineAsync(freshStream, document, documentId, entityId, reviewReasons, ct);
+        }
+    }
+
+    /// <summary>
+    /// Standard pipeline: native/vision OCR text acquisition → AI field extraction.
+    /// </summary>
+    private async Task<(string DocumentText, DocumentExtractionResult Extraction, DocumentTextAcquisitionResult? TextResult)>
+        StandardPipelineAsync(
+            Stream fileStream, Document document, Guid documentId, Guid entityId,
+            List<string> reviewReasons, CancellationToken ct)
+    {
+        // Stage 3: Acquire text
+        var acquireTextStopwatch = Stopwatch.StartNew();
+        var textResult = await _textAcquisitionService.AcquireTextAsync(
+            fileStream, document.ContentType, documentId, entityId, document.FileName, ct);
+        acquireTextStopwatch.Stop();
+
+        var documentText = textResult.Text;
+        reviewReasons.AddRange(textResult.ReviewReasons);
+
+        if (string.IsNullOrWhiteSpace(documentText))
+        {
+            LogStageWarning("acquire_text", acquireTextStopwatch.ElapsedMilliseconds, "empty_text",
+                "source {Source} usedVision {UsedVision} contentType {ContentType}",
+                textResult.Source, textResult.UsedVision, document.ContentType);
+            documentText = "[No text could be extracted from this document]";
+        }
+        else
+        {
+            LogStageInformation("acquire_text", acquireTextStopwatch.ElapsedMilliseconds, "text_acquired",
+                "source {Source} usedVision {UsedVision} confidence {Confidence} nativeLen {NativeLen} visionLen {VisionLen}",
+                textResult.Source, textResult.UsedVision, textResult.Confidence,
+                textResult.NativeTextLength, textResult.VisionTextLength);
+        }
+
+        // Stage 4: AI field extraction
+        var extractFieldsStopwatch = Stopwatch.StartNew();
+        var extraction = await _aiService.ExtractDocumentFieldsAsync(
+            documentText, document.ContentType, ct);
+        extractFieldsStopwatch.Stop();
+        LogConfidenceStage("extract_fields", extractFieldsStopwatch.ElapsedMilliseconds, extraction.Confidence,
+            "fieldsDetected {FieldsDetected} lineItems {LineItemCount} rawFieldCount {RawFieldCount}",
+            CountDetectedFields(extraction), extraction.LineItems.Count, extraction.RawFields.Count);
+        if (extraction.Confidence < LowConfidenceThreshold)
+            reviewReasons.Add("low_extraction_confidence");
+
+        return (documentText, extraction, textResult);
     }
 
     private void LogStageInformation(string stage, long durationMs, string result,

@@ -91,6 +91,8 @@ const REVIEW_REASON_MAP: Record<string, { labelKey: string; hintKey: string }> =
   partner_fuzzy_match: { labelKey: 'reviewReasons.fuzzyPartner', hintKey: 'reviewReasons.fuzzyPartnerHint' },
   booking_suggestion_failed: { labelKey: 'reviewReasons.bookingFailed', hintKey: 'reviewReasons.bookingFailedHint' },
   booking_suggestion_unresolved_accounts: { labelKey: 'reviewReasons.unresolvedAccounts', hintKey: 'reviewReasons.unresolvedAccountsHint' },
+  azure_doc_intelligence_failed: { labelKey: 'reviewReasons.azureFailed', hintKey: 'reviewReasons.azureFailedHint' },
+  azure_doc_intelligence_low_confidence: { labelKey: 'reviewReasons.azureLowConfidence', hintKey: 'reviewReasons.azureLowConfidenceHint' },
 };
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {

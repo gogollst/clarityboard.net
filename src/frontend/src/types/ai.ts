@@ -1,6 +1,6 @@
-export type AiProvider = 'Anthropic' | 'OpenAI' | 'Grok' | 'Gemini' | 'ZAI' | 'Manus' | 'DeepL';
+export type AiProvider = 'Anthropic' | 'OpenAI' | 'Grok' | 'Gemini' | 'ZAI' | 'Manus' | 'DeepL' | 'AzureDocIntelligence';
 
-export const AI_PROVIDERS: AiProvider[] = ['Anthropic', 'OpenAI', 'Grok', 'Gemini', 'ZAI', 'Manus', 'DeepL'];
+export const AI_PROVIDERS: AiProvider[] = ['Anthropic', 'OpenAI', 'Grok', 'Gemini', 'ZAI', 'Manus', 'DeepL', 'AzureDocIntelligence'];
 
 // ── Provider Models (fetched from DB) ─────────────────────────────────────────
 

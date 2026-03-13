@@ -32,19 +32,22 @@ public class UpsertAiProviderCommandHandler
     private readonly ICurrentUser _currentUser;
     private readonly IPromptAiService _aiService;
     private readonly ITranslationService _translationService;
+    private readonly IAzureDocIntelligenceService _azureDocIntelligence;
 
     public UpsertAiProviderCommandHandler(
         IAppDbContext db,
         IEncryptionService encryption,
         ICurrentUser currentUser,
         IPromptAiService aiService,
-        ITranslationService translationService)
+        ITranslationService translationService,
+        IAzureDocIntelligenceService azureDocIntelligence)
     {
         _db         = db;
         _encryption = encryption;
         _currentUser = currentUser;
         _aiService  = aiService;
         _translationService = translationService;
+        _azureDocIntelligence = azureDocIntelligence;
     }
 
     public async Task<AiProviderConfigDto> Handle(
@@ -80,6 +83,11 @@ public class UpsertAiProviderCommandHandler
             // DeepL health check: translate a test word
             var result = await _translationService.TranslateAsync("Test", "en", ["de"], cancellationToken);
             isHealthy = result.Count > 0;
+        }
+        else if (request.Provider == AiProvider.AzureDocIntelligence)
+        {
+            // Azure Document Intelligence health check: analyse a minimal blank PDF
+            isHealthy = await _azureDocIntelligence.TestConnectivityAsync(cancellationToken);
         }
         else
         {
