@@ -217,7 +217,7 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
             warnings.Add("azure_no_fields_detected");
             return new DocumentExtractionResult
             {
-                Confidence = doc.Confidence.HasValue ? (decimal)doc.Confidence.Value : 0.5m,
+                Confidence = float.IsFinite(doc.Confidence) ? (decimal)doc.Confidence : 0.5m,
             };
         }
 
@@ -250,8 +250,7 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
             .Select(c => (decimal)c!.Value)
             .ToList();
         var fieldConfidence = confidences.Count > 0 ? confidences.Average() : 0.5m;
-        var rawDocConf = doc.Confidence;
-        var docConfidence = rawDocConf.HasValue && float.IsFinite(rawDocConf.Value) ? (decimal)rawDocConf.Value : 0.5m;
+        var docConfidence = float.IsFinite(doc.Confidence) ? (decimal)doc.Confidence : 0.5m;
         var overallConfidence = Math.Min(docConfidence, fieldConfidence);
 
         // Build raw fields from all Azure fields for transparency
