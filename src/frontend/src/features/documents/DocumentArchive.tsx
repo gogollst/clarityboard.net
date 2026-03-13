@@ -139,6 +139,22 @@ export function Component() {
       },
     },
     {
+      key: 'netAmount',
+      header: t('columns.netAmount'),
+      render: (item: Record<string, unknown>) => {
+        const amount = item.netAmount as number | undefined;
+        return amount != null ? formatCurrency(amount) : '-';
+      },
+    },
+    {
+      key: 'taxAmount',
+      header: t('columns.taxAmount'),
+      render: (item: Record<string, unknown>) => {
+        const amount = item.taxAmount as number | undefined;
+        return amount != null ? formatCurrency(amount) : '-';
+      },
+    },
+    {
       key: 'status',
       header: t('columns.status'),
       render: (item: Record<string, unknown>) => (

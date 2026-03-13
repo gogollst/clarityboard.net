@@ -586,6 +586,8 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.VendorName).HasMaxLength(200);
             entity.Property(e => e.InvoiceNumber).HasMaxLength(100);
             entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+            entity.Property(e => e.NetAmount).HasPrecision(18, 2);
+            entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
             entity.Property(e => e.Currency).HasMaxLength(3);
             entity.Property(e => e.Confidence).HasPrecision(5, 4);
             entity.HasMany(e => e.Fields).WithOne().HasForeignKey(f => f.DocumentId);

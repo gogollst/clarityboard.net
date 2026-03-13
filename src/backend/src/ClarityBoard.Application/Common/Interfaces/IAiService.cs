@@ -41,6 +41,9 @@ public record DocumentExtractionResult
     public string? InvoiceNumber { get; init; }
     public DateOnly? InvoiceDate { get; init; }
     public decimal? TotalAmount { get; init; }
+    public decimal? GrossAmount { get; init; }
+    public decimal? NetAmount { get; init; }
+    public decimal? TaxAmount { get; init; }
     public string? Currency { get; init; }
     public decimal? TaxRate { get; init; }
     public IReadOnlyList<LineItemResult> LineItems { get; init; } = [];

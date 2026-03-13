@@ -66,7 +66,7 @@ Rules:
 - All monetary amounts in original currency; identify EUR, USD, GBP
 - Dates in ISO format YYYY-MM-DD
 - German Umsatzsteuer rates: 19% (standard), 7% (reduced), 0% (exempt)
-- Distinguish Nettobetrag, Steuerbetrag and Bruttobetrag
+- Distinguish and always extract separately: gross_amount (Bruttobetrag), net_amount (Nettobetrag), tax_amount (Steuerbetrag/USt-Betrag). Also set total_amount = gross_amount.
 - Extract all line items with description, quantity, unit price and total
 - Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic
 - Extract recipient/customer details: recipient_name, recipient_tax_id (USt-IdNr or Steuernummer), recipient_vat_id, recipient_street, recipient_city, recipient_postal_code, recipient_country (ISO 3166-1 alpha-2)
@@ -95,7 +95,7 @@ Rules:
 - All monetary amounts in original currency; identify EUR, USD, GBP
 - Dates in ISO format YYYY-MM-DD
 - German Umsatzsteuer rates: 19% (standard), 7% (reduced), 0% (exempt)
-- Distinguish Nettobetrag, Steuerbetrag and Bruttobetrag
+- Distinguish and always extract separately: gross_amount (Bruttobetrag), net_amount (Nettobetrag), tax_amount (Steuerbetrag/USt-Betrag). Also set total_amount = gross_amount.
 - Extract all line items with description, quantity, unit price and total
 - Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic
 - Extract recipient/customer details: recipient_name, recipient_tax_id (USt-IdNr or Steuernummer), recipient_vat_id, recipient_street, recipient_city, recipient_postal_code, recipient_country (ISO 3166-1 alpha-2)

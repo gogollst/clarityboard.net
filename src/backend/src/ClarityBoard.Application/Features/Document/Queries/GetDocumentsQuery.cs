@@ -63,6 +63,8 @@ public class GetDocumentsQueryHandler : IRequestHandler<GetDocumentsQuery, Paged
                 InvoiceNumber = d.InvoiceNumber,
                 InvoiceDate = d.InvoiceDate,
                 TotalAmount = d.TotalAmount,
+                NetAmount = d.NetAmount,
+                TaxAmount = d.TaxAmount,
                 Currency = d.Currency,
                 Confidence = d.Confidence,
                 CreatedAt = d.CreatedAt,

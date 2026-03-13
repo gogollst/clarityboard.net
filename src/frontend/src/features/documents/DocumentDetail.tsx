@@ -513,6 +513,18 @@ export function Component() {
                     : '—'
                 }
               />
+              {doc.netAmount != null && (
+                <DetailRow
+                  label={t('detail.fields.netAmount')}
+                  value={formatCurrency(doc.netAmount, doc.currency ?? 'EUR')}
+                />
+              )}
+              {doc.taxAmount != null && (
+                <DetailRow
+                  label={t('detail.fields.taxAmount')}
+                  value={formatCurrency(doc.taxAmount, doc.currency ?? 'EUR')}
+                />
+              )}
             </dl>
           </CardContent>
         </Card>

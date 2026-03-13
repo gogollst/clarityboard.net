@@ -11,6 +11,8 @@ export interface DocumentListItem {
   invoiceNumber?: string;
   invoiceDate?: string;
   totalAmount?: number;
+  netAmount?: number;
+  taxAmount?: number;
   currency?: string;
   confidence?: number;
   createdAt: string;

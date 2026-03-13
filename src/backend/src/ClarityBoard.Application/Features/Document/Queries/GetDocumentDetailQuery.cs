@@ -126,6 +126,8 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
             InvoiceNumber = document.InvoiceNumber,
             InvoiceDate = document.InvoiceDate,
             TotalAmount = document.TotalAmount,
+            NetAmount = document.NetAmount,
+            TaxAmount = document.TaxAmount,
             Currency = document.Currency,
             Confidence = document.Confidence,
             BookedJournalEntryId = document.BookedJournalEntryId,

@@ -21,6 +21,8 @@ public class Document
     public string? InvoiceNumber { get; private set; }
     public DateOnly? InvoiceDate { get; private set; }
     public decimal? TotalAmount { get; private set; }
+    public decimal? NetAmount { get; private set; }
+    public decimal? TaxAmount { get; private set; }
     public string? Currency { get; private set; }
     public Guid? BusinessPartnerId { get; private set; }
     public Guid? SuggestedBusinessPartnerId { get; private set; }
@@ -52,7 +54,8 @@ public class Document
 
     public void SetExtraction(string ocrText, string extractedData, decimal confidence,
         string? vendorName = null, string? invoiceNumber = null, DateOnly? invoiceDate = null,
-        decimal? totalAmount = null, string? currency = null)
+        decimal? totalAmount = null, string? currency = null,
+        decimal? netAmount = null, decimal? taxAmount = null)
     {
         OcrText = ocrText;
         ExtractedData = extractedData;
@@ -61,6 +64,8 @@ public class Document
         InvoiceNumber = invoiceNumber;
         InvoiceDate = invoiceDate;
         TotalAmount = totalAmount;
+        NetAmount = netAmount;
+        TaxAmount = taxAmount;
         Currency = currency;
         Status = "extracted";
         ProcessedAt = DateTime.UtcNow;

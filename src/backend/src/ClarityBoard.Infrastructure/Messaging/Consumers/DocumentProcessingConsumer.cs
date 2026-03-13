@@ -112,6 +112,37 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
 
             // 6. Update Document entity with extracted metadata
             var extractedJson = DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons, textResult);
+            // Resolve gross/net/tax amounts with plausibility checks
+            var grossAmount = extraction.GrossAmount ?? extraction.TotalAmount;
+            var netAmount = extraction.NetAmount;
+            var taxAmount = extraction.TaxAmount;
+
+            // If we have net + tax but no gross, calculate gross
+            if (grossAmount is null && netAmount.HasValue && taxAmount.HasValue)
+                grossAmount = netAmount.Value + taxAmount.Value;
+
+            // If we have gross + tax but no net, calculate net
+            if (netAmount is null && grossAmount.HasValue && taxAmount.HasValue)
+                netAmount = grossAmount.Value - taxAmount.Value;
+
+            // If we have gross + net but no tax, calculate tax
+            if (taxAmount is null && grossAmount.HasValue && netAmount.HasValue)
+                taxAmount = grossAmount.Value - netAmount.Value;
+
+            // Plausibility: gross should equal net + tax (within ±0.02 rounding tolerance)
+            if (grossAmount.HasValue && netAmount.HasValue && taxAmount.HasValue)
+            {
+                var expected = netAmount.Value + taxAmount.Value;
+                if (Math.Abs(grossAmount.Value - expected) > 0.02m)
+                {
+                    reviewReasons.Add(new ReviewReason
+                    {
+                        Key = "amount_plausibility_mismatch",
+                        Detail = $"Brutto {grossAmount:F2} ≠ Netto {netAmount:F2} + USt {taxAmount:F2} (= {expected:F2})"
+                    });
+                }
+            }
+
             document.SetExtraction(
                 ocrText: documentText,
                 extractedData: extractedJson,
@@ -119,8 +150,10 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                 vendorName: extraction.VendorName,
                 invoiceNumber: extraction.InvoiceNumber,
                 invoiceDate: extraction.InvoiceDate,
-                totalAmount: extraction.TotalAmount,
-                currency: extraction.Currency);
+                totalAmount: grossAmount ?? extraction.TotalAmount,
+                currency: extraction.Currency,
+                netAmount: netAmount,
+                taxAmount: taxAmount);
             persistExtractionStopwatch.Stop();
             LogStageInformation(currentStage, persistExtractionStopwatch.ElapsedMilliseconds, document.Status,
                 "storedFieldCount {StoredFieldCount}", storedFieldCount);
@@ -682,6 +715,9 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         if (!string.IsNullOrWhiteSpace(extraction.InvoiceNumber)) count++;
         if (extraction.InvoiceDate.HasValue) count++;
         if (extraction.TotalAmount.HasValue) count++;
+        if (extraction.GrossAmount.HasValue) count++;
+        if (extraction.NetAmount.HasValue) count++;
+        if (extraction.TaxAmount.HasValue) count++;
         if (!string.IsNullOrWhiteSpace(extraction.Currency)) count++;
         if (extraction.TaxRate.HasValue) count++;
 
@@ -719,6 +755,12 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             fields.Add(DocumentField.Create(document.Id, "invoice_date", extraction.InvoiceDate.Value.ToString("O"), extraction.Confidence));
         if (extraction.TotalAmount.HasValue)
             fields.Add(DocumentField.Create(document.Id, "total_amount", extraction.TotalAmount.Value.ToString("F2"), extraction.Confidence));
+        if (extraction.GrossAmount.HasValue)
+            fields.Add(DocumentField.Create(document.Id, "gross_amount", extraction.GrossAmount.Value.ToString("F2"), extraction.Confidence));
+        if (extraction.NetAmount.HasValue)
+            fields.Add(DocumentField.Create(document.Id, "net_amount", extraction.NetAmount.Value.ToString("F2"), extraction.Confidence));
+        if (extraction.TaxAmount.HasValue)
+            fields.Add(DocumentField.Create(document.Id, "tax_amount", extraction.TaxAmount.Value.ToString("F2"), extraction.Confidence));
 
         Add("currency", extraction.Currency);
 

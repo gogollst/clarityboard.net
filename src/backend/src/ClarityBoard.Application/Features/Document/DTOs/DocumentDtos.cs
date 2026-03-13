@@ -12,6 +12,8 @@ public record DocumentListDto
     public string? InvoiceNumber { get; init; }
     public DateOnly? InvoiceDate { get; init; }
     public decimal? TotalAmount { get; init; }
+    public decimal? NetAmount { get; init; }
+    public decimal? TaxAmount { get; init; }
     public string? Currency { get; init; }
     public decimal? Confidence { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -31,6 +33,8 @@ public record DocumentDetailDto
     public string? InvoiceNumber { get; init; }
     public DateOnly? InvoiceDate { get; init; }
     public decimal? TotalAmount { get; init; }
+    public decimal? NetAmount { get; init; }
+    public decimal? TaxAmount { get; init; }
     public string? Currency { get; init; }
     public decimal? Confidence { get; init; }
     public Guid? BookedJournalEntryId { get; init; }
