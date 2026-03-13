@@ -1,0 +1,48 @@
+Analysiere den folgenden OCR-extrahierten Beleg und erstelle einen Buchungsvorschlag gemäß den definierten Regeln.
+
+<beleg>
+<metadaten>
+Rechnungsnummer: {{INVOICE_NUMBER}}
+Rechnungsdatum: {{INVOICE_DATE}}
+Fälligkeitsdatum: {{DUE_DATE}}
+Währung: {{CURRENCY}}
+</metadaten>
+
+<absender>
+Name: {{CREDITOR_NAME}}
+Adresse: {{CREDITOR_ADDRESS}}
+USt-IdNr.: {{CREDITOR_VAT_ID}}
+Steuernummer: {{CREDITOR_TAX_NUMBER}}
+Land: {{CREDITOR_COUNTRY}}
+</absender>
+
+<empfaenger>
+Name: {{DEBTOR_NAME}}
+Adresse: {{DEBTOR_ADDRESS}}
+USt-IdNr.: {{DEBTOR_VAT_ID}}
+</empfaenger>
+
+<positionen>
+{{LINE_ITEMS}}
+</positionen>
+
+<betraege>
+Netto: {{TOTAL_NET}} {{CURRENCY}}
+USt ({{VAT_RATE}}%): {{TOTAL_VAT}} {{CURRENCY}}
+Brutto: {{TOTAL_GROSS}} {{CURRENCY}}
+</betraege>
+
+<zahlungsinformationen>
+Zahlungsbedingungen: {{PAYMENT_TERMS}}
+IBAN: {{IBAN}}
+BIC: {{BIC}}
+</zahlungsinformationen>
+
+<ocr_rohtext>
+{{RAW_OCR_TEXT}}
+</ocr_rohtext>
+</beleg>
+
+<zusatzkontext>
+{{ADDITIONAL_CONTEXT}}
+</zusatzkontext>
