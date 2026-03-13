@@ -68,6 +68,7 @@ export interface BookingSuggestion {
   creditAccountNumber?: string;
   creditAccountName?: string;
   amount: number;
+  netAmount?: number;
   vatCode?: string;
   vatAmount?: number;
   description: string;

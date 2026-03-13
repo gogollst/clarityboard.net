@@ -84,6 +84,7 @@ public record BookingSuggestionDto
     public string? CreditAccountNumber { get; init; }
     public string? CreditAccountName { get; init; }
     public decimal Amount { get; init; }
+    public decimal? NetAmount { get; init; }
     public string? VatCode { get; init; }
     public decimal? VatAmount { get; init; }
     public string? Description { get; init; }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using ClarityBoard.Application.Common.Helpers;
 using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Common.Messaging;
 using ClarityBoard.Domain.Entities.Accounting;
@@ -113,34 +114,21 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             // 6. Update Document entity with extracted metadata
             var extractedJson = DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons, textResult);
             // Resolve gross/net/tax amounts with plausibility checks
-            var grossAmount = extraction.GrossAmount ?? extraction.TotalAmount;
-            var netAmount = extraction.NetAmount;
-            var taxAmount = extraction.TaxAmount;
+            var reconciled = AmountReconciler.Reconcile(
+                extraction.GrossAmount ?? extraction.TotalAmount,
+                extraction.NetAmount,
+                extraction.TaxAmount);
+            var grossAmount = reconciled.GrossAmount;
+            var netAmount = reconciled.NetAmount;
+            var taxAmount = reconciled.TaxAmount;
 
-            // If we have net + tax but no gross, calculate gross
-            if (grossAmount is null && netAmount.HasValue && taxAmount.HasValue)
-                grossAmount = netAmount.Value + taxAmount.Value;
-
-            // If we have gross + tax but no net, calculate net
-            if (netAmount is null && grossAmount.HasValue && taxAmount.HasValue)
-                netAmount = grossAmount.Value - taxAmount.Value;
-
-            // If we have gross + net but no tax, calculate tax
-            if (taxAmount is null && grossAmount.HasValue && netAmount.HasValue)
-                taxAmount = grossAmount.Value - netAmount.Value;
-
-            // Plausibility: gross should equal net + tax (within ±0.02 rounding tolerance)
-            if (grossAmount.HasValue && netAmount.HasValue && taxAmount.HasValue)
+            if (reconciled.PlausibilityMismatch)
             {
-                var expected = netAmount.Value + taxAmount.Value;
-                if (Math.Abs(grossAmount.Value - expected) > 0.02m)
+                reviewReasons.Add(new ReviewReason
                 {
-                    reviewReasons.Add(new ReviewReason
-                    {
-                        Key = "amount_plausibility_mismatch",
-                        Detail = $"Brutto {grossAmount:F2} ≠ Netto {netAmount:F2} + USt {taxAmount:F2} (= {expected:F2})"
-                    });
-                }
+                    Key = "amount_plausibility_mismatch",
+                    Detail = reconciled.MismatchDetail
+                });
             }
 
             document.SetExtraction(
@@ -467,7 +455,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             accountId: debitAccount.Id,
             amount: suggestion.Amount,
             vatCode: suggestion.VatCode,
-            vatAmount: 0,
+            vatAmount: suggestion.VatAmount ?? 0,
             description: suggestion.Description,
             hrEmployeeId: pattern.HrEmployeeId);
         journalEntry.AddLine(debitLine);
@@ -477,7 +465,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             accountId: creditAccount.Id,
             amount: suggestion.Amount,
             vatCode: suggestion.VatCode,
-            vatAmount: 0,
+            vatAmount: suggestion.VatAmount ?? 0,
             description: suggestion.Description,
             hrEmployeeId: pattern.HrEmployeeId);
         journalEntry.AddLine(creditLine);

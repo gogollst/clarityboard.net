@@ -70,6 +70,7 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
                 CreditAccountNumber = creditAccount?.AccountNumber,
                 CreditAccountName = creditAccount?.Name,
                 Amount = bookingSuggestion.Amount,
+                NetAmount = bookingSuggestion.Amount - (bookingSuggestion.VatAmount ?? 0),
                 VatCode = bookingSuggestion.VatCode,
                 VatAmount = bookingSuggestion.VatAmount,
                 Description = bookingSuggestion.Description,

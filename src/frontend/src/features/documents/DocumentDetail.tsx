@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
@@ -77,7 +77,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import type { ModifyBookingRequest, DocumentField } from '@/types/document';
-import { VAT_CODES } from '@/lib/vatCodes';
+import { VAT_CODES, VAT_RATES } from '@/lib/vatCodes';
 
 const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'info'> = {
   uploaded: 'info',
@@ -179,6 +179,47 @@ export function Component() {
   // Modify form
   const modifyForm = useForm<ModifyBookingRequest>();
 
+  // Amount breakdown state for modify sheet (UI-only, not submitted directly)
+  const [modifyGross, setModifyGross] = useState(0);
+  const [modifyNet, setModifyNet] = useState(0);
+  const [modifyTax, setModifyTax] = useState(0);
+
+  const amountMismatch = Math.abs(modifyGross - (modifyNet + modifyTax)) > 0.02;
+
+  const handleGrossChange = useCallback((value: number) => {
+    setModifyGross(value);
+    setModifyNet(+(value - modifyTax).toFixed(2));
+    modifyForm.setValue('amount', value);
+  }, [modifyTax, modifyForm]);
+
+  const handleNetChange = useCallback((value: number) => {
+    setModifyNet(value);
+    const newGross = +(value + modifyTax).toFixed(2);
+    setModifyGross(newGross);
+    modifyForm.setValue('amount', newGross);
+  }, [modifyTax, modifyForm]);
+
+  const handleTaxChange = useCallback((value: number) => {
+    setModifyTax(value);
+    const newGross = +(modifyNet + value).toFixed(2);
+    setModifyGross(newGross);
+    modifyForm.setValue('amount', newGross);
+    modifyForm.setValue('vatAmount', value);
+  }, [modifyNet, modifyForm]);
+
+  const handleVatCodeChangeInModify = useCallback((code: string | undefined) => {
+    modifyForm.setValue('vatCode', code);
+    if (code && VAT_RATES[code] !== undefined) {
+      const rate = VAT_RATES[code];
+      const newTax = +(modifyNet * rate).toFixed(2);
+      setModifyTax(newTax);
+      const newGross = +(modifyNet + newTax).toFixed(2);
+      setModifyGross(newGross);
+      modifyForm.setValue('amount', newGross);
+      modifyForm.setValue('vatAmount', newTax);
+    }
+  }, [modifyNet, modifyForm]);
+
   function formatDate(iso: string | undefined): string {
     if (!iso) return '—';
     return new Date(iso).toLocaleDateString(i18n.language);
@@ -263,15 +304,21 @@ export function Component() {
   const handleOpenModify = () => {
     if (!doc.bookingSuggestion) return;
     const bs = doc.bookingSuggestion;
+    const gross = bs.amount;
+    const tax = bs.vatAmount ?? 0;
+    const net = bs.netAmount ?? gross - tax;
     modifyForm.reset({
       debitAccountId: bs.debitAccountId,
       creditAccountId: bs.creditAccountId,
-      amount: bs.amount,
+      amount: gross,
       vatCode: bs.vatCode ?? undefined,
-      vatAmount: bs.vatAmount ?? undefined,
+      vatAmount: tax || undefined,
       description: bs.description ?? undefined,
       hrEmployeeId: bs.hrEmployeeId ?? undefined,
     });
+    setModifyGross(gross);
+    setModifyNet(net);
+    setModifyTax(tax);
     setShowModifySheet(true);
   };
 
@@ -513,18 +560,22 @@ export function Component() {
                     : '—'
                 }
               />
-              {doc.netAmount != null && (
-                <DetailRow
-                  label={t('detail.fields.netAmount')}
-                  value={formatCurrency(doc.netAmount, doc.currency ?? 'EUR')}
-                />
-              )}
-              {doc.taxAmount != null && (
-                <DetailRow
-                  label={t('detail.fields.taxAmount')}
-                  value={formatCurrency(doc.taxAmount, doc.currency ?? 'EUR')}
-                />
-              )}
+              <DetailRow
+                label={t('detail.fields.netAmount')}
+                value={
+                  doc.netAmount != null
+                    ? formatCurrency(doc.netAmount, doc.currency ?? 'EUR')
+                    : '—'
+                }
+              />
+              <DetailRow
+                label={t('detail.fields.taxAmount')}
+                value={
+                  doc.taxAmount != null
+                    ? formatCurrency(doc.taxAmount, doc.currency ?? 'EUR')
+                    : '—'
+                }
+              />
             </dl>
           </CardContent>
         </Card>
@@ -816,8 +867,16 @@ export function Component() {
                   }
                 />
                 <DetailRow
-                  label={t('detail.bookingSuggestion.amount')}
+                  label={t('detail.bookingSuggestion.grossAmount')}
                   value={formatCurrency(bs.amount)}
+                />
+                <DetailRow
+                  label={t('detail.bookingSuggestion.netAmount')}
+                  value={formatCurrency(bs.netAmount ?? bs.amount - (bs.vatAmount ?? 0))}
+                />
+                <DetailRow
+                  label={t('detail.bookingSuggestion.taxAmount')}
+                  value={formatCurrency(bs.vatAmount ?? 0)}
                 />
                 <div>
                   <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -1037,20 +1096,50 @@ export function Component() {
             </div>
 
             <div>
-              <Label>{t('detail.bookingSuggestion.amount')}</Label>
+              <Label>{t('detail.bookingSuggestion.grossAmount')}</Label>
               <Input
                 type="number"
                 step="0.01"
                 className="mt-1"
-                {...modifyForm.register('amount', { valueAsNumber: true })}
+                value={modifyGross}
+                onChange={(e) => handleGrossChange(+e.target.value)}
               />
             </div>
+
+            <div>
+              <Label>{t('detail.bookingSuggestion.netAmount')}</Label>
+              <Input
+                type="number"
+                step="0.01"
+                className="mt-1"
+                value={modifyNet}
+                onChange={(e) => handleNetChange(+e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label>{t('detail.bookingSuggestion.taxAmount')}</Label>
+              <Input
+                type="number"
+                step="0.01"
+                className="mt-1"
+                value={modifyTax}
+                onChange={(e) => handleTaxChange(+e.target.value)}
+              />
+            </div>
+
+            {amountMismatch && (
+              <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                {t('detail.bookingSuggestion.amountMismatchWarning')}
+              </div>
+            )}
 
             <div>
               <Label>{t('detail.bookingSuggestion.vatCode')}</Label>
               <Select
                 value={modifyForm.watch('vatCode') ?? ''}
-                onValueChange={(v) => modifyForm.setValue('vatCode', v === 'none' ? undefined : v)}
+                onValueChange={(v) => handleVatCodeChangeInModify(v === 'none' ? undefined : v)}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="—" />

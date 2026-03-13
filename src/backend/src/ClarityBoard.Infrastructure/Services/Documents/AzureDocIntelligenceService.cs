@@ -287,6 +287,9 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
             InvoiceNumber = GetStringValue(fields, "InvoiceId"),
             InvoiceDate = GetDateValue(fields, "InvoiceDate"),
             TotalAmount = totalAmount,
+            GrossAmount = totalAmount,      // InvoiceTotal = Brutto
+            NetAmount = subTotal,            // SubTotal = Netto
+            TaxAmount = totalTax,            // TotalTax = USt
             Currency = currency,
             TaxRate = taxRate,
             LineItems = lineItems,

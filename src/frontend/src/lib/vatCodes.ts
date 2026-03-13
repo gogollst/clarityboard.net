@@ -13,3 +13,13 @@ export const VAT_CODES = [
 ] as const;
 
 export type VatCode = (typeof VAT_CODES)[number]['value'];
+
+/** Tax rates by VAT code for auto-calculation in booking forms */
+export const VAT_RATES: Record<string, number> = {
+  VSt19: 0.19,
+  USt19: 0.19,
+  VSt7: 0.07,
+  USt7: 0.07,
+  steuerfrei: 0,
+  '§13b': 0,
+};
