@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
+import RouteErrorBoundary from '@/components/shared/RouteErrorBoundary';
 
 // Layouts
 const DashboardLayout = lazy(() => import('./layouts/DashboardLayout'));
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
         <DashboardLayout />
       </SuspenseWrapper>
     ),
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <DashboardPage /> },
 

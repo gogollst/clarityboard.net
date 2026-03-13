@@ -73,6 +73,14 @@
     "notFound": "Не найдено.",
     "unauthorized": "Нет доступа."
   },
+  "error": {
+    "unexpectedTitle": "Что-то пошло не так",
+    "unexpectedDescription": "Произошла непредвиденная ошибка. Пожалуйста, попробуйте ещё раз.",
+    "notFoundTitle": "Страница не найдена",
+    "notFoundDescription": "Запрашиваемая страница не существует.",
+    "goBack": "Назад",
+    "goHome": "На главную"
+  },
   "connection": {
     "connected": "Подключено",
     "reconnecting": "Подключение...",

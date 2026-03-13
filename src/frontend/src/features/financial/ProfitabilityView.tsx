@@ -171,6 +171,23 @@ export function Component() {
   }, [pnl, revLabel, cogsLabel, opexLabel]);
 
   // -----------------------------------------------------------------------
+  // P&L helper rows (must be above early returns to preserve hook order)
+  // -----------------------------------------------------------------------
+
+  const pnlRows = useMemo(() => {
+    if (!pnl) return [];
+    const rows: { label: string; value: number; bold?: boolean }[] = [];
+    for (const section of pnl.sections) {
+      for (const item of section.items) {
+        rows.push({ label: item.label, value: item.amount });
+      }
+      rows.push({ label: section.name, value: section.subtotal, bold: true });
+    }
+    rows.push({ label: t('financial.pnl.netIncome'), value: pnl.netIncome, bold: true });
+    return rows;
+  }, [pnl, t]);
+
+  // -----------------------------------------------------------------------
   // Loading state
   // -----------------------------------------------------------------------
 
@@ -203,23 +220,6 @@ export function Component() {
       />
     );
   }
-
-  // -----------------------------------------------------------------------
-  // P&L helper rows
-  // -----------------------------------------------------------------------
-
-  const pnlRows = useMemo(() => {
-    if (!pnl) return [];
-    const rows: { label: string; value: number; bold?: boolean }[] = [];
-    for (const section of pnl.sections) {
-      for (const item of section.items) {
-        rows.push({ label: item.label, value: item.amount });
-      }
-      rows.push({ label: section.name, value: section.subtotal, bold: true });
-    }
-    rows.push({ label: t('financial.pnl.netIncome'), value: pnl.netIncome, bold: true });
-    return rows;
-  }, [pnl, t]);
 
   // -----------------------------------------------------------------------
   // Render

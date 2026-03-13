@@ -73,6 +73,14 @@
     "notFound": "Not found.",
     "unauthorized": "Unauthorized."
   },
+  "error": {
+    "unexpectedTitle": "Something went wrong",
+    "unexpectedDescription": "An unexpected error occurred. Please try again.",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "The page you are looking for does not exist.",
+    "goBack": "Go back",
+    "goHome": "Go to dashboard"
+  },
   "connection": {
     "connected": "Connected",
     "reconnecting": "Reconnecting...",

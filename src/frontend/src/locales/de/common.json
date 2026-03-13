@@ -73,6 +73,14 @@
     "notFound": "Nicht gefunden.",
     "unauthorized": "Nicht autorisiert."
   },
+  "error": {
+    "unexpectedTitle": "Etwas ist schiefgelaufen",
+    "unexpectedDescription": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "notFoundTitle": "Seite nicht gefunden",
+    "notFoundDescription": "Die angeforderte Seite existiert nicht.",
+    "goBack": "Zurück",
+    "goHome": "Zum Dashboard"
+  },
   "connection": {
     "connected": "Verbunden",
     "reconnecting": "Verbinde...",
