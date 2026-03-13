@@ -219,12 +219,13 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
         // Extract line items
         var lineItems = new List<LineItemResult>();
         if (fields.TryGetValue("Items", out var itemsField)
-            && itemsField.FieldType == DocumentFieldType.List)
+            && itemsField.FieldType == DocumentFieldType.List
+            && itemsField.ValueList is { } itemList)
         {
-            foreach (var item in itemsField.Value.AsList())
+            foreach (var item in itemList)
             {
-                if (item.FieldType != DocumentFieldType.Dictionary) continue;
-                var itemFields = item.Value.AsDictionary();
+                if (item.FieldType != DocumentFieldType.Dictionary || item.ValueDictionary is not { } itemFields)
+                    continue;
 
                 lineItems.Add(new LineItemResult
                 {
@@ -236,29 +237,29 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
             }
         }
 
-        // Calculate confidence from field confidences
+        // Calculate confidence from field confidences (Confidence is float, not nullable)
         var confidences = fields.Values
-            .Where(f => f.Confidence.HasValue)
-            .Select(f => (decimal)f.Confidence!.Value)
+            .Select(f => (decimal)f.Confidence)
             .ToList();
         var fieldConfidence = confidences.Count > 0 ? confidences.Average() : 0.5m;
-        var docConfidence = doc.Confidence.HasValue ? (decimal)doc.Confidence.Value : fieldConfidence;
+        var docConfidence = (decimal)doc.Confidence;
         var overallConfidence = Math.Min(docConfidence, fieldConfidence);
 
         // Build raw fields from all Azure fields for transparency
         var rawFields = new Dictionary<string, string>();
-        foreach (var (key, field) in fields)
+        foreach (var kvp in fields)
         {
-            if (field.Content is not null)
-                rawFields[$"azure_{key}"] = field.Content;
+            if (kvp.Value.Content is not null)
+                rawFields[$"azure_{kvp.Key}"] = kvp.Value.Content;
         }
 
         // Extract vendor address components
         AddressValue? vendorAddress = null;
         if (fields.TryGetValue("VendorAddress", out var vendorAddrField)
-            && vendorAddrField.FieldType == DocumentFieldType.Address)
+            && vendorAddrField.FieldType == DocumentFieldType.Address
+            && vendorAddrField.ValueAddress is { } addr)
         {
-            vendorAddress = vendorAddrField.Value.AsAddress();
+            vendorAddress = addr;
         }
 
         // Calculate tax rate from TotalTax / SubTotal
@@ -295,16 +296,16 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
     {
         if (!fields.TryGetValue(key, out var field)) return null;
         if (field.FieldType == DocumentFieldType.String)
-            return field.Value.AsString();
+            return field.ValueString;
         return field.Content;
     }
 
     private static decimal? GetCurrencyAmount(IReadOnlyDictionary<string, DocumentField> fields, string key)
     {
         if (!fields.TryGetValue(key, out var field)) return null;
-        if (field.FieldType == DocumentFieldType.Currency)
-            return (decimal)field.Value.AsCurrency().Amount;
-        if (field.FieldType == DocumentFieldType.Double && field.Value.AsDouble() is { } d)
+        if (field.FieldType == DocumentFieldType.Currency && field.ValueCurrency is { } currency)
+            return (decimal)currency.Amount;
+        if (field.FieldType == DocumentFieldType.Double && field.ValueDouble is { } d)
             return (decimal)d;
         return null;
     }
@@ -312,7 +313,7 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
     private static DateOnly? GetDateValue(IReadOnlyDictionary<string, DocumentField> fields, string key)
     {
         if (!fields.TryGetValue(key, out var field)) return null;
-        if (field.FieldType == DocumentFieldType.Date && field.Value.AsDate() is { } date)
+        if (field.FieldType == DocumentFieldType.Date && field.ValueDate is { } date)
             return DateOnly.FromDateTime(date.DateTime);
         return null;
     }
@@ -321,7 +322,7 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
     {
         if (!fields.TryGetValue(key, out var field)) return null;
         if (field.FieldType == DocumentFieldType.Double)
-            return field.Value.AsDouble();
+            return field.ValueDouble;
         return null;
     }
 
@@ -331,8 +332,7 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
 
         var allConfidences = result.Pages
             .SelectMany(p => p.Words ?? Enumerable.Empty<DocumentWord>())
-            .Where(w => w.Confidence.HasValue)
-            .Select(w => (decimal)w.Confidence!.Value)
+            .Select(w => (decimal)w.Confidence)
             .ToList();
 
         return allConfidences.Count > 0 ? allConfidences.Average() : 0.5m;
