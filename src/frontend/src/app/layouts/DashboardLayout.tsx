@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { useEntity, useSwitchEntity } from '@/hooks/useEntity';
@@ -23,8 +23,14 @@ export default function DashboardLayout() {
   const { selectedEntityId } = useEntity();
   const { mutate: switchEntity } = useSwitchEntity();
   const syncedRef = useRef(false);
+  const [entitySynced, setEntitySynced] = useState(() => {
+    // Check if JWT already matches on initial render
+    if (!selectedEntityId) return true;
+    const jwtEntityId = getEntityIdFromJwt();
+    return !jwtEntityId || jwtEntityId === selectedEntityId;
+  });
 
-  useSignalR({ entityId: selectedEntityId, enabled: isAuthenticated });
+  useSignalR({ entityId: selectedEntityId, enabled: isAuthenticated && entitySynced });
 
   // Sync JWT entity_id with selected entity on mount
   useEffect(() => {
@@ -32,7 +38,12 @@ export default function DashboardLayout() {
     const jwtEntityId = getEntityIdFromJwt();
     if (jwtEntityId && jwtEntityId !== selectedEntityId) {
       syncedRef.current = true;
-      switchEntity(selectedEntityId);
+      setEntitySynced(false);
+      switchEntity(selectedEntityId, {
+        onSettled: () => setEntitySynced(true),
+      });
+    } else {
+      setEntitySynced(true);
     }
   }, [isAuthenticated, selectedEntityId, switchEntity]);
 
@@ -53,7 +64,11 @@ export default function DashboardLayout() {
         {/* Page content */}
         <main className="scrollbar-thin flex-1 overflow-y-auto bg-background p-6">
           <div className="page-enter">
-            <Outlet />
+            {entitySynced ? <Outlet /> : (
+              <div className="flex h-64 items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              </div>
+            )}
           </div>
         </main>
       </div>
