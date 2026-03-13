@@ -304,7 +304,7 @@ public class DocumentController : ControllerBase
     /// </summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(
         Guid id, [FromQuery] Guid entityId, CancellationToken ct = default)
@@ -313,21 +313,14 @@ public class DocumentController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        try
+        await _mediator.Send(new DeleteDocumentCommand
         {
-            await _mediator.Send(new DeleteDocumentCommand
-            {
-                EntityId = entityId,
-                DocumentId = id,
-                UserId = userId.Value,
-            }, ct);
+            EntityId = entityId,
+            DocumentId = id,
+            UserId = userId.Value,
+        }, ct);
 
-            return NoContent();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return NoContent();
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────

@@ -29,26 +29,31 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
         if (dbContext.Database.CurrentTransaction is not null)
             return await next(cancellationToken);
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var strategy = dbContext.Database.CreateExecutionStrategy();
 
-        try
+        return await strategy.ExecuteAsync(async ct =>
         {
-            _logger.LogDebug("Begin transaction for {RequestType}", typeof(TRequest).Name);
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
 
-            var response = await next(cancellationToken);
+            try
+            {
+                _logger.LogDebug("Begin transaction for {RequestType}", typeof(TRequest).Name);
 
-            await transaction.CommitAsync(cancellationToken);
+                var response = await next(ct);
 
-            _logger.LogDebug("Committed transaction for {RequestType}", typeof(TRequest).Name);
+                await transaction.CommitAsync(ct);
 
-            return response;
-        }
-        catch
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            _logger.LogWarning("Rolled back transaction for {RequestType}", typeof(TRequest).Name);
-            throw;
-        }
+                _logger.LogDebug("Committed transaction for {RequestType}", typeof(TRequest).Name);
+
+                return response;
+            }
+            catch
+            {
+                await transaction.RollbackAsync(ct);
+                _logger.LogWarning("Rolled back transaction for {RequestType}", typeof(TRequest).Name);
+                throw;
+            }
+        }, cancellationToken);
     }
 
     private static bool IsCommand()
