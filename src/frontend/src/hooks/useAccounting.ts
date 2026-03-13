@@ -13,6 +13,7 @@ import type {
   JournalEntryDetail,
   JournalEntryListItem,
   CreateJournalEntryRequest,
+  UpdateJournalEntryRequest,
   TrialBalance,
   ProfitAndLoss,
   BalanceSheet,
@@ -200,6 +201,34 @@ export function useCreateJournalEntry() {
     },
     onError: () => {
       toast.error(i18n.t('accounting:toast.journalEntryCreateError'));
+    },
+  });
+}
+
+export function useUpdateJournalEntry() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: UpdateJournalEntryRequest) => {
+      const { id, entityId, ...body } = request;
+      const { data } = await api.put<JournalEntry>(
+        `/accounting/journal-entries/${id}`,
+        body,
+        { params: { entityId } },
+      );
+      return { data, entityId, id };
+    },
+    onSuccess: ({ entityId, id }) => {
+      toast.success(i18n.t('accounting:toast.journalEntryUpdated'));
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.journalEntries(entityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.journalEntry(id),
+      });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:toast.journalEntryUpdateError'));
     },
   });
 }

@@ -201,6 +201,24 @@ public class AccountingController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("journal-entries/{id:guid}")]
+    [ProducesResponseType(typeof(JournalEntryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<JournalEntryDto>> UpdateJournalEntry(
+        [FromQuery] Guid entityId, Guid id, [FromBody] UpdateJournalEntryRequest request, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new UpdateJournalEntryCommand
+        {
+            Id = id,
+            EntityId = entityId,
+            EntryDate = request.EntryDate,
+            Description = request.Description,
+            Lines = request.Lines,
+        }, ct);
+        return Ok(result);
+    }
+
     [HttpPost("journal-entries/{id:guid}/reverse")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -439,6 +457,13 @@ public class AccountingController : ControllerBase
 public record ReverseJournalEntryRequest
 {
     public required string Reason { get; init; }
+}
+
+public record UpdateJournalEntryRequest
+{
+    public required DateOnly EntryDate { get; init; }
+    public required string Description { get; init; }
+    public required IReadOnlyList<CreateJournalEntryLineRequest> Lines { get; init; }
 }
 
 public record AssignDocumentPartnerRequest

@@ -96,4 +96,20 @@ public class JournalEntry
             throw new InvalidOperationException("This journal entry has already been reversed.");
         Status = "reversed";
     }
+
+    public void UpdateDraft(DateOnly entryDate, string description)
+    {
+        if (Status != "draft")
+            throw new InvalidOperationException("Only draft journal entries can be edited.");
+        EntryDate = entryDate;
+        PostingDate = entryDate;
+        Description = description;
+    }
+
+    public void ClearLines()
+    {
+        if (Status != "draft")
+            throw new InvalidOperationException("Only draft journal entries can have lines modified.");
+        _lines.Clear();
+    }
 }

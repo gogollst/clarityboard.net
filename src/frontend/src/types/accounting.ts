@@ -109,6 +109,18 @@ export interface CreateJournalEntryLineRequest {
 }
 
 // ---------------------------------------------------------------------------
+// Update Journal Entry
+// ---------------------------------------------------------------------------
+
+export interface UpdateJournalEntryRequest {
+  id: string;
+  entityId: string;
+  entryDate: string;
+  description: string;
+  lines: CreateJournalEntryLineRequest[];
+}
+
+// ---------------------------------------------------------------------------
 // Account
 // ---------------------------------------------------------------------------
 
