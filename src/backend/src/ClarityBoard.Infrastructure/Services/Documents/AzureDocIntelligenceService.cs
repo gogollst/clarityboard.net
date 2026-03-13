@@ -341,8 +341,8 @@ public sealed class AzureDocIntelligenceService : IAzureDocIntelligenceService
 
         var allConfidences = result.Pages
             .SelectMany(p => p.Words ?? Enumerable.Empty<DocumentWord>())
-            .Where(w => w.Confidence.HasValue && float.IsFinite(w.Confidence.Value))
-            .Select(w => (decimal)w.Confidence!.Value)
+            .Where(w => float.IsFinite(w.Confidence))
+            .Select(w => (decimal)w.Confidence)
             .ToList();
 
         return allConfidences.Count > 0 ? allConfidences.Average() : 0.5m;
