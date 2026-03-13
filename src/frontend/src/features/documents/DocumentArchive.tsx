@@ -131,14 +131,6 @@ export function Component() {
         String(item.invoiceDate ?? '-'),
     },
     {
-      key: 'totalAmount',
-      header: t('columns.amount'),
-      render: (item: Record<string, unknown>) => {
-        const amount = item.totalAmount as number | undefined;
-        return amount != null ? formatCurrency(amount) : '-';
-      },
-    },
-    {
       key: 'netAmount',
       header: t('columns.netAmount'),
       render: (item: Record<string, unknown>) => {
@@ -151,6 +143,14 @@ export function Component() {
       header: t('columns.taxAmount'),
       render: (item: Record<string, unknown>) => {
         const amount = item.taxAmount as number | undefined;
+        return amount != null ? formatCurrency(amount) : '-';
+      },
+    },
+    {
+      key: 'totalAmount',
+      header: t('columns.amount'),
+      render: (item: Record<string, unknown>) => {
+        const amount = item.totalAmount as number | undefined;
         return amount != null ? formatCurrency(amount) : '-';
       },
     },

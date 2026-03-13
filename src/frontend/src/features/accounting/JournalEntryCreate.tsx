@@ -22,8 +22,8 @@ import {
 interface LineState {
   key: number;
   accountId: string;
-  debitAmount: string;
-  creditAmount: string;
+  side: 'debit' | 'credit';
+  netAmount: string;
   vatCode: string;
   vatAmount: string;
   costCenter: string;
@@ -34,13 +34,17 @@ function emptyLine(key: number): LineState {
   return {
     key,
     accountId: '',
-    debitAmount: '',
-    creditAmount: '',
+    side: 'debit',
+    netAmount: '',
     vatCode: '',
     vatAmount: '',
     costCenter: '',
     description: '',
   };
+}
+
+function lineGross(line: LineState): number {
+  return (parseFloat(line.netAmount) || 0) + (parseFloat(line.vatAmount) || 0);
 }
 
 function formatCurrency(value: number): string {
@@ -83,8 +87,9 @@ export function Component() {
     let totalDebit = 0;
     let totalCredit = 0;
     for (const line of lines) {
-      totalDebit += parseFloat(line.debitAmount) || 0;
-      totalCredit += parseFloat(line.creditAmount) || 0;
+      const gross = lineGross(line);
+      if (line.side === 'debit') totalDebit += gross;
+      else totalCredit += gross;
     }
     return { totalDebit, totalCredit, difference: totalDebit - totalCredit };
   }, [lines]);
@@ -92,15 +97,11 @@ export function Component() {
   const isBalanced = Math.abs(totals.difference) < 0.005;
   const hasLines = lines.length > 0 && lines.some((l) => l.accountId);
   const hasDescription = description.trim().length > 0;
-  const hasBothDebitAndCredit = lines.some(
-    (l) => (parseFloat(l.debitAmount) || 0) > 0 && (parseFloat(l.creditAmount) || 0) > 0,
-  );
   const canSubmit =
     hasDescription &&
     hasLines &&
     isBalanced &&
     totals.totalDebit > 0 &&
-    !hasBothDebitAndCredit &&
     !createMutation.isPending;
 
   const handleSubmit = () => {
@@ -113,15 +114,18 @@ export function Component() {
         description: description.trim(),
         lines: lines
           .filter((l) => l.accountId)
-          .map((l) => ({
-            accountId: l.accountId,
-            debitAmount: parseFloat(l.debitAmount) || 0,
-            creditAmount: parseFloat(l.creditAmount) || 0,
-            vatCode: l.vatCode || undefined,
-            vatAmount: l.vatAmount ? parseFloat(l.vatAmount) : undefined,
-            costCenter: l.costCenter || undefined,
-            description: l.description || undefined,
-          })),
+          .map((l) => {
+            const gross = lineGross(l);
+            return {
+              accountId: l.accountId,
+              debitAmount: l.side === 'debit' ? gross : 0,
+              creditAmount: l.side === 'credit' ? gross : 0,
+              vatCode: l.vatCode || undefined,
+              vatAmount: l.vatAmount ? parseFloat(l.vatAmount) : undefined,
+              costCenter: l.costCenter || undefined,
+              description: l.description || undefined,
+            };
+          }),
       },
       {
         onSuccess: () => {
@@ -195,93 +199,109 @@ export function Component() {
               <thead>
                 <tr className="border-b text-muted-foreground">
                   <th className="py-2 text-left font-medium min-w-[200px]">{t('accounting:journalEntryCreate.account')}</th>
-                  <th className="py-2 text-right font-medium w-28">{t('accounting:journalEntryCreate.debit')}</th>
-                  <th className="py-2 text-right font-medium w-28">{t('accounting:journalEntryCreate.credit')}</th>
+                  <th className="py-2 text-left font-medium w-24">{t('accounting:journalEntryCreate.side')}</th>
+                  <th className="py-2 text-right font-medium w-28">{t('accounting:journalEntryCreate.netAmount')}</th>
                   <th className="py-2 text-left font-medium w-24">{t('accounting:journalEntryCreate.vatCode')}</th>
+                  <th className="py-2 text-right font-medium w-28">{t('accounting:journalEntryCreate.vatAmount')}</th>
+                  <th className="py-2 text-right font-medium w-28">{t('accounting:journalEntryCreate.grossCalculated')}</th>
                   <th className="py-2 text-left font-medium w-28">{t('accounting:journalEntryCreate.costCenter')}</th>
                   <th className="py-2 text-left font-medium min-w-[120px]">{t('accounting:journalEntryCreate.lineDescription')}</th>
                   <th className="py-2 w-10"></th>
                 </tr>
               </thead>
               <tbody>
-                {lines.map((line) => {
-                  const hasBoth =
-                    (parseFloat(line.debitAmount) || 0) > 0 &&
-                    (parseFloat(line.creditAmount) || 0) > 0;
-                  return (
-                    <tr key={line.key} className={`border-b ${hasBoth ? 'bg-destructive/5' : ''}`}>
-                      <td className="py-1.5 pr-2">
-                        <Select
-                          value={line.accountId}
-                          onValueChange={(v) => updateLine(line.key, 'accountId', v)}
-                        >
-                          <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder={t('accounting:journalEntryCreate.selectAccount')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {(accounts ?? []).map((acc) => (
-                              <SelectItem key={acc.id} value={acc.id}>
-                                {acc.accountNumber} – {getLocalizedAccountName(acc, i18n.language)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="py-1.5 pr-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          className="h-8 text-right text-xs tabular-nums"
-                          value={line.debitAmount}
-                          onChange={(e) => updateLine(line.key, 'debitAmount', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-1.5 pr-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          className="h-8 text-right text-xs tabular-nums"
-                          value={line.creditAmount}
-                          onChange={(e) => updateLine(line.key, 'creditAmount', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-1.5 pr-2">
-                        <Input
-                          className="h-8 text-xs"
-                          value={line.vatCode}
-                          onChange={(e) => updateLine(line.key, 'vatCode', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-1.5 pr-2">
-                        <Input
-                          className="h-8 text-xs"
-                          value={line.costCenter}
-                          onChange={(e) => updateLine(line.key, 'costCenter', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-1.5 pr-2">
-                        <Input
-                          className="h-8 text-xs"
-                          value={line.description}
-                          onChange={(e) => updateLine(line.key, 'description', e.target.value)}
-                        />
-                      </td>
-                      <td className="py-1.5">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => removeLine(line.key)}
-                          disabled={lines.length <= 1}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {lines.map((line) => (
+                  <tr key={line.key} className="border-b">
+                    <td className="py-1.5 pr-2">
+                      <Select
+                        value={line.accountId}
+                        onValueChange={(v) => updateLine(line.key, 'accountId', v)}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t('accounting:journalEntryCreate.selectAccount')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(accounts ?? []).map((acc) => (
+                            <SelectItem key={acc.id} value={acc.id}>
+                              {acc.accountNumber} – {getLocalizedAccountName(acc, i18n.language)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="py-1.5 pr-2">
+                      <Select
+                        value={line.side}
+                        onValueChange={(v) => updateLine(line.key, 'side', v)}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="debit">{t('accounting:journalEntryCreate.sideDebit')}</SelectItem>
+                          <SelectItem value="credit">{t('accounting:journalEntryCreate.sideCredit')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="py-1.5 pr-2">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className="h-8 text-right text-xs tabular-nums"
+                        value={line.netAmount}
+                        onChange={(e) => updateLine(line.key, 'netAmount', e.target.value)}
+                      />
+                    </td>
+                    <td className="py-1.5 pr-2">
+                      <Input
+                        className="h-8 text-xs"
+                        value={line.vatCode}
+                        onChange={(e) => updateLine(line.key, 'vatCode', e.target.value)}
+                      />
+                    </td>
+                    <td className="py-1.5 pr-2">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        className="h-8 text-right text-xs tabular-nums"
+                        value={line.vatAmount}
+                        onChange={(e) => updateLine(line.key, 'vatAmount', e.target.value)}
+                      />
+                    </td>
+                    <td className="py-1.5 pr-2">
+                      <span className="inline-block h-8 leading-8 text-right text-xs tabular-nums text-muted-foreground w-full">
+                        {formatCurrency(lineGross(line))}
+                      </span>
+                    </td>
+                    <td className="py-1.5 pr-2">
+                      <Input
+                        className="h-8 text-xs"
+                        value={line.costCenter}
+                        onChange={(e) => updateLine(line.key, 'costCenter', e.target.value)}
+                      />
+                    </td>
+                    <td className="py-1.5 pr-2">
+                      <Input
+                        className="h-8 text-xs"
+                        value={line.description}
+                        onChange={(e) => updateLine(line.key, 'description', e.target.value)}
+                      />
+                    </td>
+                    <td className="py-1.5">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => removeLine(line.key)}
+                        disabled={lines.length <= 1}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -309,9 +329,6 @@ export function Component() {
             </Badge>
           </div>
 
-          {hasBothDebitAndCredit && (
-            <p className="mt-2 text-xs text-destructive">{t('accounting:journalEntryCreate.validation.bothDebitAndCredit')}</p>
-          )}
         </CardContent>
       </Card>
 

@@ -189,13 +189,6 @@ export function Component() {
 
   const round2 = (n: number) => Math.round(n * 100) / 100;
 
-  const handleGrossChange = useCallback((value: number) => {
-    const v = round2(value);
-    setModifyGross(v);
-    setModifyNet(round2(v - modifyTax));
-    modifyForm.setValue('amount', v);
-  }, [modifyTax, modifyForm]);
-
   const handleNetChange = useCallback((value: number) => {
     const v = round2(value);
     setModifyNet(v);
@@ -544,14 +537,6 @@ export function Component() {
               <DetailRow label={t('detail.fields.invoiceNumber')} value={doc.invoiceNumber} />
               <DetailRow label={t('detail.fields.invoiceDate')} value={formatDate(doc.invoiceDate)} />
               <DetailRow
-                label={t('detail.fields.totalAmount')}
-                value={
-                  doc.totalAmount != null
-                    ? formatCurrency(doc.totalAmount, doc.currency ?? 'EUR')
-                    : '—'
-                }
-              />
-              <DetailRow
                 label={t('detail.fields.netAmount')}
                 value={
                   doc.netAmount != null
@@ -564,6 +549,14 @@ export function Component() {
                 value={
                   doc.taxAmount != null
                     ? formatCurrency(doc.taxAmount, doc.currency ?? 'EUR')
+                    : '—'
+                }
+              />
+              <DetailRow
+                label={t('detail.fields.totalAmount')}
+                value={
+                  doc.totalAmount != null
+                    ? formatCurrency(doc.totalAmount, doc.currency ?? 'EUR')
                     : '—'
                 }
               />
@@ -860,16 +853,16 @@ export function Component() {
                   }
                 />
                 <DetailRow
-                  label={t('detail.bookingSuggestion.grossAmount')}
-                  value={formatCurrency(bs.amount)}
-                />
-                <DetailRow
                   label={t('detail.bookingSuggestion.netAmount')}
                   value={formatCurrency(bs.netAmount ?? bs.amount - (bs.vatAmount ?? 0))}
                 />
                 <DetailRow
                   label={t('detail.bookingSuggestion.taxAmount')}
                   value={formatCurrency(bs.vatAmount ?? 0)}
+                />
+                <DetailRow
+                  label={t('detail.bookingSuggestion.grossAmount')}
+                  value={formatCurrency(bs.amount)}
                 />
                 <div>
                   <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -1089,15 +1082,6 @@ export function Component() {
             </div>
 
             <div>
-              <Label>{t('detail.bookingSuggestion.grossAmount')}</Label>
-              <CurrencyInput
-                className="mt-1"
-                value={modifyGross}
-                onValueChange={handleGrossChange}
-              />
-            </div>
-
-            <div>
               <Label>{t('detail.bookingSuggestion.netAmount')}</Label>
               <CurrencyInput
                 className="mt-1"
@@ -1113,6 +1097,13 @@ export function Component() {
                 value={modifyTax}
                 onValueChange={handleTaxChange}
               />
+            </div>
+
+            <div>
+              <Label className="text-muted-foreground">{t('detail.bookingSuggestion.grossAmount')}</Label>
+              <div className="mt-1 h-9 rounded-md border bg-muted/50 px-3 py-2 text-sm tabular-nums">
+                {formatCurrency(modifyGross)}
+              </div>
             </div>
 
             {amountMismatch && (

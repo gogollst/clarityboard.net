@@ -53,8 +53,8 @@ function statusVariant(status: string): 'default' | 'secondary' | 'destructive' 
 interface EditLineState {
   key: number;
   accountId: string;
-  debitAmount: string;
-  creditAmount: string;
+  side: 'debit' | 'credit';
+  netAmount: string;
   vatCode: string;
   vatAmount: string;
   costCenter: string;
@@ -62,7 +62,11 @@ interface EditLineState {
 }
 
 function emptyEditLine(key: number): EditLineState {
-  return { key, accountId: '', debitAmount: '', creditAmount: '', vatCode: '', vatAmount: '', costCenter: '', description: '' };
+  return { key, accountId: '', side: 'debit', netAmount: '', vatCode: '', vatAmount: '', costCenter: '', description: '' };
+}
+
+function lineGross(line: EditLineState): number {
+  return (parseFloat(line.netAmount) || 0) + (parseFloat(line.vatAmount) || 0);
 }
 
 export function Component() {
@@ -86,16 +90,21 @@ export function Component() {
 
   const openEditSheet = () => {
     if (!entry) return;
-    const lines = entry.lines.map((l, i) => ({
-      key: i,
-      accountId: l.accountId,
-      debitAmount: l.debitAmount > 0 ? String(l.debitAmount) : '',
-      creditAmount: l.creditAmount > 0 ? String(l.creditAmount) : '',
-      vatCode: l.vatCode ?? '',
-      vatAmount: l.vatAmount > 0 ? String(l.vatAmount) : '',
-      costCenter: l.costCenter ?? '',
-      description: l.description ?? '',
-    }));
+    const lines = entry.lines.map((l, i) => {
+      const side: 'debit' | 'credit' = l.debitAmount > 0 ? 'debit' : 'credit';
+      const gross = l.debitAmount > 0 ? l.debitAmount : l.creditAmount;
+      const net = gross - l.vatAmount;
+      return {
+        key: i,
+        accountId: l.accountId,
+        side,
+        netAmount: net > 0 ? String(net) : '',
+        vatCode: l.vatCode ?? '',
+        vatAmount: l.vatAmount > 0 ? String(l.vatAmount) : '',
+        costCenter: l.costCenter ?? '',
+        description: l.description ?? '',
+      };
+    });
     setEditDate(entry.entryDate);
     setEditDescription(entry.description);
     setEditLines(lines);
@@ -120,23 +129,20 @@ export function Component() {
     let totalDebit = 0;
     let totalCredit = 0;
     for (const line of editLines) {
-      totalDebit += parseFloat(line.debitAmount) || 0;
-      totalCredit += parseFloat(line.creditAmount) || 0;
+      const gross = lineGross(line);
+      if (line.side === 'debit') totalDebit += gross;
+      else totalCredit += gross;
     }
     return { totalDebit, totalCredit, difference: totalDebit - totalCredit };
   }, [editLines]);
 
   const editIsBalanced = Math.abs(editTotals.difference) < 0.005;
   const editHasLines = editLines.length > 0 && editLines.some((l) => l.accountId);
-  const editHasBothDebitAndCredit = editLines.some(
-    (l) => (parseFloat(l.debitAmount) || 0) > 0 && (parseFloat(l.creditAmount) || 0) > 0,
-  );
   const editCanSubmit =
     editDescription.trim().length > 0 &&
     editHasLines &&
     editIsBalanced &&
     editTotals.totalDebit > 0 &&
-    !editHasBothDebitAndCredit &&
     !updateMutation.isPending;
 
   const handleEditSubmit = () => {
@@ -149,15 +155,18 @@ export function Component() {
         description: editDescription.trim(),
         lines: editLines
           .filter((l) => l.accountId)
-          .map((l) => ({
-            accountId: l.accountId,
-            debitAmount: parseFloat(l.debitAmount) || 0,
-            creditAmount: parseFloat(l.creditAmount) || 0,
-            vatCode: l.vatCode || undefined,
-            vatAmount: l.vatAmount ? parseFloat(l.vatAmount) : undefined,
-            costCenter: l.costCenter || undefined,
-            description: l.description || undefined,
-          })),
+          .map((l) => {
+            const gross = lineGross(l);
+            return {
+              accountId: l.accountId,
+              debitAmount: l.side === 'debit' ? gross : 0,
+              creditAmount: l.side === 'credit' ? gross : 0,
+              vatCode: l.vatCode || undefined,
+              vatAmount: l.vatAmount ? parseFloat(l.vatAmount) : undefined,
+              costCenter: l.costCenter || undefined,
+              description: l.description || undefined,
+            };
+          }),
       },
       { onSuccess: () => setEditOpen(false) },
     );
@@ -347,16 +356,16 @@ export function Component() {
       <Card>
         <CardContent className="grid grid-cols-3 gap-4 py-4 text-sm">
           <div>
-            <div className="text-xs text-muted-foreground">{t('accounting:journalEntryDetail.grossAmount')}</div>
-            <div className="text-lg font-semibold tabular-nums">{formatCurrency(totalDebit)}</div>
-          </div>
-          <div>
             <div className="text-xs text-muted-foreground">{t('accounting:journalEntryDetail.netAmount')}</div>
-            <div className="text-lg font-semibold tabular-nums">{formatCurrency(totalNet)}</div>
+            <div className="text-xl font-bold tabular-nums">{formatCurrency(totalNet)}</div>
           </div>
           <div>
             <div className="text-xs text-muted-foreground">{t('accounting:journalEntryDetail.vatAmount')}</div>
             <div className="text-lg font-semibold tabular-nums">{formatCurrency(totalVat)}</div>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">{t('accounting:journalEntryDetail.grossAmount')}</div>
+            <div className="text-base tabular-nums text-muted-foreground">{formatCurrency(totalDebit)}</div>
           </div>
         </CardContent>
       </Card>
@@ -460,97 +469,103 @@ export function Component() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {editLines.map((line) => {
-                    const hasBoth =
-                      (parseFloat(line.debitAmount) || 0) > 0 &&
-                      (parseFloat(line.creditAmount) || 0) > 0;
-                    return (
-                      <div
-                        key={line.key}
-                        className={`grid grid-cols-[1fr_auto] gap-2 rounded-md border p-2 ${hasBoth ? 'border-destructive/50 bg-destructive/5' : ''}`}
-                      >
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="col-span-2">
-                            <Select
-                              value={line.accountId}
-                              onValueChange={(v) => updateEditLine(line.key, 'accountId', v)}
-                            >
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue placeholder={t('accounting:journalEntryCreate.selectAccount')} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {(accounts ?? []).map((acc) => (
-                                  <SelectItem key={acc.id} value={acc.id}>
-                                    {acc.accountNumber} – {getLocalizedAccountName(acc, i18n.language)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.debit')}</Label>
-                            <Input
-                              type="number" min="0" step="0.01"
-                              className="h-8 text-right text-xs tabular-nums"
-                              value={line.debitAmount}
-                              onChange={(e) => updateEditLine(line.key, 'debitAmount', e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.credit')}</Label>
-                            <Input
-                              type="number" min="0" step="0.01"
-                              className="h-8 text-right text-xs tabular-nums"
-                              value={line.creditAmount}
-                              onChange={(e) => updateEditLine(line.key, 'creditAmount', e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.vatCode')}</Label>
-                            <Input
-                              className="h-8 text-xs"
-                              value={line.vatCode}
-                              onChange={(e) => updateEditLine(line.key, 'vatCode', e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryDetail.vatAmount')}</Label>
-                            <Input
-                              type="number" min="0" step="0.01"
-                              className="h-8 text-right text-xs tabular-nums"
-                              value={line.vatAmount}
-                              onChange={(e) => updateEditLine(line.key, 'vatAmount', e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.costCenter')}</Label>
-                            <Input
-                              className="h-8 text-xs"
-                              value={line.costCenter}
-                              onChange={(e) => updateEditLine(line.key, 'costCenter', e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.lineDescription')}</Label>
-                            <Input
-                              className="h-8 text-xs"
-                              value={line.description}
-                              onChange={(e) => updateEditLine(line.key, 'description', e.target.value)}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex items-start pt-5">
-                          <Button
-                            variant="ghost" size="icon" className="h-8 w-8"
-                            onClick={() => removeEditLine(line.key)}
-                            disabled={editLines.length <= 1}
+                  {editLines.map((line) => (
+                    <div
+                      key={line.key}
+                      className="grid grid-cols-[1fr_auto] gap-2 rounded-md border p-2"
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="col-span-2">
+                          <Select
+                            value={line.accountId}
+                            onValueChange={(v) => updateEditLine(line.key, 'accountId', v)}
                           >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue placeholder={t('accounting:journalEntryCreate.selectAccount')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(accounts ?? []).map((acc) => (
+                                <SelectItem key={acc.id} value={acc.id}>
+                                  {acc.accountNumber} – {getLocalizedAccountName(acc, i18n.language)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.side')}</Label>
+                          <Select
+                            value={line.side}
+                            onValueChange={(v) => updateEditLine(line.key, 'side', v)}
+                          >
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="debit">{t('accounting:journalEntryCreate.sideDebit')}</SelectItem>
+                              <SelectItem value="credit">{t('accounting:journalEntryCreate.sideCredit')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.netAmount')}</Label>
+                          <Input
+                            type="number" min="0" step="0.01"
+                            className="h-8 text-right text-xs tabular-nums"
+                            value={line.netAmount}
+                            onChange={(e) => updateEditLine(line.key, 'netAmount', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.vatCode')}</Label>
+                          <Input
+                            className="h-8 text-xs"
+                            value={line.vatCode}
+                            onChange={(e) => updateEditLine(line.key, 'vatCode', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.vatAmount')}</Label>
+                          <Input
+                            type="number" min="0" step="0.01"
+                            className="h-8 text-right text-xs tabular-nums"
+                            value={line.vatAmount}
+                            onChange={(e) => updateEditLine(line.key, 'vatAmount', e.target.value)}
+                          />
+                        </div>
+                        <div className="flex items-center pt-4">
+                          <span className="text-xs text-muted-foreground">
+                            {t('accounting:journalEntryCreate.grossCalculated')}: {formatCurrency(lineGross(line))}
+                          </span>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.costCenter')}</Label>
+                          <Input
+                            className="h-8 text-xs"
+                            value={line.costCenter}
+                            onChange={(e) => updateEditLine(line.key, 'costCenter', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{t('accounting:journalEntryCreate.lineDescription')}</Label>
+                          <Input
+                            className="h-8 text-xs"
+                            value={line.description}
+                            onChange={(e) => updateEditLine(line.key, 'description', e.target.value)}
+                          />
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className="flex items-start pt-5">
+                        <Button
+                          variant="ghost" size="icon" className="h-8 w-8"
+                          onClick={() => removeEditLine(line.key)}
+                          disabled={editLines.length <= 1}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Totals */}
