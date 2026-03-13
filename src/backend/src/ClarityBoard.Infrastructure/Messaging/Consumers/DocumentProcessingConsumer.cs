@@ -3,6 +3,7 @@ using ClarityBoard.Application.Common.Interfaces;
 using ClarityBoard.Application.Common.Messaging;
 using ClarityBoard.Domain.Entities.Accounting;
 using ClarityBoard.Domain.Entities.Document;
+using ClarityBoard.Domain.Entities.Entity;
 using ClarityBoard.Domain.Interfaces;
 using ClarityBoard.Infrastructure.Services.Documents;
 using MassTransit;
@@ -190,14 +191,47 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             }
             matchPartnerStopwatch.Stop();
 
-            // 7. Call AI for booking suggestion
+            // 6c. Entity recognition — verify document belongs to the correct entity
+            currentStage = "entity_recognition";
+            var entityRecognitionStopwatch = Stopwatch.StartNew();
+            var legalEntity = await _db.LegalEntities
+                .FirstOrDefaultAsync(e => e.Id == entityId, ct);
+
+            if (legalEntity is not null)
+            {
+                var (matchConfidence, matchReason) = MatchEntityFields(legalEntity, extraction);
+
+                if (matchConfidence < 0.5m && matchConfidence >= 0m)
+                {
+                    reviewReasons.Add("entity_mismatch_suspected");
+                    _logger.LogWarning(
+                        "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — matchReason: {MatchReason}",
+                        currentStage, entityRecognitionStopwatch.ElapsedMilliseconds, "low_match", matchReason);
+                }
+                else
+                {
+                    LogStageInformation(currentStage, entityRecognitionStopwatch.ElapsedMilliseconds, "matched",
+                        "confidence {Confidence} reason {Reason}", matchConfidence, matchReason);
+                }
+            }
+            entityRecognitionStopwatch.Stop();
+
+            // 7. Call AI for booking suggestion — load entity's accounts
             currentStage = "suggest_booking";
             var suggestBookingStopwatch = Stopwatch.StartNew();
             BookingSuggestionResult? bookingSuggestion = null;
             var bookingSuggestionCreated = false;
             try
             {
-                bookingSuggestion = await _aiService.SuggestBookingAsync(extraction, entityId, ct);
+                var chartOfAccounts = legalEntity?.ChartOfAccounts ?? "SKR03";
+                var accounts = await _db.Accounts
+                    .Where(a => a.EntityId == entityId && a.IsActive)
+                    .OrderBy(a => a.AccountNumber)
+                    .Select(a => new AccountInfo(a.AccountNumber, a.Name, a.AccountType, a.VatDefault))
+                    .ToListAsync(ct);
+
+                bookingSuggestion = await _aiService.SuggestBookingAsync(
+                    extraction, entityId, chartOfAccounts, accounts, ct);
                 suggestBookingStopwatch.Stop();
                 LogConfidenceStage(currentStage, suggestBookingStopwatch.ElapsedMilliseconds, bookingSuggestion.Confidence,
                     "amount {Amount} debitAccount {DebitAccount} creditAccount {CreditAccount}",
@@ -583,6 +617,9 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         if (!string.IsNullOrWhiteSpace(extraction.VendorIban)) count++;
         if (!string.IsNullOrWhiteSpace(extraction.VendorStreet)) count++;
         if (!string.IsNullOrWhiteSpace(extraction.VendorCity)) count++;
+        if (!string.IsNullOrWhiteSpace(extraction.RecipientName)) count++;
+        if (!string.IsNullOrWhiteSpace(extraction.RecipientTaxId)) count++;
+        if (!string.IsNullOrWhiteSpace(extraction.DocumentDirection)) count++;
         if (!string.IsNullOrWhiteSpace(extraction.InvoiceNumber)) count++;
         if (extraction.InvoiceDate.HasValue) count++;
         if (extraction.TotalAmount.HasValue) count++;
@@ -609,6 +646,14 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         Add("vendor_city", extraction.VendorCity);
         Add("vendor_postal_code", extraction.VendorPostalCode);
         Add("vendor_country", extraction.VendorCountry);
+        Add("recipient_name", extraction.RecipientName);
+        Add("recipient_tax_id", extraction.RecipientTaxId);
+        Add("recipient_vat_id", extraction.RecipientVatId);
+        Add("recipient_street", extraction.RecipientStreet);
+        Add("recipient_city", extraction.RecipientCity);
+        Add("recipient_postal_code", extraction.RecipientPostalCode);
+        Add("recipient_country", extraction.RecipientCountry);
+        Add("document_direction", extraction.DocumentDirection);
         Add("invoice_number", extraction.InvoiceNumber);
 
         if (extraction.InvoiceDate.HasValue)
@@ -676,4 +721,77 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         _db.BookingSuggestions.Add(bookingSuggestion);
         return true;
     }
+
+    // ── Entity Matching ──────────────────────────────────────────────────
+
+    private static (decimal Confidence, string Reason) MatchEntityFields(
+        LegalEntity entity, DocumentExtractionResult extraction)
+    {
+        // For incoming documents: recipient is us (the entity)
+        // For outgoing documents: vendor/issuer is us
+        var isIncoming = extraction.DocumentDirection != "outgoing"; // default assumption
+
+        var nameToMatch = isIncoming ? extraction.RecipientName : extraction.VendorName;
+        var taxIdToMatch = isIncoming ? extraction.RecipientTaxId : extraction.VendorTaxId;
+        var vatIdToMatch = isIncoming ? extraction.RecipientVatId : null;
+
+        var reasons = new List<string>();
+        var totalScore = 0m;
+        var checks = 0;
+
+        // Tax ID match (strongest signal)
+        if (!string.IsNullOrWhiteSpace(taxIdToMatch) && !string.IsNullOrWhiteSpace(entity.TaxId))
+        {
+            checks++;
+            if (NormalizeTaxId(taxIdToMatch) == NormalizeTaxId(entity.TaxId))
+            {
+                totalScore += 1.0m;
+                reasons.Add("tax_id_match");
+            }
+        }
+
+        // VAT ID match
+        if (!string.IsNullOrWhiteSpace(vatIdToMatch) && !string.IsNullOrWhiteSpace(entity.VatId))
+        {
+            checks++;
+            if (NormalizeVatId(vatIdToMatch) == NormalizeVatId(entity.VatId))
+            {
+                totalScore += 1.0m;
+                reasons.Add("vat_id_match");
+            }
+        }
+
+        // Name match (fuzzy — company names vary)
+        if (!string.IsNullOrWhiteSpace(nameToMatch) && !string.IsNullOrWhiteSpace(entity.Name))
+        {
+            checks++;
+            var normalizedMatch = NormalizeCompanyName(nameToMatch);
+            var normalizedEntity = NormalizeCompanyName(entity.Name);
+            if (normalizedMatch.Contains(normalizedEntity, StringComparison.OrdinalIgnoreCase)
+                || normalizedEntity.Contains(normalizedMatch, StringComparison.OrdinalIgnoreCase))
+            {
+                totalScore += 0.8m;
+                reasons.Add("name_match");
+            }
+        }
+
+        if (checks == 0)
+            return (0.5m, "no_fields_to_match"); // Can't determine — neutral
+
+        var confidence = totalScore / checks;
+        return (confidence, reasons.Count > 0 ? string.Join(",", reasons) : "no_match");
+    }
+
+    private static string NormalizeTaxId(string id)
+        => id.Replace("/", "").Replace(" ", "").Replace("-", "").Trim();
+
+    private static string NormalizeVatId(string id)
+        => id.Replace(" ", "").Trim().ToUpperInvariant();
+
+    private static string NormalizeCompanyName(string name)
+        => name.ToLowerInvariant()
+            .Replace("gmbh", "").Replace(" ag ", " ").Replace("ug", "")
+            .Replace("e.k.", "").Replace("ohg", "").Replace(" kg ", " ")
+            .Replace("&", "").Replace("co.", "")
+            .Trim();
 }
