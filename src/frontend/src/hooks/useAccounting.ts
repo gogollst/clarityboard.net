@@ -276,13 +276,14 @@ export function useTrialBalance(
   entityId: string | null,
   year?: number,
   month?: number,
+  departmentId?: string,
 ) {
   return useQuery({
-    queryKey: [...queryKeys.accounting.trialBalance(entityId ?? ''), year, month],
+    queryKey: [...queryKeys.accounting.trialBalance(entityId ?? ''), year, month, departmentId],
     queryFn: async () => {
       const { data } = await api.get<TrialBalance>(
         '/accounting/trial-balance',
-        { params: { entityId, year, month } },
+        { params: { entityId, year, month, departmentId } },
       );
       return data;
     },
@@ -296,6 +297,7 @@ export function useProfitAndLoss(
   month?: number,
   compareYear?: number,
   compareMonth?: number,
+  departmentId?: string,
 ) {
   return useQuery({
     queryKey: [
@@ -304,11 +306,12 @@ export function useProfitAndLoss(
       month,
       compareYear,
       compareMonth,
+      departmentId,
     ],
     queryFn: async () => {
       const { data } = await api.get<ProfitAndLoss>(
         '/accounting/pnl',
-        { params: { entityId, year, month, compareYear, compareMonth } },
+        { params: { entityId, year, month, compareYear, compareMonth, departmentId } },
       );
       return data;
     },
@@ -322,6 +325,7 @@ export function useBalanceSheet(
   month?: number,
   compareYear?: number,
   compareMonth?: number,
+  departmentId?: string,
 ) {
   return useQuery({
     queryKey: [
@@ -330,11 +334,12 @@ export function useBalanceSheet(
       month,
       compareYear,
       compareMonth,
+      departmentId,
     ],
     queryFn: async () => {
       const { data } = await api.get<BalanceSheet>(
         '/accounting/balance-sheet',
-        { params: { entityId, year, month, compareYear, compareMonth } },
+        { params: { entityId, year, month, compareYear, compareMonth, departmentId } },
       );
       return data;
     },

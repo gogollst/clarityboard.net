@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { formatCurrency } from '@/lib/format';
 import { useTrialBalance } from '@/hooks/useAccounting';
+import { useDepartments } from '@/hooks/useHr';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import {
@@ -29,8 +30,15 @@ export function Component() {
   const { selectedEntityId } = useEntity();
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
+  const [departmentId, setDepartmentId] = useState('');
 
-  const { data, isLoading } = useTrialBalance(selectedEntityId, year, month);
+  const { data: departments } = useDepartments(selectedEntityId ?? undefined);
+  const activeDepartments = useMemo(
+    () => (departments ?? []).filter((d) => d.isActive),
+    [departments],
+  );
+
+  const { data, isLoading } = useTrialBalance(selectedEntityId, year, month, departmentId || undefined);
 
   const yearOptions = Array.from({ length: 4 }, (_, i) => currentYear - 2 + i);
 
@@ -101,6 +109,19 @@ export function Component() {
                 ))}
               </SelectContent>
             </Select>
+            {activeDepartments.length > 0 && (
+              <Select value={departmentId || 'all'} onValueChange={(v) => setDepartmentId(v === 'all' ? '' : v)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder={t('accounting:departmentFilterAll')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('accounting:departmentFilterAll')}</SelectItem>
+                  {activeDepartments.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         }
       />

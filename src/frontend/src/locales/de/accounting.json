@@ -198,12 +198,14 @@
       "code": "Code",
       "shortName": "Bezeichnung",
       "description": "Beschreibung",
-      "type": "Typ"
+      "type": "Typ",
+      "department": "Abteilung"
     },
     "placeholders": {
       "code": "z.B. K100",
       "shortName": "z.B. Vertrieb",
-      "description": "Optionale Beschreibung"
+      "description": "Optionale Beschreibung",
+      "department": "Abteilung auswählen"
     },
     "dialogTitle": "Neue Kostenstelle anlegen"
   },
@@ -236,6 +238,8 @@
     },
     "dialogTitle": "Neues Planungsszenario anlegen"
   },
+  "departmentFilter": "Abteilung",
+  "departmentFilterAll": "Alle Abteilungen",
   "trialBalance": {
     "title": "Saldenliste",
     "noEntitySelected": "Bitte wählen Sie zuerst eine Entity aus.",

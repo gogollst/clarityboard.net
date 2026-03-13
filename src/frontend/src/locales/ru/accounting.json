@@ -198,12 +198,14 @@
       "code": "Код",
       "shortName": "Наименование",
       "description": "Описание",
-      "type": "Тип"
+      "type": "Тип",
+      "department": "Отдел"
     },
     "placeholders": {
       "code": "напр. К100",
       "shortName": "напр. Продажи",
-      "description": "Необязательное описание"
+      "description": "Необязательное описание",
+      "department": "Выберите отдел"
     },
     "dialogTitle": "Создать новый центр затрат"
   },
@@ -236,6 +238,8 @@
     },
     "dialogTitle": "Создать новый сценарий планирования"
   },
+  "departmentFilter": "Отдел",
+  "departmentFilterAll": "Все отделы",
   "trialBalance": {
     "title": "Оборотная ведомость",
     "noEntitySelected": "Пожалуйста, сначала выберите юридическое лицо.",

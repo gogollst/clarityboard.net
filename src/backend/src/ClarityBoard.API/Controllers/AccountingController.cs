@@ -108,9 +108,10 @@ public class AccountingController : ControllerBase
     [HttpGet("trial-balance")]
     [ProducesResponseType(typeof(TrialBalanceDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<TrialBalanceDto>> GetTrialBalance(
-        [FromQuery] Guid entityId, [FromQuery] short year, [FromQuery] short month, CancellationToken ct = default)
+        [FromQuery] Guid entityId, [FromQuery] short year, [FromQuery] short month,
+        [FromQuery] Guid? departmentId = null, CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetTrialBalanceQuery(entityId, year, month), ct);
+        var result = await _mediator.Send(new GetTrialBalanceQuery(entityId, year, month, departmentId), ct);
         return Ok(result);
     }
 
@@ -124,10 +125,11 @@ public class AccountingController : ControllerBase
         [FromQuery] short month,
         [FromQuery] short? compareYear = null,
         [FromQuery] short? compareMonth = null,
+        [FromQuery] Guid? departmentId = null,
         CancellationToken ct = default)
     {
         var result = await _mediator.Send(
-            new GetProfitAndLossQuery(entityId, year, month, compareYear, compareMonth), ct);
+            new GetProfitAndLossQuery(entityId, year, month, compareYear, compareMonth, departmentId), ct);
         return Ok(result);
     }
 
@@ -141,10 +143,11 @@ public class AccountingController : ControllerBase
         [FromQuery] short month,
         [FromQuery] short? compareYear = null,
         [FromQuery] short? compareMonth = null,
+        [FromQuery] Guid? departmentId = null,
         CancellationToken ct = default)
     {
         var result = await _mediator.Send(
-            new GetBalanceSheetQuery(entityId, year, month, compareYear, compareMonth), ct);
+            new GetBalanceSheetQuery(entityId, year, month, compareYear, compareMonth, departmentId), ct);
         return Ok(result);
     }
 

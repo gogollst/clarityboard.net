@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useCostCenters, useCreateCostCenter } from '@/hooks/useAccounting';
+import { useDepartments } from '@/hooks/useHr';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -29,18 +30,21 @@ export function Component() {
 
   const { data: costCenters, isLoading } = useCostCenters(selectedEntityId);
   const createMutation = useCreateCostCenter();
+  const { data: departments } = useDepartments(selectedEntityId ?? undefined);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [code, setCode] = useState('');
   const [shortName, setShortName] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState('Department');
+  const [hrDepartmentId, setHrDepartmentId] = useState('');
 
   const resetForm = () => {
     setCode('');
     setShortName('');
     setDescription('');
     setType('Department');
+    setHrDepartmentId('');
   };
 
   const columns = [
@@ -124,7 +128,7 @@ export function Component() {
             </div>
             <div className="space-y-1">
               <Label>{t('accounting:costCenters.fields.type')}</Label>
-              <Select value={type} onValueChange={setType}>
+              <Select value={type} onValueChange={(v) => { setType(v); if (v !== 'Department') setHrDepartmentId(''); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -137,6 +141,23 @@ export function Component() {
                 </SelectContent>
               </Select>
             </div>
+            {type === 'Department' && (departments ?? []).length > 0 && (
+              <div className="space-y-1">
+                <Label>{t('accounting:costCenters.fields.department')}</Label>
+                <Select value={hrDepartmentId} onValueChange={setHrDepartmentId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('accounting:costCenters.placeholders.department')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(departments ?? []).filter((d) => d.isActive).map((d) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.code} – {d.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
@@ -147,7 +168,7 @@ export function Component() {
               onClick={() => {
                 if (!selectedEntityId || !code || !shortName) return;
                 createMutation.mutate(
-                  { entityId: selectedEntityId, code, shortName, description: description || undefined, type },
+                  { entityId: selectedEntityId, code, shortName, description: description || undefined, type, hrDepartmentId: hrDepartmentId || undefined },
                   { onSuccess: () => { setDialogOpen(false); resetForm(); } }
                 );
               }}

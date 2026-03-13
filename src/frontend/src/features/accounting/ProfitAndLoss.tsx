@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { formatCurrency } from '@/lib/format';
 import { useProfitAndLoss } from '@/hooks/useAccounting';
+import { useDepartments } from '@/hooks/useHr';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -37,6 +38,13 @@ export function Component() {
   const [compare, setCompare] = useState(false);
   const [compareYear, setCompareYear] = useState(currentYear - 1);
   const [compareMonth, setCompareMonth] = useState(currentMonth);
+  const [departmentId, setDepartmentId] = useState('');
+
+  const { data: departments } = useDepartments(selectedEntityId ?? undefined);
+  const activeDepartments = useMemo(
+    () => (departments ?? []).filter((d) => d.isActive),
+    [departments],
+  );
 
   const { data, isLoading } = useProfitAndLoss(
     selectedEntityId,
@@ -44,6 +52,7 @@ export function Component() {
     month,
     compare ? compareYear : undefined,
     compare ? compareMonth : undefined,
+    departmentId || undefined,
   );
 
   const yearOptions = Array.from({ length: 4 }, (_, i) => currentYear - 2 + i);
@@ -80,6 +89,19 @@ export function Component() {
                 ))}
               </SelectContent>
             </Select>
+            {activeDepartments.length > 0 && (
+              <Select value={departmentId || 'all'} onValueChange={(v) => setDepartmentId(v === 'all' ? '' : v)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder={t('accounting:departmentFilterAll')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('accounting:departmentFilterAll')}</SelectItem>
+                  {activeDepartments.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <div className="flex items-center gap-2 ml-4">
               <Checkbox
                 id="compare"

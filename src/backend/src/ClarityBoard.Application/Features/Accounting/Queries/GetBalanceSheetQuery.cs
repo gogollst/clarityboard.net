@@ -22,7 +22,8 @@ public record GetBalanceSheetQuery(
     short Year,
     short Month,
     short? CompareYear = null,
-    short? CompareMonth = null) : IRequest<BalanceSheetDto>, IEntityScoped;
+    short? CompareMonth = null,
+    Guid? DepartmentId = null) : IRequest<BalanceSheetDto>, IEntityScoped;
 
 public class GetBalanceSheetQueryHandler : IRequestHandler<GetBalanceSheetQuery, BalanceSheetDto>
 {
@@ -33,7 +34,7 @@ public class GetBalanceSheetQueryHandler : IRequestHandler<GetBalanceSheetQuery,
     public async Task<BalanceSheetDto> Handle(GetBalanceSheetQuery request, CancellationToken ct)
     {
         var asOfDate = new DateOnly(request.Year, request.Month, DateTime.DaysInMonth(request.Year, request.Month));
-        var balances = await GetCumulativeBalancesAsync(request.EntityId, asOfDate, ct);
+        var balances = await GetCumulativeBalancesAsync(request.EntityId, asOfDate, request.DepartmentId, ct);
 
         Dictionary<string, decimal>? priorBalances = null;
         DateOnly? priorDate = null;
@@ -41,7 +42,7 @@ public class GetBalanceSheetQueryHandler : IRequestHandler<GetBalanceSheetQuery,
         {
             priorDate = new DateOnly(request.CompareYear.Value, request.CompareMonth.Value,
                 DateTime.DaysInMonth(request.CompareYear.Value, request.CompareMonth.Value));
-            priorBalances = await GetCumulativeBalancesAsync(request.EntityId, priorDate.Value, ct);
+            priorBalances = await GetCumulativeBalancesAsync(request.EntityId, priorDate.Value, request.DepartmentId, ct);
         }
 
         // AKTIVA (Assets)
@@ -125,18 +126,32 @@ public class GetBalanceSheetQueryHandler : IRequestHandler<GetBalanceSheetQuery,
     }
 
     private async Task<Dictionary<string, decimal>> GetCumulativeBalancesAsync(
-        Guid entityId, DateOnly asOfDate, CancellationToken ct)
+        Guid entityId, DateOnly asOfDate, Guid? departmentId, CancellationToken ct)
     {
-        return await (
-            from a in _db.Accounts.Where(a => a.EntityId == entityId)
+        HashSet<Guid>? costCenterIds = null;
+        if (departmentId.HasValue)
+        {
+            costCenterIds = (await _db.CostCenters
+                .Where(cc => cc.HrDepartmentId == departmentId.Value)
+                .Select(cc => cc.Id)
+                .ToListAsync(ct)).ToHashSet();
+        }
+
+        var query = from a in _db.Accounts.Where(a => a.EntityId == entityId)
             join jel in _db.JournalEntryLines on a.Id equals jel.AccountId
             join je in _db.JournalEntries on jel.JournalEntryId equals je.Id
             where je.EntityId == entityId
                 && je.EntryDate <= asOfDate
                 && je.Status != "reversed"
-            group jel by a.AccountNumber into g
-            select new { AccountNumber = g.Key, Balance = g.Sum(l => l.DebitAmount - l.CreditAmount) }
-        ).ToDictionaryAsync(x => x.AccountNumber, x => x.Balance, ct);
+            select new { a.AccountNumber, jel };
+
+        if (costCenterIds != null)
+            query = query.Where(x => x.jel.CostCenterId != null && costCenterIds.Contains(x.jel.CostCenterId.Value));
+
+        return await query
+            .GroupBy(x => x.AccountNumber)
+            .Select(g => new { AccountNumber = g.Key, Balance = g.Sum(x => x.jel.DebitAmount - x.jel.CreditAmount) })
+            .ToDictionaryAsync(x => x.AccountNumber, x => x.Balance, ct);
     }
 
     private static decimal SumRange(Dictionary<string, decimal> balances, string from, string to)

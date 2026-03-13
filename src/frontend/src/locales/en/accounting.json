@@ -198,12 +198,14 @@
       "code": "Code",
       "shortName": "Name",
       "description": "Description",
-      "type": "Type"
+      "type": "Type",
+      "department": "Department"
     },
     "placeholders": {
       "code": "e.g. C100",
       "shortName": "e.g. Sales",
-      "description": "Optional description"
+      "description": "Optional description",
+      "department": "Select department"
     },
     "dialogTitle": "Create New Cost Center"
   },
@@ -236,6 +238,8 @@
     },
     "dialogTitle": "Create New Planning Scenario"
   },
+  "departmentFilter": "Department",
+  "departmentFilterAll": "All departments",
   "trialBalance": {
     "title": "Trial Balance",
     "noEntitySelected": "Please select an entity first.",

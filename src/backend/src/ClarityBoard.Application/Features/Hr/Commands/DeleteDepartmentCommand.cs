@@ -45,6 +45,14 @@ public class DeleteDepartmentCommandHandler : IRequestHandler<DeleteDepartmentCo
                     "Cannot delete department with assigned employees. Reassign them first.")
             ]);
 
+        var hasCostCenters = await _db.CostCenters
+            .AnyAsync(c => c.HrDepartmentId == request.DepartmentId, ct);
+        if (hasCostCenters)
+            throw new ValidationException([
+                new ValidationFailure(nameof(request.DepartmentId),
+                    "Cannot delete department linked to cost centers. Remove the cost center link first.")
+            ]);
+
         _db.Departments.Remove(department);
         await _db.SaveChangesAsync(ct);
     }

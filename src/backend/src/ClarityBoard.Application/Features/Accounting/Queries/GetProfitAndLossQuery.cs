@@ -22,7 +22,8 @@ public record GetProfitAndLossQuery(
     short Year,
     short Month,
     short? CompareYear = null,
-    short? CompareMonth = null) : IRequest<ProfitAndLossDto>, IEntityScoped;
+    short? CompareMonth = null,
+    Guid? DepartmentId = null) : IRequest<ProfitAndLossDto>, IEntityScoped;
 
 public class GetProfitAndLossQueryHandler : IRequestHandler<GetProfitAndLossQuery, ProfitAndLossDto>
 {
@@ -32,11 +33,11 @@ public class GetProfitAndLossQueryHandler : IRequestHandler<GetProfitAndLossQuer
 
     public async Task<ProfitAndLossDto> Handle(GetProfitAndLossQuery request, CancellationToken ct)
     {
-        var balances = await GetAccountBalancesAsync(request.EntityId, request.Year, request.Month, ct);
+        var balances = await GetAccountBalancesAsync(request.EntityId, request.Year, request.Month, request.DepartmentId, ct);
         Dictionary<string, decimal>? priorBalances = null;
 
         if (request.CompareYear.HasValue && request.CompareMonth.HasValue)
-            priorBalances = await GetAccountBalancesAsync(request.EntityId, request.CompareYear.Value, request.CompareMonth.Value, ct);
+            priorBalances = await GetAccountBalancesAsync(request.EntityId, request.CompareYear.Value, request.CompareMonth.Value, request.DepartmentId, ct);
 
         var sections = new List<PnlSection>();
 
@@ -118,21 +119,36 @@ public class GetProfitAndLossQueryHandler : IRequestHandler<GetProfitAndLossQuer
     }
 
     private async Task<Dictionary<string, decimal>> GetAccountBalancesAsync(
-        Guid entityId, short year, short month, CancellationToken ct)
+        Guid entityId, short year, short month, Guid? departmentId, CancellationToken ct)
     {
         var periodStart = new DateOnly(year, 1, 1);
         var periodEnd = new DateOnly(year, month, DateTime.DaysInMonth(year, month));
 
-        return await (
-            from a in _db.Accounts.Where(a => a.EntityId == entityId)
+        // If department filter is set, resolve matching cost center IDs first
+        HashSet<Guid>? costCenterIds = null;
+        if (departmentId.HasValue)
+        {
+            costCenterIds = (await _db.CostCenters
+                .Where(cc => cc.HrDepartmentId == departmentId.Value)
+                .Select(cc => cc.Id)
+                .ToListAsync(ct)).ToHashSet();
+        }
+
+        var query = from a in _db.Accounts.Where(a => a.EntityId == entityId)
             join jel in _db.JournalEntryLines on a.Id equals jel.AccountId
             join je in _db.JournalEntries on jel.JournalEntryId equals je.Id
             where je.EntityId == entityId
                 && je.EntryDate >= periodStart && je.EntryDate <= periodEnd
                 && je.Status != "reversed"
-            group jel by a.AccountNumber into g
-            select new { AccountNumber = g.Key, Balance = g.Sum(l => l.DebitAmount - l.CreditAmount) }
-        ).ToDictionaryAsync(x => x.AccountNumber, x => x.Balance, ct);
+            select new { a.AccountNumber, jel };
+
+        if (costCenterIds != null)
+            query = query.Where(x => x.jel.CostCenterId != null && costCenterIds.Contains(x.jel.CostCenterId.Value));
+
+        return await query
+            .GroupBy(x => x.AccountNumber)
+            .Select(g => new { AccountNumber = g.Key, Balance = g.Sum(x => x.jel.DebitAmount - x.jel.CreditAmount) })
+            .ToDictionaryAsync(x => x.AccountNumber, x => x.Balance, ct);
     }
 
     private static decimal SumRange(Dictionary<string, decimal> balances, string from, string to)

@@ -20,7 +20,7 @@ public record TrialBalanceDto(
     decimal TotalDebits,
     decimal TotalCredits);
 
-public record GetTrialBalanceQuery(Guid EntityId, short Year, short Month) : IRequest<TrialBalanceDto>, IEntityScoped;
+public record GetTrialBalanceQuery(Guid EntityId, short Year, short Month, Guid? DepartmentId = null) : IRequest<TrialBalanceDto>, IEntityScoped;
 
 public class GetTrialBalanceQueryHandler : IRequestHandler<GetTrialBalanceQuery, TrialBalanceDto>
 {
@@ -32,6 +32,15 @@ public class GetTrialBalanceQueryHandler : IRequestHandler<GetTrialBalanceQuery,
     {
         var periodEnd = new DateOnly(request.Year, request.Month, DateTime.DaysInMonth(request.Year, request.Month));
 
+        HashSet<Guid>? costCenterIds = null;
+        if (request.DepartmentId.HasValue)
+        {
+            costCenterIds = (await _db.CostCenters
+                .Where(cc => cc.HrDepartmentId == request.DepartmentId.Value)
+                .Select(cc => cc.Id)
+                .ToListAsync(ct)).ToHashSet();
+        }
+
         var lines = await (
             from a in _db.Accounts.Where(a => a.EntityId == request.EntityId && a.IsActive)
             join jel in _db.JournalEntryLines on a.Id equals jel.AccountId into jelGroup
@@ -39,6 +48,7 @@ public class GetTrialBalanceQueryHandler : IRequestHandler<GetTrialBalanceQuery,
             join je in _db.JournalEntries on jel.JournalEntryId equals je.Id into jeGroup
             from je in jeGroup.DefaultIfEmpty()
             where je == null || (je.EntityId == request.EntityId && je.EntryDate <= periodEnd && je.Status != "reversed")
+            where costCenterIds == null || jel == null || (jel.CostCenterId != null && costCenterIds.Contains(jel.CostCenterId.Value))
             group new { jel, a } by new { a.Id, a.AccountNumber, a.Name, a.AccountType, a.AccountClass } into g
             select new TrialBalanceLineDto(
                 g.Key.AccountNumber,
@@ -50,7 +60,6 @@ public class GetTrialBalanceQueryHandler : IRequestHandler<GetTrialBalanceQuery,
                 g.Sum(x => x.jel != null ? x.jel.DebitAmount - x.jel.CreditAmount : 0))
         ).OrderBy(l => l.AccountNumber).ToListAsync(ct);
 
-        // Filter out zero-balance accounts
         var nonZeroLines = lines.Where(l => l.DebitTotal != 0 || l.CreditTotal != 0).ToList();
 
         return new TrialBalanceDto(
