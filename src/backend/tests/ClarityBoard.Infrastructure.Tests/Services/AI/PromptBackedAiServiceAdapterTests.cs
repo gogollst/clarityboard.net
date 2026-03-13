@@ -52,7 +52,13 @@ public class PromptBackedAiServiceAdapterTests
         var sut = new PromptBackedAiServiceAdapter(promptService);
         var extraction = new DocumentExtractionResult { TotalAmount = 99.95m };
 
-        var result = await sut.SuggestBookingAsync(extraction, Guid.NewGuid(), CancellationToken.None);
+        var accounts = new List<AccountInfo>
+        {
+            new("3400", "Wareneingang", "expense", "VSt19"),
+            new("1200", "Forderungen", "asset", null),
+        };
+
+        var result = await sut.SuggestBookingAsync(extraction, Guid.NewGuid(), "SKR03", accounts, CancellationToken.None);
 
         Assert.Equal("3400", result.DebitAccountNumber);
         Assert.Equal("1200", result.CreditAccountNumber);
