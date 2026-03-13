@@ -58,7 +58,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         var ct = context.CancellationToken;
         var overallStopwatch = Stopwatch.StartNew();
         var currentStage = "load_document";
-        var reviewReasons = new List<string>();
+        var reviewReasons = new List<ReviewReason>();
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object?>
         {
@@ -145,7 +145,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                     case PartnerMatchType.Fuzzy:
                         var firstSuggestion = matchResult.SuggestedPartners[0];
                         document.SuggestBusinessPartner(firstSuggestion.Id);
-                        reviewReasons.Add("partner_fuzzy_match");
+                        reviewReasons.Add(new ReviewReason { Key = "partner_fuzzy_match" });
                         LogStageInformation(currentStage, matchPartnerStopwatch.ElapsedMilliseconds, "fuzzy_match",
                             "suggestedCount {SuggestedCount} firstSuggestion {FirstSuggestion}",
                             matchResult.SuggestedPartners.Count, firstSuggestion.Name);
@@ -227,7 +227,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                 {
                     // No strong match — fall back to uploaded entity
                     suggestedEntityId = entityId;
-                    reviewReasons.Add("entity_mismatch_suspected");
+                    reviewReasons.Add(new ReviewReason { Key = "entity_mismatch_suspected" });
                     _logger.LogWarning(
                         "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — best match: {BestEntity} ({Confidence})",
                         currentStage, entityRecognitionStopwatch.ElapsedMilliseconds, "low_match",
@@ -275,25 +275,25 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                     "amount {Amount} debitAccount {DebitAccount} creditAccount {CreditAccount}",
                     bookingSuggestion.Amount, bookingSuggestion.DebitAccountNumber, bookingSuggestion.CreditAccountNumber);
                 if (bookingSuggestion.Confidence < LowConfidenceThreshold)
-                    reviewReasons.Add("low_booking_confidence");
+                    reviewReasons.Add(new ReviewReason { Key = "low_booking_confidence" });
 
                 // Evaluate AI classification flags
                 if (bookingSuggestion.Flags is not null)
                 {
                     if (bookingSuggestion.Flags.NeedsManualReview)
-                        reviewReasons.Add("ai_needs_manual_review");
+                        reviewReasons.Add(new ReviewReason { Key = "ai_needs_manual_review" });
                     if (bookingSuggestion.Flags.ReverseCharge)
-                        reviewReasons.Add("reverse_charge_detected");
+                        reviewReasons.Add(new ReviewReason { Key = "reverse_charge_detected" });
                     if (bookingSuggestion.Flags.ActivationRequired)
-                        reviewReasons.Add("activation_required");
+                        reviewReasons.Add(new ReviewReason { Key = "activation_required" });
                     if (bookingSuggestion.Flags.EntertainmentExpense)
-                        reviewReasons.Add("entertainment_expense_70_30");
+                        reviewReasons.Add(new ReviewReason { Key = "entertainment_expense_70_30" });
                     if (bookingSuggestion.Flags.IntraCommunity)
-                        reviewReasons.Add("intra_community_acquisition");
+                        reviewReasons.Add(new ReviewReason { Key = "intra_community_acquisition" });
 
                     foreach (var reason in bookingSuggestion.Flags.ReviewReasons)
                     {
-                        if (!reviewReasons.Contains(reason))
+                        if (!reviewReasons.Any(r => r.Key == reason.Key))
                             reviewReasons.Add(reason);
                     }
                 }
@@ -304,7 +304,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                 _logger.LogWarning(ex,
                     "Document processing stage {Stage} failed in {DurationMs}ms — document will be marked for review",
                     currentStage, suggestBookingStopwatch.ElapsedMilliseconds);
-                reviewReasons.Add("booking_suggestion_failed");
+                reviewReasons.Add(new ReviewReason { Key = "booking_suggestion_failed" });
             }
 
             // 8. Create BookingSuggestion entity
@@ -314,7 +314,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             {
                 bookingSuggestionCreated = await CreateBookingSuggestionAsync(document, entityId, bookingSuggestion, suggestedEntityId, ct);
                 if (!bookingSuggestionCreated)
-                    reviewReasons.Add("booking_suggestion_unresolved_accounts");
+                    reviewReasons.Add(new ReviewReason { Key = "booking_suggestion_unresolved_accounts" });
             }
 
             document.UpdateExtractedData(DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons, textResult));
@@ -342,7 +342,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             {
                 _logger.LogWarning(
                     "Document marked for manual review with reasons {ReviewReasons}",
-                    string.Join(",", reviewReasons));
+                    string.Join(",", reviewReasons.Select(r => r.Key)));
             }
 
             await _documentStatusChangeNotifier.NotifyAsync(entityId, document.Id, document.Status, ct);
@@ -504,9 +504,9 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                 azureResult.ModelUsed, CountDetectedFields(extraction), extraction.LineItems.Count);
 
             if (extraction.Confidence < AzureMinConfidenceThreshold)
-                reviewReasons.Add("azure_doc_intelligence_low_confidence");
+                reviewReasons.Add(new ReviewReason { Key = "azure_doc_intelligence_low_confidence" });
             if (extraction.Confidence < LowConfidenceThreshold)
-                reviewReasons.Add("low_extraction_confidence");
+                reviewReasons.Add(new ReviewReason { Key = "low_extraction_confidence" });
 
             return (azureResult.OcrText, extraction, null);
         }
@@ -519,7 +519,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         acquireTextStopwatch.Stop();
 
         var documentText = textResult.Text;
-        reviewReasons.AddRange(textResult.ReviewReasons);
+        reviewReasons.AddRange(textResult.ReviewReasons.Select(r => new ReviewReason { Key = r }));
 
         if (string.IsNullOrWhiteSpace(documentText))
         {
@@ -545,7 +545,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             "fieldsDetected {FieldsDetected} lineItems {LineItemCount} rawFieldCount {RawFieldCount}",
             CountDetectedFields(aiExtraction), aiExtraction.LineItems.Count, aiExtraction.RawFields.Count);
         if (aiExtraction.Confidence < LowConfidenceThreshold)
-            reviewReasons.Add("low_extraction_confidence");
+            reviewReasons.Add(new ReviewReason { Key = "low_extraction_confidence" });
 
         return (documentText, aiExtraction, textResult);
     }
@@ -576,7 +576,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                 _logger.LogWarning(
                     "Document processing stage {Stage} completed in {DurationMs}ms with result {Result} — empty text, falling back to standard pipeline",
                     "azure_analyze", azureStopwatch.ElapsedMilliseconds, "empty_text");
-                reviewReasons.Add("azure_doc_intelligence_empty_text");
+                reviewReasons.Add(new ReviewReason { Key = "azure_doc_intelligence_empty_text" });
                 return null;
             }
 
@@ -593,7 +593,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             _logger.LogWarning(ex,
                 "Document processing stage {Stage} failed in {DurationMs}ms — falling back to standard pipeline",
                 "azure_analyze", azureStopwatch.ElapsedMilliseconds);
-            reviewReasons.Add("azure_doc_intelligence_failed");
+            reviewReasons.Add(new ReviewReason { Key = "azure_doc_intelligence_failed" });
             return null;
         }
     }

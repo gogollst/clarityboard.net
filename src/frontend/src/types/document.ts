@@ -28,9 +28,14 @@ export interface DocumentDetail extends DocumentListItem {
   suggestedBusinessPartnerNumber?: string;
   ocrText?: string;
   ocrMetadata?: OcrMetadata;
-  reviewReasons?: string[];
+  reviewReasons?: (string | ReviewReasonDto)[];
   fields?: DocumentField[];
   bookingSuggestion?: BookingSuggestion;
+}
+
+export interface ReviewReasonDto {
+  key: string;
+  detail?: string;
 }
 
 export interface OcrMetadata {

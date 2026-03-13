@@ -44,7 +44,7 @@ public record DocumentDetailDto
     public OcrMetadataDto? OcrMetadata { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? ProcessedAt { get; init; }
-    public IReadOnlyList<string> ReviewReasons { get; init; } = [];
+    public IReadOnlyList<ReviewReasonDto> ReviewReasons { get; init; } = [];
     public IReadOnlyList<DocumentFieldDto> Fields { get; init; } = [];
     public BookingSuggestionDto? BookingSuggestion { get; init; }
 }
@@ -95,6 +95,12 @@ public record BookingSuggestionDto
     public string? VatTreatmentType { get; init; }
     public Guid? SuggestedEntityId { get; init; }
     public string? SuggestedEntityName { get; init; }
+}
+
+public record ReviewReasonDto
+{
+    public string Key { get; init; } = "";
+    public string? Detail { get; init; }
 }
 
 public record DocumentUploadResult

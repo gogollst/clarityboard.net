@@ -93,13 +93,19 @@ public record VatTreatmentResult
 public record BookingFlagsResult
 {
     public bool NeedsManualReview { get; init; }
-    public IReadOnlyList<string> ReviewReasons { get; init; } = [];
+    public IReadOnlyList<ReviewReason> ReviewReasons { get; init; } = [];
     public bool IsRecurring { get; init; }
     public bool GwgRelevant { get; init; }
     public bool ActivationRequired { get; init; }
     public bool ReverseCharge { get; init; }
     public bool IntraCommunity { get; init; }
     public bool EntertainmentExpense { get; init; }
+}
+
+public record ReviewReason
+{
+    public string Key { get; init; } = "";
+    public string Detail { get; init; } = "";
 }
 
 public record ClassifiedLineItemResult

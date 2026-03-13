@@ -459,10 +459,11 @@ export function Component() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {doc.reviewReasons.map((reason) => {
+              {doc.reviewReasons.map((reason, idx) => {
                 const display = getReviewReasonDisplay(reason, t);
+                const reasonKey = typeof reason === 'string' ? reason : reason.key;
                 return (
-                  <div key={reason} className="rounded-md border border-amber-200 bg-white p-3 dark:border-amber-700 dark:bg-amber-900/30">
+                  <div key={`${reasonKey}-${idx}`} className="rounded-md border border-amber-200 bg-white p-3 dark:border-amber-700 dark:bg-amber-900/30">
                     <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                       {display.isAiFreetext && (
                         <Badge variant="outline" className="mr-2 text-[10px] px-1.5 py-0 align-middle border-amber-300 text-amber-600 dark:border-amber-600 dark:text-amber-400">
@@ -474,6 +475,11 @@ export function Component() {
                     {display.hint && (
                       <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
                         {display.hint}
+                      </p>
+                    )}
+                    {display.detail && (
+                      <p className="mt-1 text-xs text-amber-500 dark:text-amber-500 italic">
+                        {display.detail}
                       </p>
                     )}
                   </div>

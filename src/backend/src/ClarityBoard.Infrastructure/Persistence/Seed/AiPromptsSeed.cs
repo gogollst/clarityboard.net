@@ -540,7 +540,12 @@ Antworte AUSSCHLIESSLICH mit dem folgenden JSON-Objekt. Kein einleitender Text, 
   ],
   "flags": {
     "needs_manual_review": <boolean>,
-    "review_reasons": ["<string>"],
+    "review_reasons": [
+      {
+        "key": "<snake_case Key aus der Liste unten oder 'custom' wenn kein passender Key existiert>",
+        "detail": "<Fachlicher Kontext auf Deutsch, z.B. 'Aufteilung auf Kostenstellen 100 und 200 erforderlich'>"
+      }
+    ],
     "is_recurring": <boolean>,
     "gwg_relevant": <boolean>,
     "activation_required": <boolean>,
@@ -550,6 +555,19 @@ Antworte AUSSCHLIESSLICH mit dem folgenden JSON-Objekt. Kein einleitender Text, 
   },
   "notes": "<Zusätzliche Hinweise für den Buchhalter>"
 }
+
+WICHTIG für review_reasons: Verwende bevorzugt einen der folgenden kontrollierten Keys:
+- cost_center_split_required — Aufteilung auf mehrere Kostenstellen erforderlich
+- high_consulting_activation — Beratungsaufwand möglicherweise aktivierungspflichtig
+- project_assignment_check — Zuordnung zu Projekt prüfen
+- manual_review_rule — Manuelle Prüfung gemäß Buchungsregel erforderlich
+- ocr_quality_issues — Widersprüchliche oder fehlerhafte OCR-Daten
+- amount_plausibility_check — Betrag unplausibel oder inkonsistent
+- tax_treatment_unclear — Steuerliche Behandlung unklar
+- multi_period_allocation — Periodenabgrenzung erforderlich
+- intercompany_transaction — Konzern-interne Transaktion erkannt
+- duplicate_invoice_suspected — Möglicherweise doppelte Rechnung
+Nur wenn KEIN passender Key existiert, verwende "custom" als key und beschreibe den Grund im detail-Feld.
 </output_schema>
 
 <qualitaetsregeln>
@@ -557,7 +575,7 @@ Antworte AUSSCHLIESSLICH mit dem folgenden JSON-Objekt. Kein einleitender Text, 
 2. KONSERVATIV: Im Zweifel lieber flaggen als falsch buchen. needsManualReview = true ist kein Fehler.
 3. VOLLSTÄNDIG: Jeder Buchungsvorschlag muss bilanziell ausgeglichen sein (Summe Soll = Summe Haben).
 4. DATEV-KONFORM: Buchungstexte max. 60 Zeichen. Steuerschlüssel müssen zum Konto und zur USt-Behandlung passen.
-5. OCR-TOLERANZ: Bei widersprüchlichen OCR-Daten selbst berechnen und ocrQualityIssues in review_reasons aufnehmen.
+5. OCR-TOLERANZ: Bei widersprüchlichen OCR-Daten selbst berechnen und {"key": "ocr_quality_issues", "detail": "<Beschreibung>"} in review_reasons aufnehmen.
 6. KEINE HALLUZINATION: Fehlende Felder auf null setzen, nicht raten.
 7. KONTEN-VALIDIERUNG: Verwende NUR Konten aus der übergebenen Kontenliste oder dem SKR 04 Referenzplan.
 </qualitaetsregeln>

@@ -7,7 +7,7 @@ public static class DocumentExtractedDataSerializer
 {
     public static string Serialize(
         DocumentExtractionResult extraction,
-        IReadOnlyCollection<string> reviewReasons,
+        IReadOnlyCollection<ReviewReason> reviewReasons,
         DocumentTextAcquisitionResult? textAcquisition = null)
     {
         var payload = new
@@ -22,9 +22,11 @@ public static class DocumentExtractedDataSerializer
             RawFields = extraction.RawFields,
             extraction.Confidence,
             ReviewReasons = reviewReasons
-                .Where(reason => !string.IsNullOrWhiteSpace(reason))
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(reason => reason, StringComparer.Ordinal)
+                .Where(r => !string.IsNullOrWhiteSpace(r.Key))
+                .GroupBy(r => r.Key, StringComparer.Ordinal)
+                .Select(g => g.First())
+                .OrderBy(r => r.Key, StringComparer.Ordinal)
+                .Select(r => new { r.Key, r.Detail })
                 .ToArray(),
             OcrMetadata = textAcquisition is null
                 ? null

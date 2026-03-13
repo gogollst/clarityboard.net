@@ -349,6 +349,34 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
             .ToList();
     }
 
+    private static IReadOnlyList<ReviewReason> GetReviewReasonArray(JsonElement element, params string[] names)
+    {
+        if (!TryGetProperty(element, out var property, names) || property.ValueKind != JsonValueKind.Array)
+            return [];
+
+        var results = new List<ReviewReason>();
+        foreach (var item in property.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String)
+            {
+                // Old format: plain string → treat as key with empty detail
+                var value = item.GetString();
+                if (!string.IsNullOrWhiteSpace(value))
+                    results.Add(new ReviewReason { Key = value, Detail = "" });
+            }
+            else if (item.ValueKind == JsonValueKind.Object)
+            {
+                // New format: { "key": "...", "detail": "..." }
+                var key = GetString(item, "key");
+                var detail = GetString(item, "detail") ?? "";
+                if (!string.IsNullOrWhiteSpace(key))
+                    results.Add(new ReviewReason { Key = key, Detail = detail });
+            }
+        }
+
+        return results;
+    }
+
     private static VatTreatmentResult? ParseVatTreatment(JsonElement root)
     {
         var obj = GetNestedObject(root, "vat_treatment", "vatTreatment");
@@ -375,7 +403,7 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
         return new BookingFlagsResult
         {
             NeedsManualReview = GetBool(f, "needs_manual_review", "needsManualReview"),
-            ReviewReasons = GetStringArray(f, "review_reasons", "reviewReasons"),
+            ReviewReasons = GetReviewReasonArray(f, "review_reasons", "reviewReasons"),
             IsRecurring = GetBool(f, "is_recurring", "isRecurring"),
             GwgRelevant = GetBool(f, "gwg_relevant", "gwgRelevant"),
             ActivationRequired = GetBool(f, "activation_required", "activationRequired"),

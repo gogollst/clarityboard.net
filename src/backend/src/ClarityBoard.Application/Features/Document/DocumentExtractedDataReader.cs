@@ -5,7 +5,7 @@ namespace ClarityBoard.Application.Features.Document;
 
 public static class DocumentExtractedDataReader
 {
-    public static IReadOnlyList<string> ReadReviewReasons(string? extractedData)
+    public static IReadOnlyList<ReviewReasonDto> ReadReviewReasons(string? extractedData)
     {
         if (string.IsNullOrWhiteSpace(extractedData))
             return [];
@@ -18,12 +18,27 @@ public static class DocumentExtractedDataReader
                 || reviewReasonsElement.ValueKind != JsonValueKind.Array)
                 return [];
 
-            return reviewReasonsElement
-                .EnumerateArray()
-                .Select(element => element.GetString())
-                .Where(reason => !string.IsNullOrWhiteSpace(reason))
-                .Select(reason => reason!)
-                .ToArray();
+            var results = new List<ReviewReasonDto>();
+            foreach (var element in reviewReasonsElement.EnumerateArray())
+            {
+                if (element.ValueKind == JsonValueKind.String)
+                {
+                    // Old format: plain string
+                    var value = element.GetString();
+                    if (!string.IsNullOrWhiteSpace(value))
+                        results.Add(new ReviewReasonDto { Key = value, Detail = null });
+                }
+                else if (element.ValueKind == JsonValueKind.Object)
+                {
+                    // New format: { "Key": "...", "Detail": "..." }
+                    var key = element.TryGetProperty("Key", out var k) ? k.GetString() : null;
+                    var detail = element.TryGetProperty("Detail", out var d) ? d.GetString() : null;
+                    if (!string.IsNullOrWhiteSpace(key))
+                        results.Add(new ReviewReasonDto { Key = key!, Detail = string.IsNullOrWhiteSpace(detail) ? null : detail });
+                }
+            }
+
+            return results;
         }
         catch (JsonException)
         {
