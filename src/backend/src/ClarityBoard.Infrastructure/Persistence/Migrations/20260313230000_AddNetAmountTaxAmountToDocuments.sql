@@ -1,5 +1,5 @@
 -- Add NetAmount and TaxAmount columns to document.Documents
-ALTER TABLE document."Documents"
+ALTER TABLE document.documents
     ADD COLUMN IF NOT EXISTS "NetAmount" numeric(18,2) NULL,
     ADD COLUMN IF NOT EXISTS "TaxAmount" numeric(18,2) NULL;
 
