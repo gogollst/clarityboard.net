@@ -54,6 +54,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AccountCombobox } from '@/components/shared/AccountCombobox';
 import {
   ArrowLeft,
   Check,
@@ -960,40 +961,20 @@ export function Component() {
           <form onSubmit={handleModifySubmit} className="mt-6 space-y-4">
             <div>
               <Label>{t('detail.bookingSuggestion.debitAccount')}</Label>
-              <Select
+              <AccountCombobox
+                accounts={accounts}
                 value={modifyForm.watch('debitAccountId')}
                 onValueChange={(v) => modifyForm.setValue('debitAccountId', v)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((acc) => (
-                    <SelectItem key={acc.id} value={acc.id}>
-                      {acc.accountNumber} — {acc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
 
             <div>
               <Label>{t('detail.bookingSuggestion.creditAccount')}</Label>
-              <Select
+              <AccountCombobox
+                accounts={accounts}
                 value={modifyForm.watch('creditAccountId')}
                 onValueChange={(v) => modifyForm.setValue('creditAccountId', v)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((acc) => (
-                    <SelectItem key={acc.id} value={acc.id}>
-                      {acc.accountNumber} — {acc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
 
             <div>
