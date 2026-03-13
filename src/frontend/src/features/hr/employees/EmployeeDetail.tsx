@@ -13,7 +13,7 @@ import {
   useDetachDocFromContract,
 } from '@/hooks/useHr';
 import { useAuth } from '@/hooks/useAuth';
-import { useEntity } from '@/hooks/useEntity';
+import { useAuthStore } from '@/stores/authStore';
 import type { ContractEntry, EmployeeDetail as EmployeeDetailType, CreateContractRequest, UpdateContractRequest } from '@/types/hr';
 import PageHeader from '@/components/shared/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -953,7 +953,8 @@ export function Component() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { hasPermission } = useAuth();
-  const { entities } = useEntity();
+  const authEntities = useAuthStore((s) => s.user?.entities ?? []);
+  const entities = authEntities.map((e) => ({ id: e.entityId, name: e.entityName }));
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editEntityId, setEditEntityId] = useState<string>('');
