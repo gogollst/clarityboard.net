@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
-import { useDocuments, useReprocessDocument } from '@/hooks/useDocuments';
+import { useDocuments, useReprocessDocument, useDeleteDocument, useDeleteDocumentPreflight } from '@/hooks/useDocuments';
 import { api } from '@/lib/api';
 import type { DocumentStatus } from '@/types/document';
 import PageHeader from '@/components/shared/PageHeader';
@@ -12,6 +12,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Select,
   SelectTrigger,
   SelectValue,
@@ -19,7 +27,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import { formatCurrency } from '@/lib/format';
-import { Upload, Search, Download, Eye, RefreshCw, Loader2 } from 'lucide-react';
+import { Upload, Search, Download, Eye, RefreshCw, Loader2, Trash2, AlertTriangle } from 'lucide-react';
 
 const STATUS_VARIANT_MAP: Record<string, 'default' | 'success' | 'warning' | 'destructive' | 'info'> = {
   uploaded: 'info',
@@ -39,6 +47,13 @@ export function Component() {
   const [search, setSearch] = useState('');
   const pageSize = 20;
   const reprocessDocument = useReprocessDocument();
+  const deleteDocument = useDeleteDocument();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; fileName: string } | null>(null);
+  const {
+    data: preflight,
+    isFetching: isPreflightLoading,
+    refetch: fetchPreflight,
+  } = useDeleteDocumentPreflight(selectedEntityId, deleteTarget?.id ?? null);
 
   const { data, isLoading } = useDocuments({
     entityId: selectedEntityId ?? '',
@@ -64,6 +79,23 @@ export function Component() {
   const handleReprocess = (id: string) => {
     if (!selectedEntityId) return;
     reprocessDocument.mutate({ documentId: id, entityId: selectedEntityId });
+  };
+
+  const handleOpenDeleteDialog = (id: string, fileName: string) => {
+    setDeleteTarget({ id, fileName });
+  };
+
+  // Fetch preflight when a new deleteTarget is selected
+  useEffect(() => {
+    if (deleteTarget) fetchPreflight();
+  }, [deleteTarget?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleConfirmDelete = () => {
+    if (!selectedEntityId || !deleteTarget) return;
+    deleteDocument.mutate(
+      { documentId: deleteTarget.id, entityId: selectedEntityId },
+      { onSuccess: () => setDeleteTarget(null) },
+    );
   };
 
   // Count items by status for quick filters
@@ -152,6 +184,16 @@ export function Component() {
               )}
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            title={t('actions.delete')}
+            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+            onClick={() => handleOpenDeleteDialog(String(item.id ?? ''), String(item.fileName ?? ''))}
+            disabled={deleteDocument.isPending}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       ),
     },
@@ -252,6 +294,90 @@ export function Component() {
           onPageChange: setPage,
         }}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('delete.title')}</DialogTitle>
+            <DialogDescription>
+              {t('delete.confirm', { fileName: deleteTarget?.fileName })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            {isPreflightLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t('delete.loading')}
+              </div>
+            ) : preflight ? (
+              <>
+                {!preflight.canDelete && preflight.blockReason && (
+                  <div className="rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950">
+                    <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                      {t('delete.blocked')}
+                    </p>
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {preflight.blockReason.startsWith('closed_period:')
+                        ? t('delete.closedPeriod', { period: preflight.blockReason.split(':')[1] })
+                        : preflight.blockReason}
+                    </p>
+                  </div>
+                )}
+                {preflight.canDelete && (
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      {t('delete.willDeleteDocument')}
+                    </li>
+                    {preflight.fieldCount > 0 && (
+                      <li className="flex items-center gap-2">
+                        <span className="text-muted-foreground">•</span>
+                        {t('delete.willDeleteFields', { count: preflight.fieldCount })}
+                      </li>
+                    )}
+                    {preflight.hasBookingSuggestion && (
+                      <li className="flex items-center gap-2">
+                        <span className="text-muted-foreground">•</span>
+                        {t('delete.willDeleteBookingSuggestion')}
+                      </li>
+                    )}
+                    {preflight.hasJournalEntry && preflight.journalEntryWillBeReversed && (
+                      <li className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                        <AlertTriangle className="h-4 w-4 shrink-0" />
+                        {t('delete.willReverseJournalEntry')}
+                      </li>
+                    )}
+                    {preflight.hasJournalEntry && !preflight.journalEntryWillBeReversed && (
+                      <li className="flex items-center gap-2">
+                        <span className="text-muted-foreground">•</span>
+                        {t('delete.journalEntryAlreadyReversed')}
+                      </li>
+                    )}
+                  </ul>
+                )}
+                {preflight.canDelete && (
+                  <p className="text-xs text-muted-foreground italic">{t('delete.irreversible')}</p>
+                )}
+              </>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              {t('actions.cancel', { ns: 'common', defaultValue: 'Cancel' })}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleteDocument.isPending || !preflight?.canDelete}
+            >
+              {deleteDocument.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              <Trash2 className="mr-1 h-4 w-4" />
+              {t('actions.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

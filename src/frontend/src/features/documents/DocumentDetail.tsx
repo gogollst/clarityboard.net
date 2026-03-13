@@ -9,6 +9,8 @@ import {
   useModifyBooking,
   useRejectBooking,
   useReprocessDocument,
+  useDeleteDocumentPreflight,
+  useDeleteDocument,
 } from '@/hooks/useDocuments';
 import { useAccounts } from '@/hooks/useAccounting';
 import { useSearchBusinessPartners, useAssignDocumentPartner } from '@/hooks/useAccounting';
@@ -65,6 +67,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Trash2,
   Upload,
   X,
   XCircle,
@@ -145,6 +148,8 @@ export function Component() {
   const confirmPartnerMatch = useConfirmPartnerMatch();
   const assignPartner = useAssignDocumentPartner();
   const reprocessDocument = useReprocessDocument();
+  const deleteDocument = useDeleteDocument();
+  const { data: preflight, refetch: fetchPreflight, isFetching: isPreflightLoading } = useDeleteDocumentPreflight(selectedEntityId, id ?? null);
 
   // Account & employee data for modify form
   const { data: accounts = [] } = useAccounts(selectedEntityId);
@@ -167,6 +172,7 @@ export function Component() {
   const [rejectReason, setRejectReason] = useState('');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
   const [showOcrPanel, setShowOcrPanel] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Modify form
   const modifyForm = useForm<ModifyBookingRequest>();
@@ -282,6 +288,19 @@ export function Component() {
     });
   };
 
+  const handleOpenDeleteDialog = async () => {
+    await fetchPreflight();
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteDocument = () => {
+    if (!selectedEntityId) return;
+    deleteDocument.mutate(
+      { documentId: doc.id, entityId: selectedEntityId },
+      { onSuccess: () => navigate('/documents') },
+    );
+  };
+
   const bs = doc.bookingSuggestion;
   const canAct =
     (doc.status === 'review' || doc.status === 'extracted') &&
@@ -300,6 +319,15 @@ export function Component() {
             {doc.confidence != null && (
               <ConfidenceBar confidence={doc.confidence} />
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-950"
+              onClick={handleOpenDeleteDialog}
+            >
+              <Trash2 className="mr-1 h-4 w-4" />
+              {t('actions.delete')}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -1020,6 +1048,90 @@ export function Component() {
           </form>
         </SheetContent>
       </Sheet>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('delete.title')}</DialogTitle>
+            <DialogDescription>
+              {t('delete.confirm', { fileName: doc.fileName })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            {isPreflightLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t('delete.loading')}
+              </div>
+            ) : preflight ? (
+              <>
+                {!preflight.canDelete && preflight.blockReason && (
+                  <div className="rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950">
+                    <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                      {t('delete.blocked')}
+                    </p>
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {preflight.blockReason.startsWith('closed_period:')
+                        ? t('delete.closedPeriod', { period: preflight.blockReason.split(':')[1] })
+                        : preflight.blockReason}
+                    </p>
+                  </div>
+                )}
+                {preflight.canDelete && (
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <span className="text-muted-foreground">•</span>
+                      {t('delete.willDeleteDocument')}
+                    </li>
+                    {preflight.fieldCount > 0 && (
+                      <li className="flex items-center gap-2">
+                        <span className="text-muted-foreground">•</span>
+                        {t('delete.willDeleteFields', { count: preflight.fieldCount })}
+                      </li>
+                    )}
+                    {preflight.hasBookingSuggestion && (
+                      <li className="flex items-center gap-2">
+                        <span className="text-muted-foreground">•</span>
+                        {t('delete.willDeleteBookingSuggestion')}
+                      </li>
+                    )}
+                    {preflight.hasJournalEntry && preflight.journalEntryWillBeReversed && (
+                      <li className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                        <AlertTriangle className="h-4 w-4 shrink-0" />
+                        {t('delete.willReverseJournalEntry')}
+                      </li>
+                    )}
+                    {preflight.hasJournalEntry && !preflight.journalEntryWillBeReversed && (
+                      <li className="flex items-center gap-2">
+                        <span className="text-muted-foreground">•</span>
+                        {t('delete.journalEntryAlreadyReversed')}
+                      </li>
+                    )}
+                  </ul>
+                )}
+                {preflight.canDelete && (
+                  <p className="text-xs text-muted-foreground italic">{t('delete.irreversible')}</p>
+                )}
+              </>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              {t('actions.cancel', { ns: 'common', defaultValue: 'Cancel' })}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteDocument}
+              disabled={deleteDocument.isPending || !preflight?.canDelete}
+            >
+              {deleteDocument.isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+              <Trash2 className="mr-1 h-4 w-4" />
+              {t('actions.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -31,7 +31,8 @@
     "modifyBooking": "Anpassen",
     "rejectBooking": "Ablehnen",
     "confirmApproval": "Bestätigen & Buchen",
-    "reprocess": "Erneut verarbeiten"
+    "reprocess": "Erneut verarbeiten",
+    "delete": "Löschen"
   },
   "detail": {
     "title": "Dokumentdetail",
@@ -123,9 +124,24 @@
       "processing": "In Verarbeitung"
     }
   },
+  "delete": {
+    "title": "Dokument löschen",
+    "confirm": "Möchten Sie \"{{fileName}}\" wirklich unwiderruflich löschen?",
+    "loading": "Abhängigkeiten werden geprüft...",
+    "blocked": "Löschung nicht möglich",
+    "closedPeriod": "Der zugehörige Buchungssatz liegt in einer geschlossenen Periode ({{period}}).",
+    "willDeleteDocument": "Das Dokument und die zugehörige Datei werden unwiderruflich entfernt",
+    "willDeleteFields": "{{count}} extrahierte Felder werden gelöscht",
+    "willDeleteBookingSuggestion": "Der Buchungsvorschlag wird gelöscht",
+    "willReverseJournalEntry": "Der zugehörige Buchungssatz wird storniert (Storno-Buchung wird erstellt)",
+    "journalEntryAlreadyReversed": "Der zugehörige Buchungssatz wurde bereits storniert",
+    "irreversible": "Dieser Vorgang kann nicht rückgängig gemacht werden."
+  },
   "toast": {
     "bookingModified": "Buchung mit Änderungen erstellt",
-    "bookingRejected": "Buchungsvorschlag abgelehnt"
+    "bookingRejected": "Buchungsvorschlag abgelehnt",
+    "documentDeleted": "Dokument und zugehörige Artefakte wurden gelöscht",
+    "documentDeleteError": "Fehler beim Löschen des Dokuments"
   },
   "uploadPage": {
     "title": "Dokument hochladen",

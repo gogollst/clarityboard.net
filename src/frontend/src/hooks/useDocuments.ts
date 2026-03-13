@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { queryKeys } from '@/lib/queryKeys';
+import i18n from '@/i18n';
 import type { PaginatedResponse } from '@/types/api';
 import type {
   DocumentListItem,
@@ -10,6 +11,7 @@ import type {
   UploadDocumentRequest,
   DocumentDownloadUrl,
   ModifyBookingRequest,
+  DeleteDocumentPreflight,
 } from '@/types/document';
 
 // ---------------------------------------------------------------------------
@@ -247,6 +249,58 @@ export function useModifyBooking() {
     },
     onError: () => {
       toast.error('Failed to modify booking suggestion');
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Delete Document (Preflight + Execute)
+// ---------------------------------------------------------------------------
+
+export function useDeleteDocumentPreflight(entityId: string | null, documentId: string | null) {
+  return useQuery({
+    queryKey: [...queryKeys.documents.detail(entityId ?? '', documentId ?? ''), 'delete-preflight'],
+    queryFn: async () => {
+      const { data } = await api.get<DeleteDocumentPreflight>(
+        `/documents/${documentId}/delete-preflight`,
+        { params: { entityId } },
+      );
+      return data;
+    },
+    enabled: false, // Only fetch on demand
+  });
+}
+
+export function useDeleteDocument() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      documentId,
+      entityId,
+    }: {
+      documentId: string;
+      entityId: string;
+    }) => {
+      await api.delete(`/documents/${documentId}`, {
+        params: { entityId },
+      });
+      return { documentId, entityId };
+    },
+    onSuccess: ({ entityId }) => {
+      toast.success(i18n.t('documents:toast.documentDeleted'));
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documents.list(entityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.journalEntries(entityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.trialBalance(entityId),
+      });
+    },
+    onError: () => {
+      toast.error(i18n.t('documents:toast.documentDeleteError'));
     },
   });
 }

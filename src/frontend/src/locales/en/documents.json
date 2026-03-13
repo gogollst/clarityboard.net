@@ -31,7 +31,8 @@
     "modifyBooking": "Modify",
     "rejectBooking": "Reject",
     "confirmApproval": "Confirm & Book",
-    "reprocess": "Reprocess"
+    "reprocess": "Reprocess",
+    "delete": "Delete"
   },
   "detail": {
     "title": "Document Detail",
@@ -123,9 +124,24 @@
       "processing": "Processing"
     }
   },
+  "delete": {
+    "title": "Delete Document",
+    "confirm": "Are you sure you want to permanently delete \"{{fileName}}\"?",
+    "loading": "Checking dependencies...",
+    "blocked": "Deletion not possible",
+    "closedPeriod": "The associated journal entry is in a closed fiscal period ({{period}}).",
+    "willDeleteDocument": "The document and its file will be permanently removed",
+    "willDeleteFields": "{{count}} extracted fields will be deleted",
+    "willDeleteBookingSuggestion": "The booking suggestion will be deleted",
+    "willReverseJournalEntry": "The associated journal entry will be reversed (a reversal entry will be created)",
+    "journalEntryAlreadyReversed": "The associated journal entry has already been reversed",
+    "irreversible": "This action cannot be undone."
+  },
   "toast": {
     "bookingModified": "Booking created with modifications",
-    "bookingRejected": "Booking suggestion rejected"
+    "bookingRejected": "Booking suggestion rejected",
+    "documentDeleted": "Document and related artifacts deleted",
+    "documentDeleteError": "Failed to delete document"
   },
   "uploadPage": {
     "title": "Upload Document",
