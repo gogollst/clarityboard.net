@@ -455,7 +455,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             accountId: debitAccount.Id,
             amount: suggestion.Amount,
             vatCode: suggestion.VatCode,
-            vatAmount: suggestion.VatAmount ?? 0,
+            vatAmount: document.TaxAmount ?? 0,
             description: suggestion.Description,
             hrEmployeeId: pattern.HrEmployeeId);
         journalEntry.AddLine(debitLine);
@@ -465,7 +465,7 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             accountId: creditAccount.Id,
             amount: suggestion.Amount,
             vatCode: suggestion.VatCode,
-            vatAmount: suggestion.VatAmount ?? 0,
+            vatAmount: document.TaxAmount ?? 0,
             description: suggestion.Description,
             hrEmployeeId: pattern.HrEmployeeId);
         journalEntry.AddLine(creditLine);
