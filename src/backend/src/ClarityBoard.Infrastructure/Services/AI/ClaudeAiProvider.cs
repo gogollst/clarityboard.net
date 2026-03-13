@@ -235,7 +235,15 @@ public partial class ClaudeAiProvider : IAiService
               "type": "object",
               "description": "Any additional fields found in the document as key-value pairs",
               "additionalProperties": { "type": "string" }
-            }
+            },
+            "recipient_name": { "type": "string", "description": "Name of the recipient/customer" },
+            "recipient_tax_id": { "type": "string", "description": "Recipient tax ID (Steuernummer)" },
+            "recipient_vat_id": { "type": "string", "description": "Recipient VAT ID (USt-IdNr)" },
+            "recipient_street": { "type": "string", "description": "Recipient street address" },
+            "recipient_city": { "type": "string", "description": "Recipient city" },
+            "recipient_postal_code": { "type": "string", "description": "Recipient postal code" },
+            "recipient_country": { "type": "string", "description": "Recipient country (ISO 3166-1 alpha-2)" },
+            "document_direction": { "type": "string", "enum": ["incoming", "outgoing"], "description": "incoming = Eingangsrechnung (vendor bills you), outgoing = Ausgangsrechnung (you bill customer)" }
           },
           "required": ["vendor_name", "total_amount", "confidence"]
         }
@@ -305,6 +313,14 @@ public partial class ClaudeAiProvider : IAiService
         return new DocumentExtractionResult
         {
             VendorName = GetStringOrNull(root, "vendor_name"),
+            RecipientName = GetStringOrNull(root, "recipient_name"),
+            RecipientTaxId = GetStringOrNull(root, "recipient_tax_id"),
+            RecipientVatId = GetStringOrNull(root, "recipient_vat_id"),
+            RecipientStreet = GetStringOrNull(root, "recipient_street"),
+            RecipientCity = GetStringOrNull(root, "recipient_city"),
+            RecipientPostalCode = GetStringOrNull(root, "recipient_postal_code"),
+            RecipientCountry = GetStringOrNull(root, "recipient_country"),
+            DocumentDirection = GetStringOrNull(root, "document_direction"),
             InvoiceNumber = GetStringOrNull(root, "invoice_number"),
             InvoiceDate = invoiceDate,
             TotalAmount = GetDecimalOrNull(root, "total_amount"),

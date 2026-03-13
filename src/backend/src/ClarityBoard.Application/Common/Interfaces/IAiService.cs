@@ -27,6 +27,14 @@ public record DocumentExtractionResult
     public string? VendorCountry { get; init; }
     public string? VendorIban { get; init; }
     public string? VendorBic { get; init; }
+    public string? RecipientName { get; init; }
+    public string? RecipientTaxId { get; init; }
+    public string? RecipientVatId { get; init; }
+    public string? RecipientStreet { get; init; }
+    public string? RecipientCity { get; init; }
+    public string? RecipientPostalCode { get; init; }
+    public string? RecipientCountry { get; init; }
+    public string? DocumentDirection { get; init; } // "incoming" or "outgoing"
     public string? InvoiceNumber { get; init; }
     public DateOnly? InvoiceDate { get; init; }
     public decimal? TotalAmount { get; init; }

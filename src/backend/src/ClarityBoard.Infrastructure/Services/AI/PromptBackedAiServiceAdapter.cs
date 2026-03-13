@@ -47,6 +47,21 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
                          ?? GetNestedString(supplierObj, "iban"),
             VendorBic = GetString(root, "vendor_bic", "vendorBic", "supplier_bic", "bic")
                         ?? GetNestedString(supplierObj, "bic"),
+            RecipientName = GetString(root, "recipient_name", "recipientName", "customer_name")
+                            ?? GetNestedString(GetNestedObject(root, "recipient", "customer"), "name"),
+            RecipientTaxId = GetString(root, "recipient_tax_id", "recipientTaxId", "customer_tax_id")
+                             ?? GetNestedString(GetNestedObject(root, "recipient", "customer"), "tax_id", "taxId"),
+            RecipientVatId = GetString(root, "recipient_vat_id", "recipientVatId", "customer_vat_id", "recipient_ust_id_nr")
+                             ?? GetNestedString(GetNestedObject(root, "recipient", "customer"), "vat_id", "ust_id_nr"),
+            RecipientStreet = GetString(root, "recipient_street", "recipientStreet")
+                              ?? GetNestedAddressField(GetNestedObject(root, "recipient", "customer"), "street"),
+            RecipientCity = GetString(root, "recipient_city", "recipientCity")
+                            ?? GetNestedAddressField(GetNestedObject(root, "recipient", "customer"), "city"),
+            RecipientPostalCode = GetString(root, "recipient_postal_code", "recipientPostalCode")
+                                  ?? GetNestedAddressField(GetNestedObject(root, "recipient", "customer"), "postal_code", "postalCode", "zip"),
+            RecipientCountry = GetString(root, "recipient_country", "recipientCountry")
+                               ?? GetNestedAddressField(GetNestedObject(root, "recipient", "customer"), "country"),
+            DocumentDirection = GetString(root, "document_direction", "documentDirection", "direction"),
             InvoiceNumber = GetString(root, "invoice_number", "invoiceNumber", "document_number"),
             InvoiceDate = ParseDateOnly(GetString(root, "invoice_date", "invoiceDate", "date")),
             TotalAmount = GetDecimal(root, "total_amount", "totalAmount", "gross_amount", "total_gross"),

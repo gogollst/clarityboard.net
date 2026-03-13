@@ -69,6 +69,9 @@ Rules:
 - Distinguish Nettobetrag, Steuerbetrag and Bruttobetrag
 - Extract all line items with description, quantity, unit price and total
 - Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic
+- Extract recipient/customer details: recipient_name, recipient_tax_id (USt-IdNr or Steuernummer), recipient_vat_id, recipient_street, recipient_city, recipient_postal_code, recipient_country (ISO 3166-1 alpha-2)
+- Determine document_direction: "incoming" if the document was received (Eingangsrechnung — vendor bills you), "outgoing" if the document was sent (Ausgangsrechnung — you bill a customer)
+- The vendor/supplier is the party ISSUING the document; the recipient is the party RECEIVING the document
 - Assign a confidence score 0.0–1.0 based on text quality and completeness
 - If a field cannot be determined reliably, omit it rather than guess
 """,
@@ -95,6 +98,9 @@ Rules:
 - Distinguish Nettobetrag, Steuerbetrag and Bruttobetrag
 - Extract all line items with description, quantity, unit price and total
 - Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic
+- Extract recipient/customer details: recipient_name, recipient_tax_id (USt-IdNr or Steuernummer), recipient_vat_id, recipient_street, recipient_city, recipient_postal_code, recipient_country (ISO 3166-1 alpha-2)
+- Determine document_direction: "incoming" if the document was received (Eingangsrechnung — vendor bills you), "outgoing" if the document was sent (Ausgangsrechnung — you bill a customer)
+- The vendor/supplier is the party ISSUING the document; the recipient is the party RECEIVING the document
 - Assign a confidence score 0.0–1.0 based on text quality and completeness
 - If a field cannot be determined reliably, omit it rather than guess
 """,
