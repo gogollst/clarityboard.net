@@ -47,7 +47,7 @@ export function Component() {
   const [deleteTarget, setDeleteTarget] = useState<Department | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<Department | null>(null);
 
-  const canManage = hasPermission('entity.manage');
+  const canManage = hasPermission('hr.manage');
   const employees = employeesData?.items ?? [];
 
   if (!selectedEntityId) {

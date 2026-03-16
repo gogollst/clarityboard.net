@@ -288,7 +288,7 @@ export function useCreateDepartment() {
     },
     onSuccess: () => {
       toast.success(i18n.t('hr:toast.departmentCreated'));
-      queryClient.invalidateQueries({ queryKey: queryKeys.hr.departments() });
+      queryClient.invalidateQueries({ queryKey: ['hr', 'departments'] });
     },
     onError: () => {
       toast.error(i18n.t('hr:toast.departmentCreateError'));
@@ -308,7 +308,7 @@ export function useUpdateDepartment() {
     },
     onSuccess: () => {
       toast.success(i18n.t('hr:toast.departmentUpdated'));
-      queryClient.invalidateQueries({ queryKey: queryKeys.hr.departments() });
+      queryClient.invalidateQueries({ queryKey: ['hr', 'departments'] });
     },
     onError: () => {
       toast.error(i18n.t('hr:toast.departmentUpdateError'));
@@ -325,7 +325,7 @@ export function useDeleteDepartment() {
     },
     onSuccess: () => {
       toast.success(i18n.t('hr:toast.departmentDeleted'));
-      queryClient.invalidateQueries({ queryKey: queryKeys.hr.departments() });
+      queryClient.invalidateQueries({ queryKey: ['hr', 'departments'] });
     },
     onError: () => {
       toast.error(i18n.t('hr:toast.departmentDeleteError'));
@@ -342,7 +342,7 @@ export function useDeactivateDepartment() {
     },
     onSuccess: () => {
       toast.success(i18n.t('hr:toast.departmentDeactivated'));
-      queryClient.invalidateQueries({ queryKey: queryKeys.hr.departments() });
+      queryClient.invalidateQueries({ queryKey: ['hr', 'departments'] });
     },
     onError: () => {
       toast.error(i18n.t('hr:toast.departmentDeactivatedError'));
