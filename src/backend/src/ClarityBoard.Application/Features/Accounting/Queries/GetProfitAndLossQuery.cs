@@ -41,30 +41,39 @@ public class GetProfitAndLossQueryHandler : IRequestHandler<GetProfitAndLossQuer
 
         var sections = new List<PnlSection>();
 
+        // ── Revenue sections (Ertraege) ──────────────────────────────────
+        // Revenue accounts (class 8) have a natural CREDIT balance → negative in debit-credit.
+        // We negate to show positive values for display; these ADD to net income.
+
         // 1. Revenue (Umsatzerloese) - accounts 8000-8599
-        var revenue = SumRange(balances, "8000", "8599");
-        var priorRevenue = priorBalances != null ? SumRange(priorBalances, "8000", "8599") : (decimal?)null;
+        var revenue = -SumRange(balances, "8000", "8599"); // negate credit balance → positive
+        var priorRevenue = priorBalances != null ? -SumRange(priorBalances, "8000", "8599") : (decimal?)null;
         sections.Add(new PnlSection("Umsatzerloese", [
-            new PnlLineItem("Umsatzerloese", -revenue, priorRevenue.HasValue ? -priorRevenue.Value : null)
-        ], -revenue, priorRevenue.HasValue ? -priorRevenue.Value : null));
+            new PnlLineItem("Umsatzerloese", revenue, priorRevenue)
+        ], revenue, priorRevenue));
 
         // 2. Revenue deductions (Erloesschmaelerungen) - accounts 8700-8739
+        // These are debit-balance accounts that REDUCE revenue
         var deductions = SumRange(balances, "8700", "8739");
         var priorDeductions = priorBalances != null ? SumRange(priorBalances, "8700", "8739") : (decimal?)null;
 
-        // 3. Inventory changes - Class 7
-        var inventoryChanges = SumRange(balances, "7000", "7099");
-        var priorInventory = priorBalances != null ? SumRange(priorBalances, "7000", "7099") : (decimal?)null;
+        // 3. Inventory changes / own work capitalised - accounts 7000-7099
+        var inventoryChanges = -SumRange(balances, "7000", "7099");
+        var priorInventory = priorBalances != null ? -SumRange(priorBalances, "7000", "7099") : (decimal?)null;
         sections.Add(new PnlSection("Bestandsveraenderungen / Eigenleistungen", [
-            new PnlLineItem("Bestandsveraenderungen", -inventoryChanges, priorInventory.HasValue ? -priorInventory.Value : null)
-        ], -inventoryChanges, priorInventory.HasValue ? -priorInventory.Value : null));
+            new PnlLineItem("Bestandsveraenderungen", inventoryChanges, priorInventory)
+        ], inventoryChanges, priorInventory));
 
         // 4. Other operating income - accounts 8800-8999
-        var otherIncome = SumRange(balances, "8800", "8999");
-        var priorOtherIncome = priorBalances != null ? SumRange(priorBalances, "8800", "8999") : (decimal?)null;
+        var otherIncome = -SumRange(balances, "8800", "8999");
+        var priorOtherIncome = priorBalances != null ? -SumRange(priorBalances, "8800", "8999") : (decimal?)null;
         sections.Add(new PnlSection("Sonstige betriebliche Ertraege", [
-            new PnlLineItem("Sonstige betriebliche Ertraege", -otherIncome, priorOtherIncome.HasValue ? -priorOtherIncome.Value : null)
-        ], -otherIncome, priorOtherIncome.HasValue ? -priorOtherIncome.Value : null));
+            new PnlLineItem("Sonstige betriebliche Ertraege", otherIncome, priorOtherIncome)
+        ], otherIncome, priorOtherIncome));
+
+        // ── Expense sections (Aufwendungen) ──────────────────────────────
+        // Expense accounts have a natural DEBIT balance → positive in debit-credit.
+        // Displayed as positive values; these SUBTRACT from net income.
 
         // 5. Material expenses - Class 3
         var materialExpense = SumRange(balances, "3000", "3899");
@@ -106,16 +115,27 @@ public class GetProfitAndLossQueryHandler : IRequestHandler<GetProfitAndLossQuer
             new PnlLineItem("Gewerbesteuer", SumRange(balances, "2204", "2209"), priorBalances != null ? SumRange(priorBalances, "2204", "2209") : null)
         ], taxes, priorTaxes));
 
-        // Calculate net income: sum of all sections (revenue negative = income)
-        var netIncome = sections.Sum(s => s.Subtotal);
-        var priorNetIncome = priorBalances != null ? sections.Sum(s => s.PriorSubtotal ?? 0) : (decimal?)null;
+        // ── Net Income (HGB §275) ────────────────────────────────────────
+        // Revenue sections are positive (income), expense sections are positive (costs).
+        // Net Income = Total Revenue - Total Expenses
+        var totalRevenue = revenue + inventoryChanges + otherIncome - deductions;
+        var totalExpenses = materialExpense + personnelCosts + depreciation + otherOpex + taxes;
+        var netIncome = totalRevenue - totalExpenses;
+
+        decimal? priorNetIncome = null;
+        if (priorBalances != null)
+        {
+            var priorTotalRevenue = (priorRevenue ?? 0) + (priorInventory ?? 0) + (priorOtherIncome ?? 0) - (priorDeductions ?? 0);
+            var priorTotalExpenses = (priorMaterial ?? 0) + (priorPersonnel ?? 0) + (priorDepr ?? 0) + (priorOtherOpex ?? 0) + (priorTaxes ?? 0);
+            priorNetIncome = priorTotalRevenue - priorTotalExpenses;
+        }
 
         return new ProfitAndLossDto(
             request.Year, request.Month,
             request.CompareYear, request.CompareMonth,
             sections,
-            -netIncome, // Negate because expenses are positive, revenue negative in debit/credit
-            priorNetIncome.HasValue ? -priorNetIncome.Value : null);
+            netIncome,
+            priorNetIncome);
     }
 
     private async Task<Dictionary<string, decimal>> GetAccountBalancesAsync(
