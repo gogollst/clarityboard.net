@@ -1,5 +1,5 @@
 {
-  "title": "Executive Summary",
+  "title": "Geschäftsführungs-Übersicht",
   "lastUpdated": "Zuletzt aktualisiert: {{time}}",
   "period": {
     "mtd": "MTD",
@@ -42,12 +42,12 @@
     "tools": "Tools",
     "fullDashboard": "Vollständiges Dashboard",
     "showFullNav": "Vollständige Navigation anzeigen",
-    "hideFullNav": "Vollständige Navigation ausblenden",
+    "hideFullNav": "Navigation reduzieren",
     "operations": "Operations",
     "comingSoon": "Demnächst verfügbar"
   },
   "noEntity": {
-    "title": "Kein Unternehmen ausgewählt",
+    "title": "Keine Gesellschaft ausgewählt",
     "description": "Wählen Sie eine juristische Person aus, um die Executive Summary anzuzeigen."
   },
   "error": {

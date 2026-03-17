@@ -8,7 +8,9 @@
     "hr": "Кадры",
     "hrAdmin": "Кадровый администратор",
     "admin": "Администрирование",
-    "aiManagement": "Управление ИИ"
+    "aiManagement": "Управление ИИ",
+    "executive": "Руководство",
+    "executiveTools": "Инструменты"
   },
   "items": {
     "dashboard": "Панель управления",
@@ -52,6 +54,13 @@
     "profitAndLoss": "ОПиУ",
     "vatReconciliation": "Сверка НДС",
     "chartOfAccounts": "План счетов",
-    "businessPartners": "Контрагенты"
+    "businessPartners": "Контрагенты",
+    "productMappings": "Сопоставления продуктов",
+    "deferredRevenue": "Отложенные доходы",
+    "executiveSummary": "Обзор руководства",
+    "fullDashboard": "Полная панель",
+    "operations": "Операции",
+    "showFullNav": "Показать полную навигацию",
+    "hideFullNav": "Скрыть полную навигацию"
   }
 }

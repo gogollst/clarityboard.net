@@ -41,7 +41,10 @@
     "cashFlow": "Денежный поток",
     "scenarios": "Сценарии",
     "datevExport": "Экспорт DATEV",
-    "financialDetails": "Финансовые подробности"
+    "financialDetails": "Финансовые подробности",
+    "praBalance": "Сальдо ПРА",
+    "dueThisMonth": "к оплате в этом месяце",
+    "viewDetails": "Подробнее"
   },
   "hr": {
     "title": "HR-дашборд",

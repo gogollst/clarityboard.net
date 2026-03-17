@@ -2,10 +2,16 @@
   "title": "Документы",
   "upload": "Загрузить",
   "allStatuses": "Все статусы",
+  "allDirections": "Все направления",
   "searchPlaceholder": "Поиск документов...",
   "noDocuments": "Документы не найдены.",
+  "directions": {
+    "incoming": "Входящий",
+    "outgoing": "Исходящий"
+  },
   "columns": {
     "fileName": "Имя файла",
+    "direction": "Направление",
     "vendor": "Поставщик",
     "invoiceNumber": "№ счёта",
     "date": "Дата",
@@ -63,7 +69,11 @@
       "createdAt": "Загружен",
       "businessPartner": "Контрагент",
       "suggestedPartner": "Предложенный контрагент",
-      "reviewReasons": "Причины проверки"
+      "reviewReasons": "Причины проверки",
+      "customerName": "Клиент",
+      "dueDate": "Дата оплаты",
+      "servicePeriod": "Период услуг",
+      "reverseCharge": "Обратный НДС"
     },
     "fieldsPanel": {
       "title": "Извлечённые поля",
@@ -80,9 +90,17 @@
         "vendor_country": "Страна поставщика",
         "vendor_iban": "IBAN поставщика",
         "vendor_bic": "BIC поставщика",
+        "vendor_email": "Email поставщика",
+        "vendor_phone": "Телефон поставщика",
+        "vendor_bank_name": "Банк поставщика",
         "recipient_name": "Получатель",
         "recipient_tax_id": "ИНН получателя",
         "recipient_vat_id": "НДС ID получателя",
+        "recipient_iban": "IBAN получателя",
+        "recipient_bic": "BIC получателя",
+        "recipient_email": "Email получателя",
+        "recipient_phone": "Телефон получателя",
+        "recipient_bank_name": "Банк получателя",
         "recipient_street": "Улица получателя",
         "recipient_city": "Город получателя",
         "recipient_postal_code": "Индекс получателя",
@@ -97,7 +115,14 @@
         "raw_SubTotal": "Сумма нетто",
         "raw_TotalTax": "Сумма НДС",
         "currency": "Валюта",
-        "tax_rate": "Ставка НДС"
+        "tax_rate": "Ставка НДС",
+        "due_date": "Дата оплаты",
+        "order_number": "Номер заказа",
+        "reverse_charge": "Обратный НДС",
+        "service_period_start": "Начало периода услуг",
+        "service_period_end": "Конец периода услуг",
+        "is_recurring_revenue": "Повторяющийся доход",
+        "recurring_interval": "Интервал выставления счетов"
       }
     },
     "ocrPanel": {
@@ -141,6 +166,19 @@
       "fuzzyMatchHint": "ИИ предлагает этого контрагента на основе нечёткого совпадения. Подтвердите или выберите другого.",
       "assigned": "Контрагент успешно назначен",
       "confirmed": "Предложение контрагента подтверждено"
+    },
+    "revenueSchedule": {
+      "title": "График доходов",
+      "totalAmount": "Общая сумма",
+      "progress": "{{booked}} из {{total}} проведено",
+      "period": "Период",
+      "amount": "Сумма",
+      "account": "Счёт",
+      "status": "Статус",
+      "planned": "Запланировано",
+      "booked": "Проведено",
+      "cancelled": "Отменено",
+      "noEntries": "Нет записей графика доходов."
     }
   },
   "reviewReasons": {
@@ -214,7 +252,33 @@
     "intercompanyTransactionHint": "Обнаружена транзакция между связанными компаниями. Проверьте трансфертное ценообразование.",
     "duplicateInvoice": "Возможный дубликат счёта",
     "duplicateInvoiceHint": "Этот счёт похож на уже зарегистрированный. Проверьте на дубликат.",
-    "aiNote": "Примечание ИИ"
+    "aiNote": "Примечание ИИ",
+    "missingServicePeriod": "Отсутствует период услуг",
+    "missingServicePeriodHint": "Для исходящих счетов с повторяющимся доходом необходим период услуг.",
+    "deferredRevenueRequired": "Требуется отложенный доход",
+    "deferredRevenueRequiredHint": "Период услуг охватывает несколько месяцев. Необходимо пассивное начисление доходов.",
+    "outgoingInvoiceClassification": "Классификация исходящего счёта",
+    "outgoingInvoiceClassificationHint": "Этот документ классифицирован как исходящий счёт. Проверьте счёт доходов.",
+    "foreignCurrencyOutgoing": "Исходящий счёт в иностранной валюте",
+    "foreignCurrencyOutgoingHint": "Исходящий счёт в иностранной валюте. Проверьте курс и проводку доходов.",
+    "missingInvoiceNumber": "Отсутствует номер счёта",
+    "missingInvoiceNumberHint": "Номер счёта не распознан (V-01).",
+    "invalidDate": "Некорректная дата счёта",
+    "invalidDateHint": "Дата счёта в будущем (V-02).",
+    "invalidAmount": "Некорректная сумма",
+    "invalidAmountHint": "Общая сумма не является положительной (V-03).",
+    "invalidServicePeriod": "Некорректный период услуг",
+    "invalidServicePeriodHint": "Дата окончания периода должна быть позже даты начала (V-05).",
+    "unusualServicePeriod": "Необычный период услуг",
+    "unusualServicePeriodHint": "Период услуг превышает 36 месяцев (V-06).",
+    "amountMismatch": "Расхождение сумм",
+    "amountMismatchHint": "Сумма позиций отличается от общей суммы (V-07).",
+    "vatMismatch": "Расхождение НДС",
+    "vatMismatchHint": "Нетто + НДС не совпадает с брутто (V-08).",
+    "reverseChargeVatConflict": "Конфликт Reverse Charge и НДС",
+    "reverseChargeVatConflictHint": "Счёт Reverse Charge содержит НДС > 0 (V-09).",
+    "missingCustomerVat": "Отсутствует ИНН клиента",
+    "missingCustomerVatHint": "Клиент из ЕС без идентификационного номера НДС (V-10)."
   },
   "archive": {
     "quickFilters": {

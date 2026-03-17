@@ -376,6 +376,47 @@
       "saveFailed": "Authentifizierungskonfiguration konnte nicht gespeichert werden"
     }
   },
+  "productMappings": {
+    "title": "Produktkategorie-Zuordnungen",
+    "description": "Ordnen Sie Produktnamen aus Rechnungen automatisch Erlöskategorien und Konten zu.",
+    "addMapping": "Zuordnung hinzufügen",
+    "noMappings": "Keine Produktzuordnungen vorhanden.",
+    "columns": {
+      "pattern": "Produktname-Muster",
+      "category": "Kategorie",
+      "revenueAccount": "Erlöskonto",
+      "active": "Aktiv",
+      "actions": "Aktionen"
+    },
+    "categories": {
+      "SAAS_LICENSE": "SaaS-Lizenz",
+      "ON_PREM_LICENSE": "On-Premise-Lizenz",
+      "HOSTING": "Hosting",
+      "MAINTENANCE": "Wartung",
+      "ONE_TIME_SERVICE": "Einmalige Dienstleistung",
+      "DISCOUNT": "Rabatt"
+    },
+    "dialog": {
+      "createTitle": "Produktzuordnung erstellen",
+      "editTitle": "Produktzuordnung bearbeiten",
+      "pattern": "Produktname-Muster",
+      "patternPlaceholder": "z.B. aqua cloud, hosting",
+      "patternHint": "Schlüsselwort, nach dem im Produktnamen gesucht wird (Groß-/Kleinschreibung wird ignoriert).",
+      "category": "Produktkategorie",
+      "categoryPlaceholder": "Kategorie auswählen",
+      "revenueAccount": "Erlöskonto (optional)",
+      "active": "Aktiv",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "confirmDelete": "Zuordnung \"{{pattern}}\" wirklich löschen?",
+    "toast": {
+      "saved": "Produktzuordnung gespeichert",
+      "saveFailed": "Produktzuordnung konnte nicht gespeichert werden",
+      "deleted": "Produktzuordnung gelöscht",
+      "deleteFailed": "Produktzuordnung konnte nicht gelöscht werden"
+    }
+  },
   "departments": {
     "title": "Abteilungen",
     "empty": "Keine Abteilungen angelegt.",

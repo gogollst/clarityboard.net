@@ -8,7 +8,9 @@
     "hr": "HR",
     "hrAdmin": "HR Admin",
     "admin": "Administration",
-    "aiManagement": "KI-Verwaltung"
+    "aiManagement": "KI-Verwaltung",
+    "executive": "Geschäftsführung",
+    "executiveTools": "Werkzeuge"
   },
   "items": {
     "dashboard": "Dashboard",
@@ -52,6 +54,13 @@
     "profitAndLoss": "GuV",
     "vatReconciliation": "USt-Abgleich",
     "chartOfAccounts": "Kontenplan",
-    "businessPartners": "Geschäftspartner"
+    "businessPartners": "Geschäftspartner",
+    "productMappings": "Produktzuordnungen",
+    "deferredRevenue": "Erlösabgrenzung",
+    "executiveSummary": "Geschäftsführungs-Übersicht",
+    "fullDashboard": "Vollständiges Dashboard",
+    "operations": "Betrieb",
+    "showFullNav": "Vollständige Navigation anzeigen",
+    "hideFullNav": "Navigation reduzieren"
   }
 }

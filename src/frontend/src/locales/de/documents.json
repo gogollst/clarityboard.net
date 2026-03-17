@@ -2,10 +2,16 @@
   "title": "Dokumente",
   "upload": "Hochladen",
   "allStatuses": "Alle Status",
+  "allDirections": "Alle Richtungen",
   "searchPlaceholder": "Dokumente suchen...",
   "noDocuments": "Keine Dokumente gefunden.",
+  "directions": {
+    "incoming": "Eingang",
+    "outgoing": "Ausgang"
+  },
   "columns": {
     "fileName": "Dateiname",
+    "direction": "Richtung",
     "vendor": "Lieferant",
     "invoiceNumber": "Rechnungs-Nr.",
     "date": "Datum",
@@ -63,7 +69,11 @@
       "createdAt": "Hochgeladen am",
       "businessPartner": "Geschäftspartner",
       "suggestedPartner": "Vorgeschlagener Partner",
-      "reviewReasons": "Prüfgründe"
+      "reviewReasons": "Prüfgründe",
+      "customerName": "Kunde",
+      "dueDate": "Fälligkeitsdatum",
+      "servicePeriod": "Leistungszeitraum",
+      "reverseCharge": "Reverse Charge"
     },
     "fieldsPanel": {
       "title": "Extrahierte Felder",
@@ -80,9 +90,17 @@
         "vendor_country": "Land Lieferant",
         "vendor_iban": "IBAN Lieferant",
         "vendor_bic": "BIC Lieferant",
+        "vendor_email": "E-Mail Lieferant",
+        "vendor_phone": "Telefon Lieferant",
+        "vendor_bank_name": "Bank Lieferant",
         "recipient_name": "Empfänger",
         "recipient_tax_id": "USt-IdNr. Empfänger",
         "recipient_vat_id": "USt-IdNr. Empfänger",
+        "recipient_iban": "IBAN Empfänger",
+        "recipient_bic": "BIC Empfänger",
+        "recipient_email": "E-Mail Empfänger",
+        "recipient_phone": "Telefon Empfänger",
+        "recipient_bank_name": "Bank Empfänger",
         "recipient_street": "Straße Empfänger",
         "recipient_city": "Ort Empfänger",
         "recipient_postal_code": "PLZ Empfänger",
@@ -97,7 +115,14 @@
         "raw_SubTotal": "Nettobetrag",
         "raw_TotalTax": "Steuerbetrag",
         "currency": "Währung",
-        "tax_rate": "Steuersatz"
+        "tax_rate": "Steuersatz",
+        "due_date": "Fälligkeitsdatum",
+        "order_number": "Bestellnummer",
+        "reverse_charge": "Reverse Charge",
+        "service_period_start": "Leistungszeitraum Beginn",
+        "service_period_end": "Leistungszeitraum Ende",
+        "is_recurring_revenue": "Wiederkehrender Umsatz",
+        "recurring_interval": "Abrechnungsintervall"
       }
     },
     "ocrPanel": {
@@ -141,6 +166,19 @@
       "fuzzyMatchHint": "Die KI schlägt diesen Partner aufgrund einer Ähnlichkeitssuche vor. Bitte bestätigen Sie oder wählen Sie einen anderen.",
       "assigned": "Partner erfolgreich zugeordnet",
       "confirmed": "Partnervorschlag bestätigt"
+    },
+    "revenueSchedule": {
+      "title": "Erlösverteilung",
+      "totalAmount": "Gesamtbetrag",
+      "progress": "{{booked}} von {{total}} gebucht",
+      "period": "Periode",
+      "amount": "Betrag",
+      "account": "Konto",
+      "status": "Status",
+      "planned": "Geplant",
+      "booked": "Gebucht",
+      "cancelled": "Storniert",
+      "noEntries": "Keine Erlösverteilung vorhanden."
     }
   },
   "reviewReasons": {
@@ -214,7 +252,33 @@
     "intercompanyTransactionHint": "Transaktion zwischen verbundenen Unternehmen erkannt. Bitte Verrechnungspreise prüfen.",
     "duplicateInvoice": "Möglicherweise doppelte Rechnung",
     "duplicateInvoiceHint": "Diese Rechnung ähnelt einer bereits erfassten. Bitte auf Duplikat prüfen.",
-    "aiNote": "KI-Hinweis"
+    "aiNote": "KI-Hinweis",
+    "missingServicePeriod": "Leistungszeitraum fehlt",
+    "missingServicePeriodHint": "Für Ausgangsrechnungen mit wiederkehrendem Umsatz wird ein Leistungszeitraum benötigt.",
+    "deferredRevenueRequired": "Erlösabgrenzung erforderlich",
+    "deferredRevenueRequiredHint": "Der Leistungszeitraum erstreckt sich über mehrere Monate. Eine passive Rechnungsabgrenzung ist erforderlich.",
+    "outgoingInvoiceClassification": "Klassifikation als Ausgangsrechnung",
+    "outgoingInvoiceClassificationHint": "Dieses Dokument wurde als Ausgangsrechnung klassifiziert. Bitte Erlöskontierung prüfen.",
+    "foreignCurrencyOutgoing": "Ausgangsrechnung in Fremdwährung",
+    "foreignCurrencyOutgoingHint": "Ausgangsrechnung in Fremdwährung. Bitte Wechselkurs und Erlösbuchung prüfen.",
+    "missingInvoiceNumber": "Rechnungsnummer fehlt",
+    "missingInvoiceNumberHint": "Die Rechnungsnummer konnte nicht erkannt werden (V-01).",
+    "invalidDate": "Ungültiges Rechnungsdatum",
+    "invalidDateHint": "Das Rechnungsdatum liegt in der Zukunft (V-02).",
+    "invalidAmount": "Ungültiger Betrag",
+    "invalidAmountHint": "Der Gesamtbetrag ist nicht positiv (V-03).",
+    "invalidServicePeriod": "Ungültiger Leistungszeitraum",
+    "invalidServicePeriodHint": "Das Ende des Leistungszeitraums muss nach dem Beginn liegen (V-05).",
+    "unusualServicePeriod": "Ungewöhnlicher Leistungszeitraum",
+    "unusualServicePeriodHint": "Der Leistungszeitraum überschreitet 36 Monate (V-06).",
+    "amountMismatch": "Betragsabweichung",
+    "amountMismatchHint": "Die Summe der Positionen weicht vom Nettobetrag ab (V-07).",
+    "vatMismatch": "MwSt-Abweichung",
+    "vatMismatchHint": "Netto + MwSt stimmt nicht mit dem Bruttobetrag überein (V-08).",
+    "reverseChargeVatConflict": "Reverse Charge mit MwSt-Konflikt",
+    "reverseChargeVatConflictHint": "Reverse-Charge-Rechnung enthält einen MwSt-Betrag > 0 (V-09).",
+    "missingCustomerVat": "USt-IdNr. des Kunden fehlt",
+    "missingCustomerVatHint": "EU-Kunde ohne Umsatzsteuer-Identifikationsnummer (V-10)."
   },
   "archive": {
     "quickFilters": {
