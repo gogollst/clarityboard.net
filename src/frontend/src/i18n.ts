@@ -19,6 +19,7 @@ import deAdmin from './locales/de/admin.json';
 import deAi from './locales/de/ai.json';
 import deHr from './locales/de/hr.json';
 import deAccounting from './locales/de/accounting.json';
+import deExecutive from './locales/de/executive.json';
 
 // English
 import enCommon from './locales/en/common.json';
@@ -37,6 +38,7 @@ import enAdmin from './locales/en/admin.json';
 import enAi from './locales/en/ai.json';
 import enHr from './locales/en/hr.json';
 import enAccounting from './locales/en/accounting.json';
+import enExecutive from './locales/en/executive.json';
 
 // Russian
 import ruCommon from './locales/ru/common.json';
@@ -55,6 +57,7 @@ import ruAdmin from './locales/ru/admin.json';
 import ruAi from './locales/ru/ai.json';
 import ruHr from './locales/ru/hr.json';
 import ruAccounting from './locales/ru/accounting.json';
+import ruExecutive from './locales/ru/executive.json';
 
 i18n
   .use(LanguageDetector)
@@ -78,6 +81,7 @@ i18n
         ai: deAi,
         hr: deHr,
         accounting: deAccounting,
+        executive: deExecutive,
       },
       en: {
         common: enCommon,
@@ -96,6 +100,7 @@ i18n
         ai: enAi,
         hr: enHr,
         accounting: enAccounting,
+        executive: enExecutive,
       },
       ru: {
         common: ruCommon,
@@ -114,13 +119,14 @@ i18n
         ai: ruAi,
         hr: ruHr,
         accounting: ruAccounting,
+        executive: ruExecutive,
       },
     },
     lng: 'de',
     fallbackLng: 'de',
     supportedLngs: ['de', 'en', 'ru'],
     defaultNS: 'common',
-    ns: ['common', 'navigation', 'auth', 'validation', 'dashboard', 'cashflow', 'scenarios', 'documents', 'budget', 'assets', 'datev', 'settings', 'admin', 'ai', 'hr', 'accounting'],
+    ns: ['common', 'navigation', 'auth', 'validation', 'dashboard', 'cashflow', 'scenarios', 'documents', 'budget', 'assets', 'datev', 'settings', 'admin', 'ai', 'hr', 'accounting', 'executive'],
     interpolation: {
       escapeValue: false,
     },

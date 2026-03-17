@@ -1,0 +1,57 @@
+{
+  "title": "Executive Summary",
+  "lastUpdated": "Zuletzt aktualisiert: {{time}}",
+  "period": {
+    "mtd": "MTD",
+    "qtd": "QTD",
+    "ytd": "YTD",
+    "vsPrior": "ggü. Vorjahr"
+  },
+  "headlines": {
+    "revenue": "Umsatz",
+    "ebitda": "EBITDA",
+    "freeCashFlow": "Free Cash Flow",
+    "headcount": "Mitarbeiterzahl",
+    "alerts": "Warnungen"
+  },
+  "domains": {
+    "operations": "Operations"
+  },
+  "alerts": {
+    "title": "Warnungen & Ausnahmen",
+    "viewAll": "Alle Warnungen anzeigen",
+    "allClear": "Alle Kennzahlen im Zielbereich",
+    "view": "Anzeigen"
+  },
+  "insights": {
+    "title": "Wichtige Änderungen",
+    "up": "{{name}} +{{pct}}% ggü. Vorperiode",
+    "down": "{{name}} -{{pct}}% ggü. Vorperiode",
+    "improved": "{{name}} verbessert um {{pct}}%",
+    "worsened": "{{name}} verschlechtert um {{pct}}%",
+    "unchanged": "{{name}} unverändert"
+  },
+  "comingSoon": {
+    "noData": "--",
+    "noChart": "Noch keine Daten",
+    "inProgress": "Datenerfassung läuft"
+  },
+  "sidebar": {
+    "executiveSummary": "Executive Summary",
+    "domains": "Bereiche",
+    "tools": "Tools",
+    "fullDashboard": "Vollständiges Dashboard",
+    "showFullNav": "Vollständige Navigation anzeigen",
+    "hideFullNav": "Vollständige Navigation ausblenden",
+    "operations": "Operations",
+    "comingSoon": "Demnächst verfügbar"
+  },
+  "noEntity": {
+    "title": "Kein Unternehmen ausgewählt",
+    "description": "Wählen Sie eine juristische Person aus, um die Executive Summary anzuzeigen."
+  },
+  "error": {
+    "domainFailed": "{{domain}}-Daten konnten nicht geladen werden.",
+    "retry": "Erneut versuchen"
+  }
+}

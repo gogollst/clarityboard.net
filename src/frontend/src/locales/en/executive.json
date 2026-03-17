@@ -1,0 +1,57 @@
+{
+  "title": "Executive Summary",
+  "lastUpdated": "Last updated: {{time}}",
+  "period": {
+    "mtd": "MTD",
+    "qtd": "QTD",
+    "ytd": "YTD",
+    "vsPrior": "vs Prior"
+  },
+  "headlines": {
+    "revenue": "Revenue",
+    "ebitda": "EBITDA",
+    "freeCashFlow": "Free Cash Flow",
+    "headcount": "Headcount",
+    "alerts": "Alerts"
+  },
+  "domains": {
+    "operations": "Operations"
+  },
+  "alerts": {
+    "title": "Alerts & Exceptions",
+    "viewAll": "View all alerts",
+    "allClear": "All metrics within target ranges",
+    "view": "View"
+  },
+  "insights": {
+    "title": "Key Changes",
+    "up": "{{name}} up {{pct}}% vs last period",
+    "down": "{{name}} down {{pct}}% vs last period",
+    "improved": "{{name}} improved by {{pct}}%",
+    "worsened": "{{name}} worsened by {{pct}}%",
+    "unchanged": "{{name}} unchanged"
+  },
+  "comingSoon": {
+    "noData": "--",
+    "noChart": "No data yet",
+    "inProgress": "Data collection in progress"
+  },
+  "sidebar": {
+    "executiveSummary": "Executive Summary",
+    "domains": "Domains",
+    "tools": "Tools",
+    "fullDashboard": "Full Dashboard",
+    "showFullNav": "Show full navigation",
+    "hideFullNav": "Hide full navigation",
+    "operations": "Operations",
+    "comingSoon": "Coming soon"
+  },
+  "noEntity": {
+    "title": "No Entity Selected",
+    "description": "Select a legal entity to view the executive summary."
+  },
+  "error": {
+    "domainFailed": "Unable to load {{domain}} data.",
+    "retry": "Retry"
+  }
+}

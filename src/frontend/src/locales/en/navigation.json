@@ -8,7 +8,9 @@
     "hr": "HR",
     "hrAdmin": "HR Admin",
     "admin": "Admin",
-    "aiManagement": "AI Management"
+    "aiManagement": "AI Management",
+    "executive": "Executive",
+    "executiveTools": "Tools"
   },
   "items": {
     "dashboard": "Dashboard",
@@ -52,6 +54,13 @@
     "profitAndLoss": "Profit & Loss",
     "vatReconciliation": "VAT Reconciliation",
     "chartOfAccounts": "Chart of Accounts",
-    "businessPartners": "Business Partners"
+    "businessPartners": "Business Partners",
+    "productMappings": "Product Mappings",
+    "deferredRevenue": "Deferred Revenue",
+    "executiveSummary": "Executive Summary",
+    "fullDashboard": "Full Dashboard",
+    "operations": "Operations",
+    "showFullNav": "Show full navigation",
+    "hideFullNav": "Hide full navigation"
   }
 }
