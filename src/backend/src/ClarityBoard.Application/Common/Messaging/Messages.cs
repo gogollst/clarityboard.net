@@ -4,3 +4,4 @@ public record ProcessWebhookEvent(Guid WebhookEventId, Guid EntityId, string Sou
 public record ProcessDocument(Guid DocumentId, Guid EntityId);
 public record RecalculateKpis(Guid EntityId, DateOnly SnapshotDate);
 public record EvaluateAlerts(Guid EntityId, string KpiId, decimal Value, decimal? PreviousValue);
+public record PostDueRevenueEntries(Guid EntityId, Guid UserId, DateOnly UpToMonth);

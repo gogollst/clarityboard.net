@@ -54,13 +54,77 @@ const REVIEW_REASON_MAP: Record<string, { labelKey: string; hintKey: string }> =
   multi_period_allocation: { labelKey: 'reviewReasons.multiPeriodAllocation', hintKey: 'reviewReasons.multiPeriodAllocationHint' },
   intercompany_transaction: { labelKey: 'reviewReasons.intercompanyTransaction', hintKey: 'reviewReasons.intercompanyTransactionHint' },
   duplicate_invoice_suspected: { labelKey: 'reviewReasons.duplicateInvoice', hintKey: 'reviewReasons.duplicateInvoiceHint' },
+
+  // ── Outgoing invoices / Revenue ────────────────────────────────────
+  missing_service_period: { labelKey: 'reviewReasons.missingServicePeriod', hintKey: 'reviewReasons.missingServicePeriodHint' },
+  deferred_revenue_required: { labelKey: 'reviewReasons.deferredRevenueRequired', hintKey: 'reviewReasons.deferredRevenueRequiredHint' },
+  outgoing_invoice_classification: { labelKey: 'reviewReasons.outgoingInvoiceClassification', hintKey: 'reviewReasons.outgoingInvoiceClassificationHint' },
+  foreign_currency_outgoing: { labelKey: 'reviewReasons.foreignCurrencyOutgoing', hintKey: 'reviewReasons.foreignCurrencyOutgoingHint' },
+
+  // ── Outgoing invoice validation (V-01 to V-10) ──────────────────
+  missing_invoice_number: { labelKey: 'reviewReasons.missingInvoiceNumber', hintKey: 'reviewReasons.missingInvoiceNumberHint' },
+  invalid_date: { labelKey: 'reviewReasons.invalidDate', hintKey: 'reviewReasons.invalidDateHint' },
+  invalid_amount: { labelKey: 'reviewReasons.invalidAmount', hintKey: 'reviewReasons.invalidAmountHint' },
+  invalid_service_period: { labelKey: 'reviewReasons.invalidServicePeriod', hintKey: 'reviewReasons.invalidServicePeriodHint' },
+  unusual_service_period: { labelKey: 'reviewReasons.unusualServicePeriod', hintKey: 'reviewReasons.unusualServicePeriodHint' },
+  amount_mismatch: { labelKey: 'reviewReasons.amountMismatch', hintKey: 'reviewReasons.amountMismatchHint' },
+  vat_mismatch: { labelKey: 'reviewReasons.vatMismatch', hintKey: 'reviewReasons.vatMismatchHint' },
+  reverse_charge_vat_conflict: { labelKey: 'reviewReasons.reverseChargeVatConflict', hintKey: 'reviewReasons.reverseChargeVatConflictHint' },
+  missing_customer_vat: { labelKey: 'reviewReasons.missingCustomerVat', hintKey: 'reviewReasons.missingCustomerVatHint' },
 };
+
+export type ReviewSeverity = 'error' | 'warning' | 'info';
+
+/**
+ * Maps review-reason keys to their severity level for color-coding.
+ * Keys not listed here default to 'warning'.
+ */
+const SEVERITY_MAP: Record<string, ReviewSeverity> = {
+  // Errors (V-01, V-02, V-03, V-05, V-07, V-09)
+  missing_invoice_number: 'error',
+  invalid_date: 'error',
+  invalid_amount: 'error',
+  invalid_service_period: 'error',
+  amount_mismatch: 'error',
+  reverse_charge_vat_conflict: 'error',
+  booking_suggestion_failed: 'error',
+  booking_suggestion_unresolved_accounts: 'error',
+
+  // Warnings (V-04, V-06, V-08, V-10)
+  missing_service_period: 'warning',
+  unusual_service_period: 'warning',
+  vat_mismatch: 'warning',
+  missing_customer_vat: 'warning',
+  deferred_revenue_required: 'info',
+  outgoing_invoice_classification: 'info',
+  foreign_currency_outgoing: 'warning',
+
+  // Existing keys
+  low_extraction_confidence: 'warning',
+  low_booking_confidence: 'warning',
+  partner_fuzzy_match: 'info',
+  entity_mismatch_suspected: 'warning',
+  ai_needs_manual_review: 'warning',
+  reverse_charge_detected: 'info',
+  activation_required: 'info',
+  entertainment_expense_70_30: 'info',
+  intra_community_acquisition: 'info',
+  tax_treatment_unclear: 'warning',
+  multi_period_allocation: 'info',
+  intercompany_transaction: 'warning',
+  duplicate_invoice_suspected: 'error',
+};
+
+export function getReviewSeverity(key: string): ReviewSeverity {
+  return SEVERITY_MAP[key] ?? 'warning';
+}
 
 export interface ReviewReasonDisplay {
   label: string;
   hint?: string;
   detail?: string;
   isAiFreetext: boolean;
+  severity: ReviewSeverity;
 }
 
 /**
@@ -86,6 +150,7 @@ export function getReviewReasonDisplay(
 ): ReviewReasonDisplay {
   const { key, detail } = normalizeReason(reason);
 
+  const severity = getReviewSeverity(key);
   const mapped = REVIEW_REASON_MAP[key];
   if (mapped) {
     return {
@@ -93,14 +158,15 @@ export function getReviewReasonDisplay(
       hint: t(mapped.hintKey),
       detail: detail || undefined,
       isAiFreetext: false,
+      severity,
     };
   }
 
   // "custom" key from AI → use detail as the display text
   if (key === 'custom' && detail) {
-    return { label: detail, hint: undefined, detail: undefined, isAiFreetext: true };
+    return { label: detail, hint: undefined, detail: undefined, isAiFreetext: true, severity: 'info' };
   }
 
   // Unknown key (legacy freetext or unmapped key)
-  return { label: key, hint: detail || undefined, isAiFreetext: true };
+  return { label: key, hint: detail || undefined, isAiFreetext: true, severity };
 }

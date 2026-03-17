@@ -26,6 +26,11 @@ public class Document
     public string? Currency { get; private set; }
     public Guid? BusinessPartnerId { get; private set; }
     public Guid? SuggestedBusinessPartnerId { get; private set; }
+    public string DocumentDirection { get; private set; } = "incoming"; // incoming or outgoing
+    public decimal? ClassificationConfidence { get; private set; }
+    public DateOnly? DueDate { get; private set; }
+    public string? OrderNumber { get; private set; }
+    public bool ReverseCharge { get; private set; }
 
     private readonly List<DocumentField> _fields = new();
     public IReadOnlyCollection<DocumentField> Fields => _fields.AsReadOnly();
@@ -96,4 +101,21 @@ public class Document
     {
         SuggestedBusinessPartnerId = suggestedPartnerId;
     }
+
+    public void SetClassification(string direction, decimal confidence)
+    {
+        DocumentDirection = direction;
+        ClassificationConfidence = confidence;
+    }
+
+    public void ClearJournalEntry()
+    {
+        BookedJournalEntryId = null;
+        if (Status == "booked")
+            Status = "extracted";
+    }
+
+    public void SetDueDate(DateOnly? dueDate) => DueDate = dueDate;
+    public void SetOrderNumber(string? orderNumber) => OrderNumber = orderNumber;
+    public void SetReverseCharge(bool reverseCharge) => ReverseCharge = reverseCharge;
 }

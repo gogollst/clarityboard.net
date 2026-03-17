@@ -32,6 +32,9 @@ public interface IAppDbContext
     DbSet<AccountingPlanEntry> AccountingPlanEntries { get; }
     DbSet<DatevExport> DatevExports { get; }
     DbSet<BusinessPartner> BusinessPartners { get; }
+    DbSet<RevenueScheduleEntry> RevenueScheduleEntries { get; }
+    DbSet<InvoiceCashflowEntry> InvoiceCashflowEntries { get; }
+    DbSet<ProductCategoryMapping> ProductCategoryMappings { get; }
 
     // Entity
     DbSet<LegalEntity> LegalEntities { get; }

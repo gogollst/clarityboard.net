@@ -17,7 +17,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Upload } from 'lucide-react';
 
 export function Component() {
   const { t, i18n } = useTranslation('hr');
@@ -148,10 +148,16 @@ export function Component() {
       <PageHeader
         title={t('employees.title')}
         actions={
-          <Button onClick={() => navigate('/hr/employees/new')}>
-            <Plus className="mr-1 h-4 w-4" />
-            {t('employees.newEmployee')}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/hr/employees/import')}>
+              <Upload className="mr-1 h-4 w-4" />
+              {t('employees.import.button')}
+            </Button>
+            <Button onClick={() => navigate('/hr/employees/new')}>
+              <Plus className="mr-1 h-4 w-4" />
+              {t('employees.newEmployee')}
+            </Button>
+          </div>
         }
       />
 

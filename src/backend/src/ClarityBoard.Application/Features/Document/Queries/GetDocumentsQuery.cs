@@ -10,6 +10,7 @@ public record GetDocumentsQuery : IRequest<PagedResult<DocumentListDto>>, IEntit
 {
     public Guid EntityId { get; init; }
     public string? Status { get; init; }
+    public string? Direction { get; init; }
     public DateOnly? DateFrom { get; init; }
     public DateOnly? DateTo { get; init; }
     public string? Search { get; init; }
@@ -29,6 +30,9 @@ public class GetDocumentsQueryHandler : IRequestHandler<GetDocumentsQuery, Paged
 
         if (!string.IsNullOrEmpty(request.Status))
             query = query.Where(d => d.Status == request.Status);
+
+        if (!string.IsNullOrEmpty(request.Direction))
+            query = query.Where(d => d.DocumentDirection == request.Direction);
 
         if (request.DateFrom.HasValue)
             query = query.Where(d => d.InvoiceDate >= request.DateFrom.Value);
@@ -59,6 +63,8 @@ public class GetDocumentsQueryHandler : IRequestHandler<GetDocumentsQuery, Paged
                 FileSize = d.FileSize,
                 DocumentType = d.DocumentType,
                 Status = d.Status,
+                DocumentDirection = d.DocumentDirection,
+                ClassificationConfidence = d.ClassificationConfidence,
                 VendorName = d.VendorName,
                 InvoiceNumber = d.InvoiceNumber,
                 InvoiceDate = d.InvoiceDate,
@@ -67,6 +73,8 @@ public class GetDocumentsQueryHandler : IRequestHandler<GetDocumentsQuery, Paged
                 TaxAmount = d.TaxAmount,
                 Currency = d.Currency,
                 Confidence = d.Confidence,
+                DueDate = d.DueDate,
+                ReverseCharge = d.ReverseCharge,
                 CreatedAt = d.CreatedAt,
                 ProcessedAt = d.ProcessedAt,
             })

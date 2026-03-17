@@ -216,7 +216,13 @@
         "sourceName": "Source Name",
         "sourceNamePlaceholder": "e.g. Stripe Payments",
         "sourceType": "Source Type",
-        "sourceTypePlaceholder": "e.g. stripe, shopify, custom",
+        "sourceTypePlaceholder": "e.g. stripe, zoho_books, custom",
+        "secret": "Webhook Secret",
+        "secretPlaceholder": "Secret key for signature validation",
+        "headerSignatureKey": "Signature Header",
+        "eventFilter": "Event Filter",
+        "eventFilterPlaceholder": "e.g. invoice.sent, invoice.paid",
+        "endpointUrl": "Webhook Endpoint",
         "create": "Create"
       },
       "addRule": {
@@ -374,6 +380,47 @@
     "toast": {
       "saved": "Auth configuration saved",
       "saveFailed": "Failed to save auth configuration"
+    }
+  },
+  "productMappings": {
+    "title": "Product Category Mappings",
+    "description": "Automatically map product names from invoices to revenue categories and accounts.",
+    "addMapping": "Add mapping",
+    "noMappings": "No product mappings configured.",
+    "columns": {
+      "pattern": "Product name pattern",
+      "category": "Category",
+      "revenueAccount": "Revenue account",
+      "active": "Active",
+      "actions": "Actions"
+    },
+    "categories": {
+      "SAAS_LICENSE": "SaaS License",
+      "ON_PREM_LICENSE": "On-Premise License",
+      "HOSTING": "Hosting",
+      "MAINTENANCE": "Maintenance",
+      "ONE_TIME_SERVICE": "One-Time Service",
+      "DISCOUNT": "Discount"
+    },
+    "dialog": {
+      "createTitle": "Create product mapping",
+      "editTitle": "Edit product mapping",
+      "pattern": "Product name pattern",
+      "patternPlaceholder": "e.g. aqua cloud, hosting",
+      "patternHint": "Keyword to search for in the product name (case-insensitive).",
+      "category": "Product category",
+      "categoryPlaceholder": "Select category",
+      "revenueAccount": "Revenue account (optional)",
+      "active": "Active",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "confirmDelete": "Delete mapping \"{{pattern}}\"?",
+    "toast": {
+      "saved": "Product mapping saved",
+      "saveFailed": "Failed to save product mapping",
+      "deleted": "Product mapping deleted",
+      "deleteFailed": "Failed to delete product mapping"
     }
   },
   "departments": {

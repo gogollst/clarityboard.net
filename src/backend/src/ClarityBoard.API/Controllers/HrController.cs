@@ -78,6 +78,16 @@ public class HrController : ControllerBase
         return CreatedAtAction(nameof(GetEmployee), new { id }, new { id });
     }
 
+    [HttpPost("employees/import")]
+    [ProducesResponseType(typeof(BulkImportEmployeesResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<BulkImportEmployeesResult>> BulkImportEmployees(
+        [FromBody] BulkImportEmployeesCommand command, CancellationToken ct)
+    {
+        var result = await _mediator.Send(command, ct);
+        return Ok(result);
+    }
+
     [HttpGet("employees/me")]
     [ProducesResponseType(typeof(EmployeeDetailDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -38,6 +38,9 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
     public DbSet<AccountingPlanEntry> AccountingPlanEntries => Set<AccountingPlanEntry>();
     public DbSet<DatevExport> DatevExports => Set<DatevExport>();
     public DbSet<BusinessPartner> BusinessPartners => Set<BusinessPartner>();
+    public DbSet<RevenueScheduleEntry> RevenueScheduleEntries => Set<RevenueScheduleEntry>();
+    public DbSet<InvoiceCashflowEntry> InvoiceCashflowEntries => Set<InvoiceCashflowEntry>();
+    public DbSet<ProductCategoryMapping> ProductCategoryMappings => Set<ProductCategoryMapping>();
 
     // Entity
     public DbSet<LegalEntity> LegalEntities => Set<LegalEntity>();
@@ -152,6 +155,26 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
         modelBuilder.Entity<AccountingPlanEntry>().ToTable("accounting_plan_entries", "accounting");
         modelBuilder.Entity<DatevExport>().ToTable("datev_exports", "accounting");
         modelBuilder.Entity<BusinessPartner>().ToTable("business_partners", "accounting");
+        modelBuilder.Entity<ProductCategoryMapping>().ToTable("product_category_mappings", "accounting");
+        modelBuilder.Entity<RevenueScheduleEntry>().ToTable("revenue_schedule_entries", "accounting");
+        modelBuilder.Entity<InvoiceCashflowEntry>().ToTable("cashflow_entries", "accounting");
+
+        // RevenueScheduleEntry config
+        modelBuilder.Entity<RevenueScheduleEntry>(e =>
+        {
+            e.Property(x => x.Amount).HasPrecision(18, 2);
+            e.Property(x => x.RevenueAccountNumber).HasMaxLength(10);
+            e.Property(x => x.Status).HasMaxLength(20).HasDefaultValue("planned");
+        });
+
+        // InvoiceCashflowEntry config
+        modelBuilder.Entity<InvoiceCashflowEntry>(e =>
+        {
+            e.Property(x => x.GrossAmount).HasPrecision(18, 2);
+            e.Property(x => x.Currency).HasMaxLength(3).HasDefaultValue("EUR");
+            e.Property(x => x.Direction).HasMaxLength(10).HasDefaultValue("inflow");
+            e.Property(x => x.Status).HasMaxLength(20).HasDefaultValue("open");
+        });
 
         // Entity schema
         modelBuilder.Entity<LegalEntity>().ToTable("legal_entities", "entity");
@@ -315,6 +338,14 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.FiscalYearStartMonth).HasMaxLength(2);
         });
 
+        modelBuilder.Entity<ProductCategoryMapping>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.EntityId, e.IsActive });
+            entity.Property(e => e.ProductNamePattern).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.ProductCategory).HasMaxLength(50).IsRequired();
+        });
+
         modelBuilder.Entity<CostCenter>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -407,6 +438,8 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.DatevConsultantNumber).HasMaxLength(7);
             entity.Property(e => e.ManagingDirector).HasMaxLength(200);
             entity.Property(e => e.ManagingDirectorId).IsRequired(false);
+            entity.Property(e => e.Iban).HasMaxLength(34);
+            entity.Property(e => e.Bic).HasMaxLength(11);
             entity.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(e => e.ManagingDirectorId)
@@ -590,6 +623,9 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
             entity.Property(e => e.Currency).HasMaxLength(3);
             entity.Property(e => e.Confidence).HasPrecision(5, 4);
+            entity.Property(e => e.DocumentDirection).HasMaxLength(20).HasDefaultValue("incoming");
+            entity.Property(e => e.ClassificationConfidence).HasPrecision(3, 2);
+            entity.Property(e => e.OrderNumber).HasMaxLength(255);
             entity.HasMany(e => e.Fields).WithOne().HasForeignKey(f => f.DocumentId);
         });
 
@@ -627,6 +663,7 @@ public class ClarityBoardContext : DbContext, IUnitOfWork, IAppDbContext
             entity.Property(e => e.VatCode).HasMaxLength(10);
             entity.Property(e => e.CostCenter).HasMaxLength(50);
             entity.Property(e => e.Confidence).HasPrecision(5, 4);
+            entity.Property(e => e.DocumentDirection).HasMaxLength(20).HasDefaultValue("incoming");
             entity.HasIndex(e => new { e.EntityId, e.AutoBookEnabled })
                 .HasFilter("\"IsActive\" = true AND \"AutoBookEnabled\" = true");
         });

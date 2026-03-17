@@ -235,6 +235,32 @@ public class AdminController : ControllerBase
         var fileName = $"audit-logs-{DateTime.UtcNow:yyyyMMdd-HHmmss}.csv";
         return File(csv, "text/csv; charset=utf-8", fileName);
     }
+
+    // ── Product Category Mappings ────────────────────────────────────────
+
+    [HttpGet("product-mappings")]
+    public async Task<ActionResult<IReadOnlyList<ProductMappingDto>>> GetProductMappings(
+        [FromQuery] Guid entityId, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetProductMappingsQuery(entityId), ct);
+        return Ok(result);
+    }
+
+    [HttpPut("product-mappings")]
+    public async Task<ActionResult<Guid>> UpsertProductMapping(
+        [FromBody] UpsertProductMappingCommand command, CancellationToken ct)
+    {
+        var id = await _mediator.Send(command, ct);
+        return Ok(id);
+    }
+
+    [HttpDelete("product-mappings/{mappingId:guid}")]
+    public async Task<IActionResult> DeleteProductMapping(
+        Guid mappingId, [FromQuery] Guid entityId, CancellationToken ct)
+    {
+        await _mediator.Send(new DeleteProductMappingCommand(entityId, mappingId), ct);
+        return NoContent();
+    }
 }
 
 // ── Request Models ────────────────────────────────────────────────────

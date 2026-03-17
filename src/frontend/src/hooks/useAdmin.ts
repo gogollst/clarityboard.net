@@ -17,6 +17,8 @@ import type {
   SendTestEmailResult,
   AuthConfig,
   UpsertAuthConfigRequest,
+  ProductCategoryMapping,
+  UpsertProductMappingRequest,
 } from '@/types/admin';
 
 // ---------------------------------------------------------------------------
@@ -334,6 +336,59 @@ export function useUpsertAuthConfig() {
     },
     onError: () => {
       toast.error(i18n.t('admin:auth.toast.saveFailed'));
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Product Category Mappings
+// ---------------------------------------------------------------------------
+
+export function useProductMappings(entityId: string) {
+  return useQuery({
+    queryKey: queryKeys.admin.productMappings(entityId),
+    queryFn: async () => {
+      const { data } = await api.get<ProductCategoryMapping[]>(
+        '/admin/product-mappings',
+        { params: { entityId } },
+      );
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function useUpsertProductMapping() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: UpsertProductMappingRequest) => {
+      const { data } = await api.put<string>('/admin/product-mappings', request);
+      return data;
+    },
+    onSuccess: (_data, variables) => {
+      toast.success(i18n.t('admin:productMappings.toast.saved'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.productMappings(variables.entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('admin:productMappings.toast.saveFailed'));
+    },
+  });
+}
+
+export function useDeleteProductMapping() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ mappingId, entityId }: { mappingId: string; entityId: string }) => {
+      await api.delete(`/admin/product-mappings/${mappingId}`, { params: { entityId } });
+    },
+    onSuccess: (_data, variables) => {
+      toast.success(i18n.t('admin:productMappings.toast.deleted'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.productMappings(variables.entityId) });
+    },
+    onError: () => {
+      toast.error(i18n.t('admin:productMappings.toast.deleteFailed'));
     },
   });
 }

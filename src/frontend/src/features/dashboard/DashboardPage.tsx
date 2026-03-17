@@ -8,6 +8,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useKpiDashboard, useKpiDefinitions } from '@/hooks/useKpis';
+import { useDeferredRevenueOverview } from '@/hooks/useDocuments';
+import { formatCurrency } from '@/lib/format';
 import KpiGrid from '@/components/kpi/KpiGrid';
 import AlertBanner from '@/components/kpi/AlertBanner';
 import PageHeader from '@/components/shared/PageHeader';
@@ -50,11 +52,12 @@ function buildKpiCards(
 // DashboardPage
 // ---------------------------------------------------------------------------
 
-export default function DashboardPage() {
+export function Component() {
   const { t } = useTranslation('dashboard');
   const { selectedEntityId, selectedEntity } = useEntity();
   const { data: dashboard, isLoading } = useKpiDashboard(selectedEntityId);
   const { data: definitions } = useKpiDefinitions();
+  const { data: praOverview } = useDeferredRevenueOverview(selectedEntityId);
 
   // -----------------------------------------------------------------------
   // Loading state
@@ -131,6 +134,30 @@ export default function DashboardPage() {
           );
         })}
       </Tabs>
+
+      {/* PRA Balance */}
+      {praOverview && praOverview.totalPraBalance > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t('quickActions.praBalance')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold tabular-nums">{formatCurrency(praOverview.totalPraBalance)}</p>
+                <p className="text-sm text-muted-foreground">
+                  {praOverview.dueThisMonth > 0 && `${formatCurrency(praOverview.dueThisMonth)} ${t('quickActions.dueThisMonth')}`}
+                </p>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/accounting/deferred-revenue">
+                  {t('quickActions.viewDetails')}
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick actions */}
       <Card>

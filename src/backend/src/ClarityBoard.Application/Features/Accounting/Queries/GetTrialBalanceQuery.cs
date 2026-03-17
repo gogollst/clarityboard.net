@@ -7,6 +7,9 @@ namespace ClarityBoard.Application.Features.Accounting.Queries;
 public record TrialBalanceLineDto(
     string AccountNumber,
     string AccountName,
+    string? AccountNameDe,
+    string? AccountNameEn,
+    string? AccountNameRu,
     string AccountType,
     short AccountClass,
     decimal DebitTotal,
@@ -49,10 +52,13 @@ public class GetTrialBalanceQueryHandler : IRequestHandler<GetTrialBalanceQuery,
             from je in jeGroup.DefaultIfEmpty()
             where je == null || (je.EntityId == request.EntityId && je.EntryDate <= periodEnd && je.Status != "reversed")
             where costCenterIds == null || jel == null || (jel.CostCenterId != null && costCenterIds.Contains(jel.CostCenterId.Value))
-            group new { jel, a } by new { a.Id, a.AccountNumber, a.Name, a.AccountType, a.AccountClass } into g
+            group new { jel, a } by new { a.Id, a.AccountNumber, a.Name, a.NameDe, a.NameEn, a.NameRu, a.AccountType, a.AccountClass } into g
             select new TrialBalanceLineDto(
                 g.Key.AccountNumber,
                 g.Key.Name,
+                g.Key.NameDe,
+                g.Key.NameEn,
+                g.Key.NameRu,
                 g.Key.AccountType,
                 g.Key.AccountClass,
                 g.Sum(x => x.jel != null ? x.jel.DebitAmount : 0),

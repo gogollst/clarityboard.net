@@ -54,7 +54,7 @@ public sealed class FinancialKpiCalculator : IKpiCalculationService
                                  && je.PostingDate <= snapshotDate),
                 jel => jel.JournalEntryId,
                 je => je.Id,
-                (jel, je) => new { jel.AccountId, jel.DebitAmount, jel.CreditAmount })
+                (jel, je) => new { jel.AccountId, jel.DebitAmount, jel.CreditAmount, jel.VatAmount })
             .Join(
                 _db.Accounts.AsNoTracking()
                     .Where(a => a.EntityId == entityId),
@@ -65,7 +65,8 @@ public sealed class FinancialKpiCalculator : IKpiCalculationService
                     a.AccountType,
                     a.AccountClass,
                     x.DebitAmount,
-                    x.CreditAmount))
+                    x.CreditAmount,
+                    x.VatAmount))
             .ToListAsync(ct);
 
         // Aggregate balances by account number
@@ -87,7 +88,8 @@ public sealed class FinancialKpiCalculator : IKpiCalculationService
         string AccountType,
         short AccountClass,
         decimal DebitAmount,
-        decimal CreditAmount);
+        decimal CreditAmount,
+        decimal VatAmount);
 
     // ─────────────────────────────────────────────────────────────────────
     // Intermediate component record holding all computed building blocks
@@ -149,7 +151,7 @@ public sealed class FinancialKpiCalculator : IKpiCalculationService
         {
             if (!balances.TryGetValue(line.AccountNumber, out var existing))
             {
-                existing = new AccountBalance(line.AccountNumber, line.AccountType, line.AccountClass, 0m, 0m);
+                existing = new AccountBalance(line.AccountNumber, line.AccountType, line.AccountClass, 0m, 0m, 0m, 0m);
                 balances[line.AccountNumber] = existing;
             }
 
@@ -157,6 +159,8 @@ public sealed class FinancialKpiCalculator : IKpiCalculationService
             {
                 TotalDebit = existing.TotalDebit + line.DebitAmount,
                 TotalCredit = existing.TotalCredit + line.CreditAmount,
+                TotalVatOnDebit = existing.TotalVatOnDebit + (line.DebitAmount > 0 ? line.VatAmount : 0),
+                TotalVatOnCredit = existing.TotalVatOnCredit + (line.CreditAmount > 0 ? line.VatAmount : 0),
             };
         }
 
@@ -168,17 +172,30 @@ public sealed class FinancialKpiCalculator : IKpiCalculationService
         string AccountType,
         short AccountClass,
         decimal TotalDebit,
-        decimal TotalCredit)
+        decimal TotalCredit,
+        decimal TotalVatOnDebit,
+        decimal TotalVatOnCredit)
     {
         /// <summary>
-        /// Returns the natural balance for this account type.
-        /// Asset/Expense: debit - credit (positive when debit-heavy).
-        /// Liability/Equity/Revenue: credit - debit (positive when credit-heavy).
+        /// Returns the natural balance for this account type (gross amounts).
+        /// Used for balance sheet accounts where the full amount is relevant.
         /// </summary>
         public decimal NaturalBalance => AccountType switch
         {
             "revenue" or "liability" or "equity" => TotalCredit - TotalDebit,
             _ => TotalDebit - TotalCredit, // asset, expense
+        };
+
+        /// <summary>
+        /// Returns the NET natural balance (excluding VAT) for P&L calculations.
+        /// All revenue/expense amounts must exclude Umsatzsteuer.
+        /// </summary>
+        public decimal NetNaturalBalance => AccountType switch
+        {
+            "revenue" or "liability" or "equity" =>
+                (TotalCredit - TotalVatOnCredit) - (TotalDebit - TotalVatOnDebit),
+            _ =>
+                (TotalDebit - TotalVatOnDebit) - (TotalCredit - TotalVatOnCredit),
         };
     }
 
@@ -193,48 +210,49 @@ public sealed class FinancialKpiCalculator : IKpiCalculationService
     {
         // ── Revenue: Class 8 revenue accounts (natural credit balance),
         //    minus contra-revenue accounts 8700-8730 (which are type "expense" in class 8)
-        var revenue = SumNaturalBalance(balances, b =>
+        //    All P&L values use NET amounts (excluding Umsatzsteuer).
+        var revenue = SumNetNaturalBalance(balances, b =>
             b.AccountClass == 8 && b.AccountType == "revenue");
 
-        var revenueContra = SumNaturalBalance(balances, b =>
+        var revenueContra = SumNetNaturalBalance(balances, b =>
             b.AccountClass == 8 && b.AccountType == "expense"
             && CompareAccountRange(b.AccountNumber, "8700", "8730"));
 
         // Also add received discounts (class 3 revenue accounts 3700-3736)
         // which reduce COGS / increase effective revenue
-        var receivedDiscounts = SumNaturalBalance(balances, b =>
+        var receivedDiscounts = SumNetNaturalBalance(balances, b =>
             b.AccountClass == 3 && b.AccountType == "revenue");
 
         var netRevenue = revenue - revenueContra;
 
         // ── COGS: Class 3 expense accounts (material inputs)
-        var cogs = SumNaturalBalance(balances, b =>
+        var cogs = SumNetNaturalBalance(balances, b =>
             b.AccountClass == 3 && b.AccountType == "expense");
 
         // Reduce COGS by received discounts/boni/rabatte
         var netCogs = cogs - receivedDiscounts;
 
         // ── Operating Expenses: Class 4 expense accounts
-        var opEx = SumNaturalBalance(balances, b =>
+        var opEx = SumNetNaturalBalance(balances, b =>
             b.AccountClass == 4 && b.AccountType == "expense");
 
         // ── Depreciation: Accounts 4820-4824 (subset of class 4)
-        var depreciation = SumNaturalBalance(balances, b =>
+        var depreciation = SumNetNaturalBalance(balances, b =>
             b.AccountClass == 4 && b.AccountType == "expense"
             && CompareAccountRange(b.AccountNumber, "4820", "4824"));
 
         // ── Personnel Expenses: Accounts 4100-4199
-        var personnelExpenses = SumNaturalBalance(balances, b =>
+        var personnelExpenses = SumNetNaturalBalance(balances, b =>
             b.AccountClass == 4 && b.AccountType == "expense"
             && CompareAccountRange(b.AccountNumber, "4100", "4199"));
 
         // ── Material Expenses: Accounts 4000-4099
-        var materialExpenses = SumNaturalBalance(balances, b =>
+        var materialExpenses = SumNetNaturalBalance(balances, b =>
             b.AccountClass == 4 && b.AccountType == "expense"
             && CompareAccountRange(b.AccountNumber, "4000", "4099"));
 
         // ── Interest Expense: Accounts 4960-4969
-        var interestExpense = SumNaturalBalance(balances, b =>
+        var interestExpense = SumNetNaturalBalance(balances, b =>
             b.AccountClass == 4 && b.AccountType == "expense"
             && CompareAccountRange(b.AccountNumber, "4960", "4969"));
 
@@ -497,13 +515,25 @@ public sealed class FinancialKpiCalculator : IKpiCalculationService
     }
 
     /// <summary>
-    /// Sums the natural balance of all accounts matching the predicate.
+    /// Sums the natural balance (gross) of all accounts matching the predicate.
+    /// Used for balance sheet accounts.
     /// </summary>
     private static decimal SumNaturalBalance(
         Dictionary<string, AccountBalance> balances,
         Func<AccountBalance, bool> predicate)
     {
         return balances.Values.Where(predicate).Sum(b => b.NaturalBalance);
+    }
+
+    /// <summary>
+    /// Sums the NET natural balance (excluding VAT) of all accounts matching the predicate.
+    /// Used for P&L accounts — all amounts must exclude Umsatzsteuer.
+    /// </summary>
+    private static decimal SumNetNaturalBalance(
+        Dictionary<string, AccountBalance> balances,
+        Func<AccountBalance, bool> predicate)
+    {
+        return balances.Values.Where(predicate).Sum(b => b.NetNaturalBalance);
     }
 
     /// <summary>

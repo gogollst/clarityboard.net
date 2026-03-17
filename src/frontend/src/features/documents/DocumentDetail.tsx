@@ -11,6 +11,7 @@ import {
   useReprocessDocument,
   useDeleteDocumentPreflight,
   useDeleteDocument,
+  useRevenueSchedule,
 } from '@/hooks/useDocuments';
 import { useAccounts } from '@/hooks/useAccounting';
 import { useSearchBusinessPartners, useAssignDocumentPartner } from '@/hooks/useAccounting';
@@ -107,6 +108,12 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function getFieldValue(fields: DocumentField[] | undefined, name: string): string | undefined {
+  if (!fields) return undefined;
+  const field = fields.find((f) => f.fieldName === name);
+  return field?.correctedValue ?? field?.fieldValue ?? undefined;
+}
+
 function ConfidenceBar({ confidence }: { confidence: number }) {
   const pct = Math.round(confidence * 100);
   const color =
@@ -147,6 +154,7 @@ export function Component() {
   const reprocessDocument = useReprocessDocument();
   const deleteDocument = useDeleteDocument();
   const { data: preflight, refetch: fetchPreflight, isFetching: isPreflightLoading } = useDeleteDocumentPreflight(selectedEntityId, id ?? null);
+  const { data: revenueScheduleData = [] } = useRevenueSchedule(selectedEntityId, id ?? null);
 
   // Entities for target entity selection
   const { data: entities = [] } = useEntities();
@@ -160,6 +168,7 @@ export function Component() {
   const [showOcrPanel, setShowOcrPanel] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [targetEntityId, setTargetEntityId] = useState<string>('');
+  const [showRevenueSchedule, setShowRevenueSchedule] = useState(true);
 
   // Account & employee data for modify form
   // Load accounts for the target entity (AI suggestion may point to a different entity)
@@ -371,6 +380,9 @@ export function Component() {
         title={doc.fileName}
         actions={
           <div className="flex items-center gap-2">
+            <Badge variant={doc.documentDirection === 'outgoing' ? 'default' : 'secondary'}>
+              {t(`directions.${doc.documentDirection ?? 'incoming'}`)}
+            </Badge>
             <StatusBadge status={doc.status} variantMap={STATUS_VARIANT_MAP} />
             {doc.confidence != null && (
               <ConfidenceBar confidence={doc.confidence} />
@@ -493,9 +505,24 @@ export function Component() {
               {doc.reviewReasons.map((reason, idx) => {
                 const display = getReviewReasonDisplay(reason, t);
                 const reasonKey = typeof reason === 'string' ? reason : reason.key;
+                const severityStyles = {
+                  error: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30',
+                  warning: 'border-amber-200 bg-white dark:border-amber-700 dark:bg-amber-900/30',
+                  info: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30',
+                };
+                const severityTextStyles = {
+                  error: 'text-red-800 dark:text-red-200',
+                  warning: 'text-amber-800 dark:text-amber-200',
+                  info: 'text-blue-800 dark:text-blue-200',
+                };
+                const severityHintStyles = {
+                  error: 'text-red-600 dark:text-red-400',
+                  warning: 'text-amber-600 dark:text-amber-400',
+                  info: 'text-blue-600 dark:text-blue-400',
+                };
                 return (
-                  <div key={`${reasonKey}-${idx}`} className="rounded-md border border-amber-200 bg-white p-3 dark:border-amber-700 dark:bg-amber-900/30">
-                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  <div key={`${reasonKey}-${idx}`} className={`rounded-md border p-3 ${severityStyles[display.severity]}`}>
+                    <p className={`text-sm font-medium ${severityTextStyles[display.severity]}`}>
                       {display.isAiFreetext && (
                         <Badge variant="outline" className="mr-2 text-[10px] px-1.5 py-0 align-middle border-amber-300 text-amber-600 dark:border-amber-600 dark:text-amber-400">
                           {t('reviewReasons.aiNote')}
@@ -504,12 +531,12 @@ export function Component() {
                       {display.isAiFreetext ? <span className="italic">{display.label}</span> : display.label}
                     </p>
                     {display.hint && (
-                      <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                      <p className={`mt-1 text-xs ${severityHintStyles[display.severity]}`}>
                         {display.hint}
                       </p>
                     )}
                     {display.detail && (
-                      <p className="mt-1 text-xs text-amber-500 dark:text-amber-500 italic">
+                      <p className="mt-1 text-xs text-muted-foreground italic">
                         {display.detail}
                       </p>
                     )}
@@ -533,7 +560,10 @@ export function Component() {
               <DetailRow label={t('detail.fields.contentType')} value={doc.contentType} />
               <DetailRow label={t('detail.fields.fileSize')} value={formatBytes(doc.fileSize)} />
               <DetailRow label={t('detail.fields.createdAt')} value={formatDate(doc.createdAt)} />
-              <DetailRow label={t('detail.fields.vendorName')} value={doc.vendorName} />
+              <DetailRow
+                label={doc.documentDirection === 'outgoing' ? t('detail.fields.customerName') : t('detail.fields.vendorName')}
+                value={doc.vendorName}
+              />
               <DetailRow label={t('detail.fields.invoiceNumber')} value={doc.invoiceNumber} />
               <DetailRow label={t('detail.fields.invoiceDate')} value={formatDate(doc.invoiceDate)} />
               <DetailRow
@@ -560,6 +590,32 @@ export function Component() {
                     : '—'
                 }
               />
+              {getFieldValue(doc.fields, 'due_date') && (
+                <DetailRow label={t('detail.fields.dueDate')} value={formatDate(getFieldValue(doc.fields, 'due_date'))} />
+              )}
+              {getFieldValue(doc.fields, 'service_period_start') ? (
+                <DetailRow
+                  label={t('detail.fields.servicePeriod')}
+                  value={`${formatDate(getFieldValue(doc.fields, 'service_period_start'))} – ${formatDate(getFieldValue(doc.fields, 'service_period_end'))}`}
+                />
+              ) : doc.reviewReasons?.some((r) => (typeof r === 'string' ? r : r.key) === 'missing_service_period') ? (
+                <div className="col-span-2">
+                  <dt className="text-xs font-medium uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                    {t('detail.fields.servicePeriod')} — {t('reviewReasons.missingServicePeriod')}
+                  </dt>
+                  <dd className="mt-1 flex items-center gap-2">
+                    <Input type="date" className="w-40" placeholder="Start" />
+                    <span className="text-muted-foreground">–</span>
+                    <Input type="date" className="w-40" placeholder="Ende" />
+                    <span className="text-xs text-muted-foreground">
+                      {t('reviewReasons.missingServicePeriodHint')}
+                    </span>
+                  </dd>
+                </div>
+              ) : null}
+              {doc.reverseCharge && (
+                <DetailRow label={t('detail.fields.reverseCharge')} value={<Badge variant="outline">Reverse Charge</Badge>} />
+              )}
             </dl>
           </CardContent>
         </Card>
@@ -712,11 +768,19 @@ export function Component() {
                           {t(`detail.fieldsPanel.fieldLabels.${field.fieldName}`, { defaultValue: field.fieldName })}
                         </td>
                         <td className="py-2">
-                          {field.correctedValue ?? field.fieldValue ?? '—'}
-                          {field.correctedValue && field.fieldValue && (
-                            <span className="ml-2 text-xs text-muted-foreground line-through">
-                              {field.fieldValue}
-                            </span>
+                          {field.fieldName.endsWith('product_category') ? (
+                            <Badge variant="outline">
+                              {field.correctedValue ?? field.fieldValue ?? '—'}
+                            </Badge>
+                          ) : (
+                            <>
+                              {field.correctedValue ?? field.fieldValue ?? '—'}
+                              {field.correctedValue && field.fieldValue && (
+                                <span className="ml-2 text-xs text-muted-foreground line-through">
+                                  {field.fieldValue}
+                                </span>
+                              )}
+                            </>
                           )}
                         </td>
                         <td className="py-2">
@@ -1017,6 +1081,109 @@ export function Component() {
                 </div>
               )}
             </CardContent>
+          </Card>
+        )}
+
+        {/* Revenue Schedule */}
+        {revenueScheduleData.length > 0 && (
+          <Card className="lg:col-span-2">
+            <Collapsible open={showRevenueSchedule} onOpenChange={setShowRevenueSchedule}>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-base">{t('detail.revenueSchedule.title')}</CardTitle>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    {showRevenueSchedule ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
+              </CardHeader>
+              <CardContent>
+                {/* Summary row */}
+                {(() => {
+                  const totalAmount = revenueScheduleData.reduce((sum, e) => sum + e.amount, 0);
+                  const bookedCount = revenueScheduleData.filter((e) => e.status === 'booked').length;
+                  const totalCount = revenueScheduleData.length;
+                  const progressPct = totalCount > 0 ? Math.round((bookedCount / totalCount) * 100) : 0;
+                  return (
+                    <div className="mb-4 flex flex-wrap items-center gap-4">
+                      <span className="text-sm text-muted-foreground">
+                        {t('detail.revenueSchedule.totalAmount')}:{' '}
+                        <span className="font-semibold text-foreground">
+                          {formatCurrency(totalAmount, doc?.currency ?? 'EUR')}
+                        </span>
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {t('detail.revenueSchedule.booked')}: {bookedCount} / {totalCount}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-32 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-emerald-500"
+                            style={{ width: `${progressPct}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground">{progressPct}%</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <CollapsibleContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-left text-muted-foreground">
+                          <th className="pb-2 pr-4 font-medium">{t('detail.revenueSchedule.period')}</th>
+                          <th className="pb-2 pr-4 font-medium text-right">{t('detail.revenueSchedule.amount')}</th>
+                          <th className="pb-2 pr-4 font-medium">{t('detail.revenueSchedule.account')}</th>
+                          <th className="pb-2 font-medium">{t('detail.revenueSchedule.status')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {revenueScheduleData.map((entry) => {
+                          const periodDate = new Date(entry.periodDate);
+                          const periodLabel = new Intl.DateTimeFormat(i18n.language, {
+                            year: 'numeric',
+                            month: '2-digit',
+                          }).format(periodDate);
+
+                          const statusVariant =
+                            entry.status === 'booked'
+                              ? 'default'
+                              : entry.status === 'cancelled'
+                                ? 'secondary'
+                                : 'outline';
+                          const statusClass =
+                            entry.status === 'booked'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                              : entry.status === 'cancelled'
+                                ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                                : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
+
+                          return (
+                            <tr key={entry.id} className="border-b last:border-0">
+                              <td className="py-2 pr-4">{periodLabel}</td>
+                              <td className="py-2 pr-4 text-right font-medium">
+                                {formatCurrency(entry.amount, doc?.currency ?? 'EUR')}
+                              </td>
+                              <td className="py-2 pr-4 font-mono text-xs">{entry.revenueAccountNumber}</td>
+                              <td className="py-2">
+                                <Badge variant={statusVariant} className={statusClass}>
+                                  {t(`detail.revenueSchedule.statuses.${entry.status}`)}
+                                </Badge>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </CollapsibleContent>
+              </CardContent>
+            </Collapsible>
           </Card>
         )}
       </div>

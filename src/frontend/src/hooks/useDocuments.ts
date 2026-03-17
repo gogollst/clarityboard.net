@@ -12,6 +12,11 @@ import type {
   DocumentDownloadUrl,
   ModifyBookingRequest,
   DeleteDocumentPreflight,
+  RevenueScheduleEntry,
+  DeferredRevenueOverview,
+  PostRevenueEntryResult,
+  PostAllDueResult,
+  CancelRevenueScheduleResult,
 } from '@/types/document';
 
 // ---------------------------------------------------------------------------
@@ -345,6 +350,143 @@ export function useRejectBooking() {
     },
     onError: () => {
       toast.error('Failed to reject booking suggestion');
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Revenue Schedule (Erlösabgrenzung / PRA)
+// ---------------------------------------------------------------------------
+
+export function useRevenueSchedule(entityId: string | null, documentId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.accounting.revenueSchedule(entityId ?? '', documentId ?? ''),
+    queryFn: async () => {
+      const { data } = await api.get<RevenueScheduleEntry[]>(
+        `/accounting/documents/${documentId}/revenue-schedule`,
+        { params: { entityId } },
+      );
+      return data;
+    },
+    enabled: !!entityId && !!documentId,
+  });
+}
+
+export function usePendingRevenueEntries(entityId: string | null, month: string | null) {
+  return useQuery({
+    queryKey: [...queryKeys.accounting.pendingRevenueEntries(entityId ?? ''), month],
+    queryFn: async () => {
+      const { data } = await api.get<PaginatedResponse<RevenueScheduleEntry>>(
+        '/accounting/revenue-schedules/pending',
+        { params: { entityId, month } },
+      );
+      return data;
+    },
+    enabled: !!entityId && !!month,
+  });
+}
+
+export function useDeferredRevenueOverview(entityId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.accounting.deferredRevenueOverview(entityId ?? ''),
+    queryFn: async () => {
+      const { data } = await api.get<DeferredRevenueOverview>(
+        '/accounting/revenue-schedules/overview',
+        { params: { entityId } },
+      );
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
+export function usePostRevenueEntry() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      entityId,
+      entryId,
+    }: {
+      entityId: string;
+      entryId: string;
+    }) => {
+      const { data } = await api.post<PostRevenueEntryResult>(
+        `/accounting/revenue-schedules/${entryId}/post`,
+        undefined,
+        { params: { entityId } },
+      );
+      return { ...data, entityId };
+    },
+    onSuccess: ({ entityId }) => {
+      toast.success('Revenue entry posted');
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.pendingRevenueEntries(entityId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.deferredRevenueOverview(entityId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.journalEntries(entityId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.trialBalance(entityId) });
+    },
+    onError: () => {
+      toast.error('Failed to post revenue entry');
+    },
+  });
+}
+
+export function usePostAllDueRevenueEntries() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      entityId,
+      upToMonth,
+    }: {
+      entityId: string;
+      upToMonth: string;
+    }) => {
+      const { data } = await api.post<PostAllDueResult>(
+        '/accounting/revenue-schedules/post-all',
+        undefined,
+        { params: { entityId, upToMonth } },
+      );
+      return { ...data, entityId };
+    },
+    onSuccess: ({ postedCount, entityId }) => {
+      toast.success(`${postedCount} revenue entries posted`);
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.pendingRevenueEntries(entityId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.deferredRevenueOverview(entityId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.journalEntries(entityId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.trialBalance(entityId) });
+    },
+    onError: () => {
+      toast.error('Failed to post revenue entries');
+    },
+  });
+}
+
+export function useCancelRevenueSchedule() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      entityId,
+      documentId,
+    }: {
+      entityId: string;
+      documentId: string;
+    }) => {
+      const { data } = await api.post<CancelRevenueScheduleResult>(
+        `/accounting/documents/${documentId}/cancel-revenue-schedule`,
+        undefined,
+        { params: { entityId } },
+      );
+      return { ...data, entityId, documentId };
+    },
+    onSuccess: ({ entityId, documentId }) => {
+      toast.success('Revenue schedule cancelled');
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.revenueSchedule(entityId, documentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.deferredRevenueOverview(entityId) });
+    },
+    onError: () => {
+      toast.error('Failed to cancel revenue schedule');
     },
   });
 }

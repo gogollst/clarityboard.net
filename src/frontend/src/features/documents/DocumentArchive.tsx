@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { useDocuments, useReprocessDocument, useDeleteDocument, useDeleteDocumentPreflight } from '@/hooks/useDocuments';
 import { api } from '@/lib/api';
-import type { DocumentStatus } from '@/types/document';
+import type { DocumentStatus, DocumentDirection } from '@/types/document';
 import PageHeader from '@/components/shared/PageHeader';
 import DataTable from '@/components/shared/DataTable';
 import StatusBadge from '@/components/shared/StatusBadge';
@@ -44,6 +44,7 @@ export function Component() {
   const { selectedEntityId } = useEntity();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<DocumentStatus | 'all'>('all');
+  const [direction, setDirection] = useState<DocumentDirection | 'all'>('all');
   const [search, setSearch] = useState('');
   const pageSize = 20;
   const reprocessDocument = useReprocessDocument();
@@ -60,6 +61,7 @@ export function Component() {
     page,
     pageSize,
     status: status === 'all' ? undefined : status,
+    direction: direction === 'all' ? undefined : direction,
     search: search || undefined,
   });
 
@@ -111,6 +113,18 @@ export function Component() {
       render: (item: Record<string, unknown>) => (
         <span className="font-medium">{String(item.fileName ?? '')}</span>
       ),
+    },
+    {
+      key: 'documentDirection',
+      header: t('columns.direction'),
+      render: (item: Record<string, unknown>) => {
+        const dir = String(item.documentDirection ?? 'incoming');
+        return (
+          <Badge variant={dir === 'outgoing' ? 'default' : 'secondary'} className="text-xs">
+            {t(`directions.${dir}`)}
+          </Badge>
+        );
+      },
     },
     {
       key: 'vendorName',
@@ -281,6 +295,22 @@ export function Component() {
             <SelectItem value="review">{t('statuses.review')}</SelectItem>
             <SelectItem value="booked">{t('statuses.booked')}</SelectItem>
             <SelectItem value="failed">{t('statuses.failed')}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={direction}
+          onValueChange={(v) => {
+            setDirection(v as DocumentDirection | 'all');
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder={t('allDirections')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('allDirections')}</SelectItem>
+            <SelectItem value="incoming">{t('directions.incoming')}</SelectItem>
+            <SelectItem value="outgoing">{t('directions.outgoing')}</SelectItem>
           </SelectContent>
         </Select>
         <div className="relative flex-1">

@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Send, RotateCcw, Pencil, Plus, Trash2, Loader2 } from 'lucide-react';
 import { useEntity } from '@/hooks/useEntity';
-import { useJournalEntry, usePostJournalEntry, useReverseJournalEntry, useUpdateJournalEntry, useAccounts } from '@/hooks/useAccounting';
+import { useJournalEntry, usePostJournalEntry, useReverseJournalEntry, useDeleteJournalEntry, useUpdateJournalEntry, useAccounts } from '@/hooks/useAccounting';
 import { getLocalizedAccountName } from '@/lib/accountUtils';
 import { formatCurrency } from '@/lib/format';
 import DataTable from '@/components/shared/DataTable';
@@ -69,11 +69,14 @@ export function Component() {
   const { selectedEntityId } = useEntity();
   const { data: entry, isLoading } = useJournalEntry(id ?? null, selectedEntityId);
   const { data: accounts } = useAccounts(selectedEntityId);
+  const navigate = useNavigate();
   const postMutation = usePostJournalEntry();
   const reverseMutation = useReverseJournalEntry();
+  const deleteMutation = useDeleteJournalEntry();
   const updateMutation = useUpdateJournalEntry();
 
   const [confirmPost, setConfirmPost] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [reverseDialog, setReverseDialog] = useState(false);
   const [reverseReason, setReverseReason] = useState('');
   const [editOpen, setEditOpen] = useState(false);
@@ -179,7 +182,20 @@ export function Component() {
   const columns = [
     { key: 'lineNumber', header: t('accounting:journalEntryDetail.columns.lineNumber') },
     { key: 'accountNumber', header: t('accounting:journalEntryDetail.columns.accountNumber') },
-    { key: 'accountName', header: t('accounting:journalEntryDetail.columns.accountName') },
+    {
+      key: 'accountName',
+      header: t('accounting:journalEntryDetail.columns.accountName'),
+      render: (item: Record<string, unknown>) =>
+        getLocalizedAccountName(
+          {
+            name: String(item.accountName ?? ''),
+            nameDe: item.accountNameDe as string | undefined,
+            nameEn: item.accountNameEn as string | undefined,
+            nameRu: item.accountNameRu as string | undefined,
+          },
+          i18n.language,
+        ),
+    },
     {
       key: 'debitAmount',
       header: t('accounting:journalEntryDetail.columns.debit'),
@@ -238,6 +254,18 @@ export function Component() {
     );
   }
 
+  const handleDelete = () => {
+    deleteMutation.mutate(
+      { id: entry.id, entityId: selectedEntityId },
+      {
+        onSuccess: () => {
+          setConfirmDelete(false);
+          navigate('/accounting/journal-entries');
+        },
+      },
+    );
+  };
+
   const handlePost = () => {
     postMutation.mutate(
       { id: entry.id, entityId: selectedEntityId },
@@ -282,6 +310,10 @@ export function Component() {
                 <Button size="sm" onClick={() => setConfirmPost(true)}>
                   <Send className="mr-1 h-4 w-4" />
                   {t('accounting:journalEntries.actions.post')}
+                </Button>
+                <Button size="sm" variant="destructive" onClick={() => setConfirmDelete(true)}>
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  {t('accounting:journalEntryDetail.deleteEntry')}
                 </Button>
               </>
             )}
@@ -392,6 +424,25 @@ export function Component() {
             </Button>
             <Button onClick={handlePost} disabled={postMutation.isPending}>
               {t('accounting:journalEntries.postConfirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('accounting:journalEntryDetail.deleteConfirmTitle')}</DialogTitle>
+            <DialogDescription>{t('accounting:journalEntryDetail.deleteConfirmDescription')}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDelete(false)}>
+              {t('common:buttons.cancel')}
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {t('accounting:journalEntryDetail.deleteConfirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

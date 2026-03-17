@@ -277,6 +277,8 @@
     "priorAmount": "Vorperiode",
     "position": "Position",
     "subtotal": "Zwischensumme",
+    "postPayroll": "Lohnbuchung erstellen",
+    "postingPayroll": "Wird gebucht...",
     "sections": {
       "Umsatzerloese": "Umsatzerlöse",
       "Bestandsveraenderungen / Eigenleistungen": "Bestandsveränderungen / Eigenleistungen",
@@ -571,6 +573,9 @@
     "fiscalPeriodCreated": "Buchungsperiode erstellt",
     "fiscalPeriodCreateError": "Fehler beim Erstellen der Buchungsperiode",
     "fiscalPeriodClosed": "Buchungsperiode geschlossen",
-    "fiscalPeriodCloseError": "Fehler beim Schließen der Buchungsperiode"
+    "fiscalPeriodCloseError": "Fehler beim Schließen der Buchungsperiode",
+    "payrollPosted": "Lohnbuchung erstellt: {{count}} Buchungssätze erzeugt",
+    "payrollPartial": "Lohnbuchung teilweise erstellt: {{success}} von {{total}} Mitarbeitern",
+    "payrollError": "Fehler bei der Lohnbuchung"
   }
 }

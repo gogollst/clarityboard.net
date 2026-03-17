@@ -29,6 +29,8 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
     private readonly IBusinessPartnerMatchingService _partnerMatchingService;
     private readonly DocumentStatusChangeNotifier _documentStatusChangeNotifier;
     private readonly IAccountingRepository _accountingRepo;
+    private readonly IDocumentClassifier _documentClassifier;
+    private readonly IRevenueScheduleService _revenueScheduleService;
 
     public DocumentProcessingConsumer(
         ILogger<DocumentProcessingConsumer> logger,
@@ -39,7 +41,9 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         IAzureDocIntelligenceService azureDocIntelligence,
         IBusinessPartnerMatchingService partnerMatchingService,
         DocumentStatusChangeNotifier documentStatusChangeNotifier,
-        IAccountingRepository accountingRepo)
+        IAccountingRepository accountingRepo,
+        IDocumentClassifier documentClassifier,
+        IRevenueScheduleService revenueScheduleService)
     {
         _logger = logger;
         _db = db;
@@ -50,6 +54,8 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         _partnerMatchingService = partnerMatchingService;
         _documentStatusChangeNotifier = documentStatusChangeNotifier;
         _accountingRepo = accountingRepo;
+        _documentClassifier = documentClassifier;
+        _revenueScheduleService = revenueScheduleService;
     }
 
     public async Task Consume(ConsumeContext<ProcessDocument> context)
@@ -106,6 +112,31 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             var (documentText, extraction, textResult) = await AcquireTextAndExtractAsync(
                 fileStream, document, documentId, entityId, reviewReasons, ct);
 
+            // 4b. Classify document direction (incoming vs outgoing)
+            currentStage = "classify_direction";
+            var classifyStopwatch = Stopwatch.StartNew();
+            var activeEntities = await _db.LegalEntities
+                .Where(e => e.IsActive)
+                .ToListAsync(ct);
+            var classification = await _documentClassifier.ClassifyAsync(documentText, activeEntities, ct);
+            document.SetClassification(classification.Direction, classification.Confidence);
+            classifyStopwatch.Stop();
+            LogStageInformation(currentStage, classifyStopwatch.ElapsedMilliseconds, classification.Direction,
+                "score {Score} confidence {Confidence} rules {Rules}",
+                classification.Score, classification.Confidence,
+                string.Join(",", classification.MatchedRules));
+
+            var isOutgoing = classification.Direction == "outgoing";
+
+            // Override AI-extracted direction with classifier's decision (rules-based is more reliable)
+            if (extraction.DocumentDirection != classification.Direction)
+            {
+                _logger.LogInformation(
+                    "Overriding AI-extracted direction '{AiDirection}' with classifier direction '{ClassifierDirection}' (score={Score}, confidence={Confidence})",
+                    extraction.DocumentDirection, classification.Direction, classification.Score, classification.Confidence);
+                extraction = extraction with { DocumentDirection = classification.Direction };
+            }
+
             // 5. Store DocumentFields from extraction result
             currentStage = "persist_extraction";
             var persistExtractionStopwatch = Stopwatch.StartNew();
@@ -142,25 +173,40 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                 currency: extraction.Currency,
                 netAmount: netAmount,
                 taxAmount: taxAmount);
+
+            // Set additional extracted fields on document
+            document.SetDueDate(extraction.DueDate);
+            document.SetOrderNumber(extraction.OrderNumber);
+            document.SetReverseCharge(extraction.ReverseCharge);
+
             persistExtractionStopwatch.Stop();
             LogStageInformation(currentStage, persistExtractionStopwatch.ElapsedMilliseconds, document.Status,
                 "storedFieldCount {StoredFieldCount}", storedFieldCount);
 
-            // 6b. Match or create business partner
+            // 6b. Match or create business partner (direction-aware)
             currentStage = "match_partner";
             var matchPartnerStopwatch = Stopwatch.StartNew();
-            if (!string.IsNullOrWhiteSpace(extraction.VendorName))
+
+            // For outgoing invoices, the partner is the recipient (customer/debtor)
+            // For incoming invoices, the partner is the vendor (creditor)
+            var partnerName = isOutgoing ? extraction.RecipientName : extraction.VendorName;
+            var partnerTaxId = isOutgoing ? extraction.RecipientTaxId : extraction.VendorTaxId;
+            var partnerIban = isOutgoing ? extraction.RecipientIban : extraction.VendorIban;
+
+            if (!string.IsNullOrWhiteSpace(partnerName))
             {
                 var matchResult = await _partnerMatchingService.MatchPartnerAsync(
-                    entityId, extraction.VendorName, extraction.VendorTaxId, extraction.VendorIban, ct);
+                    entityId, partnerName, partnerTaxId, partnerIban, ct);
 
                 switch (matchResult.MatchType)
                 {
                     case PartnerMatchType.Exact:
                         document.AssignBusinessPartner(matchResult.MatchedPartner!.Id);
+                        // Enrich existing partner with any newly extracted fields
+                        var enriched = EnrichPartnerFromExtraction(matchResult.MatchedPartner, extraction, isOutgoing);
                         LogStageInformation(currentStage, matchPartnerStopwatch.ElapsedMilliseconds, "exact_match",
-                            "partnerId {PartnerId} partnerName {PartnerName}",
-                            matchResult.MatchedPartner.Id, matchResult.MatchedPartner.Name);
+                            "partnerId {PartnerId} partnerName {PartnerName} enriched {Enriched}",
+                            matchResult.MatchedPartner.Id, matchResult.MatchedPartner.Name, enriched);
                         break;
 
                     case PartnerMatchType.Fuzzy:
@@ -173,27 +219,33 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                         break;
 
                     case PartnerMatchType.None:
-                        // Country must be ISO 3166-1 alpha-2 (max 2 chars) — discard if AI returned full name
-                        var vendorCountry = extraction.VendorCountry is { Length: 2 }
-                            ? extraction.VendorCountry.ToUpperInvariant()
+                        // For outgoing: use recipient fields. For incoming: use vendor fields.
+                        var partnerCountryRaw = isOutgoing ? extraction.RecipientCountry : extraction.VendorCountry;
+                        var partnerCountry = partnerCountryRaw is { Length: 2 }
+                            ? partnerCountryRaw.ToUpperInvariant()
                             : null;
 
                         var newPartner = BusinessPartner.Create(
                             entityId: entityId,
-                            name: extraction.VendorName,
-                            isCreditor: true,
-                            isDebtor: false,
-                            taxId: extraction.VendorTaxId,
-                            street: extraction.VendorStreet,
-                            city: extraction.VendorCity,
-                            postalCode: extraction.VendorPostalCode,
-                            country: vendorCountry,
-                            iban: extraction.VendorIban,
-                            bic: extraction.VendorBic);
+                            name: partnerName,
+                            isCreditor: !isOutgoing,   // incoming → creditor
+                            isDebtor: isOutgoing,      // outgoing → debtor
+                            taxId: partnerTaxId,
+                            vatNumber: isOutgoing ? extraction.RecipientVatId : null,
+                            street: isOutgoing ? extraction.RecipientStreet : extraction.VendorStreet,
+                            city: isOutgoing ? extraction.RecipientCity : extraction.VendorCity,
+                            postalCode: isOutgoing ? extraction.RecipientPostalCode : extraction.VendorPostalCode,
+                            country: partnerCountry,
+                            email: isOutgoing ? extraction.RecipientEmail : extraction.VendorEmail,
+                            phone: isOutgoing ? extraction.RecipientPhone : extraction.VendorPhone,
+                            bankName: isOutgoing ? extraction.RecipientBankName : extraction.VendorBankName,
+                            iban: isOutgoing ? extraction.RecipientIban : extraction.VendorIban,
+                            bic: isOutgoing ? extraction.RecipientBic : extraction.VendorBic);
 
-                        // Generate partner number
+                        // Generate partner number: D- for debtors, K- for creditors
+                        var prefix = isOutgoing ? "D-" : "K-";
                         var lastNumber = await _db.BusinessPartners
-                            .Where(bp => bp.EntityId == entityId && bp.PartnerNumber.StartsWith("K-"))
+                            .Where(bp => bp.EntityId == entityId && bp.PartnerNumber.StartsWith(prefix))
                             .OrderByDescending(bp => bp.PartnerNumber)
                             .Select(bp => bp.PartnerNumber)
                             .FirstOrDefaultAsync(ct);
@@ -202,19 +254,19 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                         if (lastNumber is not null && int.TryParse(lastNumber[2..], out var parsed))
                             nextSeq = parsed + 1;
 
-                        newPartner.SetPartnerNumber($"K-{nextSeq:D5}");
+                        newPartner.SetPartnerNumber($"{prefix}{nextSeq:D5}");
                         _db.BusinessPartners.Add(newPartner);
                         document.AssignBusinessPartner(newPartner.Id);
 
                         LogStageInformation(currentStage, matchPartnerStopwatch.ElapsedMilliseconds, "auto_created",
-                            "partnerNumber {PartnerNumber} partnerName {PartnerName}",
-                            newPartner.PartnerNumber, newPartner.Name);
+                            "partnerNumber {PartnerNumber} partnerName {PartnerName} direction {Direction}",
+                            newPartner.PartnerNumber, newPartner.Name, classification.Direction);
                         break;
                 }
             }
             else
             {
-                LogStageInformation(currentStage, matchPartnerStopwatch.ElapsedMilliseconds, "skipped_no_vendor_name");
+                LogStageInformation(currentStage, matchPartnerStopwatch.ElapsedMilliseconds, "skipped_no_partner_name");
             }
             matchPartnerStopwatch.Stop();
 
@@ -222,9 +274,8 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
             currentStage = "entity_recognition";
             var entityRecognitionStopwatch = Stopwatch.StartNew();
             Guid? suggestedEntityId = null;
-            var allEntities = await _db.LegalEntities
-                .Where(e => e.IsActive)
-                .ToListAsync(ct);
+            // Reuse activeEntities loaded during classification step
+            var allEntities = activeEntities;
 
             var legalEntity = allEntities.FirstOrDefault(e => e.Id == entityId);
 
@@ -343,6 +394,54 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                     reviewReasons.Add(new ReviewReason { Key = "booking_suggestion_unresolved_accounts" });
             }
 
+            // 8b. Outgoing invoice: validation + revenue schedule + cashflow entry
+            if (isOutgoing && bookingSuggestionCreated && bookingSuggestion is not null)
+            {
+                // Run outgoing invoice validation (V-01 to V-10)
+                var validator = new Application.Features.Documents.Services.OutgoingInvoiceValidationService();
+                var validationResults = validator.Validate(extraction);
+                foreach (var v in validationResults)
+                {
+                    reviewReasons.Add(new ReviewReason { Key = v.ReviewReasonKey, Detail = v.Detail });
+                }
+
+                // Create revenue schedule if service period > 1 month
+                if (bookingSuggestion.ServicePeriodStart.HasValue && bookingSuggestion.ServicePeriodEnd.HasValue)
+                {
+                    var periodMonths = ((bookingSuggestion.ServicePeriodEnd.Value.Year - bookingSuggestion.ServicePeriodStart.Value.Year) * 12)
+                                       + bookingSuggestion.ServicePeriodEnd.Value.Month - bookingSuggestion.ServicePeriodStart.Value.Month;
+
+                    if (periodMonths > 1)
+                    {
+                        var latestSuggestion = await _db.BookingSuggestions
+                            .Where(bs => bs.DocumentId == document.Id)
+                            .OrderByDescending(bs => bs.CreatedAt)
+                            .FirstOrDefaultAsync(ct);
+
+                        if (latestSuggestion is not null)
+                        {
+                            var scheduleEntries = await _revenueScheduleService.CreateScheduleAsync(
+                                document, latestSuggestion, bookingSuggestion, ct);
+                            _logger.LogInformation(
+                                "Created {Count} revenue schedule entries for document {DocumentId}",
+                                scheduleEntries.Count, document.Id);
+
+                            if (scheduleEntries.Count > 0)
+                                reviewReasons.Add(new ReviewReason { Key = "deferred_revenue_required",
+                                    Detail = $"{scheduleEntries.Count} deferred revenue entries created" });
+                        }
+                    }
+                }
+
+                // Create cashflow entry (expected inflow)
+                await _revenueScheduleService.CreateCashflowEntryAsync(document, "inflow", ct);
+            }
+            else if (!isOutgoing && bookingSuggestionCreated)
+            {
+                // Incoming invoice: create cashflow outflow entry
+                await _revenueScheduleService.CreateCashflowEntryAsync(document, "outflow", ct);
+            }
+
             document.UpdateExtractedData(DocumentExtractedDataSerializer.Serialize(extraction, reviewReasons, textResult));
 
             // 9. Check auto-booking eligibility
@@ -405,12 +504,14 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         if (string.IsNullOrWhiteSpace(vendorName))
             return false;
 
-        // Find matching recurring pattern with auto-book enabled
+        // Find matching recurring pattern with auto-book enabled (direction-aware)
+        var direction = document.DocumentDirection;
         var pattern = await _db.RecurringPatterns
             .FirstOrDefaultAsync(p =>
                 p.EntityId == entityId
                 && p.AutoBookEnabled
                 && p.IsActive
+                && p.DocumentDirection == direction
                 && p.VendorName.ToLower() == vendorName.ToLower(), ct);
 
         if (pattern is null)
@@ -717,6 +818,26 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         return count + extraction.LineItems.Count + extraction.RawFields.Count;
     }
 
+    private static bool EnrichPartnerFromExtraction(
+        BusinessPartner partner, DocumentExtractionResult extraction, bool isOutgoing)
+    {
+        var countryRaw = isOutgoing ? extraction.RecipientCountry : extraction.VendorCountry;
+        var country = countryRaw is { Length: 2 } ? countryRaw.ToUpperInvariant() : null;
+
+        return partner.EnrichMissingFields(
+            taxId: isOutgoing ? extraction.RecipientTaxId : extraction.VendorTaxId,
+            vatNumber: isOutgoing ? extraction.RecipientVatId : null,
+            street: isOutgoing ? extraction.RecipientStreet : extraction.VendorStreet,
+            city: isOutgoing ? extraction.RecipientCity : extraction.VendorCity,
+            postalCode: isOutgoing ? extraction.RecipientPostalCode : extraction.VendorPostalCode,
+            country: country,
+            email: isOutgoing ? extraction.RecipientEmail : extraction.VendorEmail,
+            phone: isOutgoing ? extraction.RecipientPhone : extraction.VendorPhone,
+            bankName: isOutgoing ? extraction.RecipientBankName : extraction.VendorBankName,
+            iban: isOutgoing ? extraction.RecipientIban : extraction.VendorIban,
+            bic: isOutgoing ? extraction.RecipientBic : extraction.VendorBic);
+    }
+
     private int StoreDocumentFields(Document document, DocumentExtractionResult extraction)
     {
         var fields = new List<DocumentField>();
@@ -730,6 +851,10 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         Add("vendor_name", extraction.VendorName);
         Add("vendor_tax_id", extraction.VendorTaxId);
         Add("vendor_iban", extraction.VendorIban);
+        Add("vendor_bic", extraction.VendorBic);
+        Add("vendor_email", extraction.VendorEmail);
+        Add("vendor_phone", extraction.VendorPhone);
+        Add("vendor_bank_name", extraction.VendorBankName);
         Add("vendor_street", extraction.VendorStreet);
         Add("vendor_city", extraction.VendorCity);
         Add("vendor_postal_code", extraction.VendorPostalCode);
@@ -737,6 +862,11 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         Add("recipient_name", extraction.RecipientName);
         Add("recipient_tax_id", extraction.RecipientTaxId);
         Add("recipient_vat_id", extraction.RecipientVatId);
+        Add("recipient_iban", extraction.RecipientIban);
+        Add("recipient_bic", extraction.RecipientBic);
+        Add("recipient_email", extraction.RecipientEmail);
+        Add("recipient_phone", extraction.RecipientPhone);
+        Add("recipient_bank_name", extraction.RecipientBankName);
         Add("recipient_street", extraction.RecipientStreet);
         Add("recipient_city", extraction.RecipientCity);
         Add("recipient_postal_code", extraction.RecipientPostalCode);
@@ -760,6 +890,20 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
         if (extraction.TaxRate.HasValue)
             fields.Add(DocumentField.Create(document.Id, "tax_rate", extraction.TaxRate.Value.ToString("F2"), extraction.Confidence));
 
+        // Sprint 2: Service period, recurring revenue, and extended fields
+        if (extraction.DueDate.HasValue)
+            fields.Add(DocumentField.Create(document.Id, "due_date", extraction.DueDate.Value.ToString("O"), extraction.Confidence));
+        Add("order_number", extraction.OrderNumber);
+        if (extraction.ReverseCharge)
+            fields.Add(DocumentField.Create(document.Id, "reverse_charge", "true", extraction.Confidence));
+        if (extraction.ServicePeriodStart.HasValue)
+            fields.Add(DocumentField.Create(document.Id, "service_period_start", extraction.ServicePeriodStart.Value.ToString("O"), extraction.Confidence));
+        if (extraction.ServicePeriodEnd.HasValue)
+            fields.Add(DocumentField.Create(document.Id, "service_period_end", extraction.ServicePeriodEnd.Value.ToString("O"), extraction.Confidence));
+        if (extraction.IsRecurringRevenue)
+            fields.Add(DocumentField.Create(document.Id, "is_recurring_revenue", "true", extraction.Confidence));
+        Add("recurring_interval", extraction.RecurringInterval);
+
         for (var i = 0; i < extraction.LineItems.Count; i++)
         {
             var item = extraction.LineItems[i];
@@ -767,6 +911,12 @@ public class DocumentProcessingConsumer : IConsumer<ProcessDocument>
                 fields.Add(DocumentField.Create(document.Id, $"line_item_{i}_description", item.Description, extraction.Confidence));
             if (item.TotalPrice.HasValue)
                 fields.Add(DocumentField.Create(document.Id, $"line_item_{i}_total", item.TotalPrice.Value.ToString("F2"), extraction.Confidence));
+            Add($"line_item_{i}_product_category", item.ProductCategory);
+            if (item.ServicePeriodStart.HasValue)
+                fields.Add(DocumentField.Create(document.Id, $"line_item_{i}_service_period_start", item.ServicePeriodStart.Value.ToString("O"), extraction.Confidence));
+            if (item.ServicePeriodEnd.HasValue)
+                fields.Add(DocumentField.Create(document.Id, $"line_item_{i}_service_period_end", item.ServicePeriodEnd.Value.ToString("O"), extraction.Confidence));
+            Add($"line_item_{i}_billing_interval", item.BillingInterval);
         }
 
         foreach (var (key, value) in extraction.RawFields)

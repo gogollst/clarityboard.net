@@ -2,10 +2,16 @@
   "title": "Documents",
   "upload": "Upload",
   "allStatuses": "All Statuses",
+  "allDirections": "All Directions",
   "searchPlaceholder": "Search documents...",
   "noDocuments": "No documents found.",
+  "directions": {
+    "incoming": "Incoming",
+    "outgoing": "Outgoing"
+  },
   "columns": {
     "fileName": "File Name",
+    "direction": "Direction",
     "vendor": "Vendor",
     "invoiceNumber": "Invoice #",
     "date": "Date",
@@ -63,7 +69,11 @@
       "createdAt": "Uploaded At",
       "businessPartner": "Business Partner",
       "suggestedPartner": "Suggested Partner",
-      "reviewReasons": "Review Reasons"
+      "reviewReasons": "Review Reasons",
+      "customerName": "Customer",
+      "dueDate": "Due Date",
+      "servicePeriod": "Service Period",
+      "reverseCharge": "Reverse Charge"
     },
     "fieldsPanel": {
       "title": "Extracted Fields",
@@ -80,9 +90,17 @@
         "vendor_country": "Vendor Country",
         "vendor_iban": "Vendor IBAN",
         "vendor_bic": "Vendor BIC",
+        "vendor_email": "Vendor Email",
+        "vendor_phone": "Vendor Phone",
+        "vendor_bank_name": "Vendor Bank",
         "recipient_name": "Recipient",
         "recipient_tax_id": "Recipient Tax ID",
         "recipient_vat_id": "Recipient VAT ID",
+        "recipient_iban": "Recipient IBAN",
+        "recipient_bic": "Recipient BIC",
+        "recipient_email": "Recipient Email",
+        "recipient_phone": "Recipient Phone",
+        "recipient_bank_name": "Recipient Bank",
         "recipient_street": "Recipient Street",
         "recipient_city": "Recipient City",
         "recipient_postal_code": "Recipient Postal Code",
@@ -97,7 +115,14 @@
         "raw_SubTotal": "Net Amount",
         "raw_TotalTax": "Tax Amount",
         "currency": "Currency",
-        "tax_rate": "Tax Rate"
+        "tax_rate": "Tax Rate",
+        "due_date": "Due Date",
+        "order_number": "Order Number",
+        "reverse_charge": "Reverse Charge",
+        "service_period_start": "Service Period Start",
+        "service_period_end": "Service Period End",
+        "is_recurring_revenue": "Recurring Revenue",
+        "recurring_interval": "Billing Interval"
       }
     },
     "ocrPanel": {
@@ -141,6 +166,19 @@
       "fuzzyMatchHint": "AI suggests this partner based on a fuzzy match. Please confirm or select a different one.",
       "assigned": "Partner assigned successfully",
       "confirmed": "Partner match confirmed"
+    },
+    "revenueSchedule": {
+      "title": "Revenue Schedule",
+      "totalAmount": "Total Amount",
+      "progress": "{{booked}} of {{total}} posted",
+      "period": "Period",
+      "amount": "Amount",
+      "account": "Account",
+      "status": "Status",
+      "planned": "Planned",
+      "booked": "Posted",
+      "cancelled": "Cancelled",
+      "noEntries": "No revenue schedule entries."
     }
   },
   "reviewReasons": {
@@ -214,7 +252,33 @@
     "intercompanyTransactionHint": "Transaction between related companies detected. Please verify transfer pricing.",
     "duplicateInvoice": "Possible duplicate invoice",
     "duplicateInvoiceHint": "This invoice resembles one already recorded. Please check for duplicates.",
-    "aiNote": "AI Note"
+    "aiNote": "AI Note",
+    "missingServicePeriod": "Missing service period",
+    "missingServicePeriodHint": "A service period is required for outgoing invoices with recurring revenue.",
+    "deferredRevenueRequired": "Deferred revenue required",
+    "deferredRevenueRequiredHint": "The service period spans multiple months. Passive revenue accrual is required.",
+    "outgoingInvoiceClassification": "Outgoing invoice classification",
+    "outgoingInvoiceClassificationHint": "This document was classified as an outgoing invoice. Please verify revenue account assignment.",
+    "foreignCurrencyOutgoing": "Foreign currency outgoing invoice",
+    "foreignCurrencyOutgoingHint": "Outgoing invoice in foreign currency. Please verify exchange rate and revenue booking.",
+    "missingInvoiceNumber": "Missing invoice number",
+    "missingInvoiceNumberHint": "The invoice number could not be recognized (V-01).",
+    "invalidDate": "Invalid invoice date",
+    "invalidDateHint": "The invoice date is in the future (V-02).",
+    "invalidAmount": "Invalid amount",
+    "invalidAmountHint": "The total amount is not positive (V-03).",
+    "invalidServicePeriod": "Invalid service period",
+    "invalidServicePeriodHint": "The service period end must be after the start date (V-05).",
+    "unusualServicePeriod": "Unusual service period",
+    "unusualServicePeriodHint": "The service period exceeds 36 months (V-06).",
+    "amountMismatch": "Amount mismatch",
+    "amountMismatchHint": "The sum of line items differs from the net amount (V-07).",
+    "vatMismatch": "VAT mismatch",
+    "vatMismatchHint": "Net + VAT does not match the gross amount (V-08).",
+    "reverseChargeVatConflict": "Reverse charge VAT conflict",
+    "reverseChargeVatConflictHint": "Reverse charge invoice has a VAT amount > 0 (V-09).",
+    "missingCustomerVat": "Missing customer VAT ID",
+    "missingCustomerVatHint": "EU customer without VAT identification number (V-10)."
   },
   "archive": {
     "quickFilters": {

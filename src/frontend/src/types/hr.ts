@@ -567,3 +567,61 @@ export interface AddOnboardingTaskRequest {
   dueDate?: string;
   sortOrder: number;
 }
+
+// Bulk Import
+export interface EmployeeImportRow {
+  rowNumber: number;
+  employeeNumber: string;
+  employeeType: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  taxId: string;
+  hireDate: string;
+  gender?: string;
+  nationality?: string;
+  position?: string;
+  employmentType?: string;
+  workEmail?: string;
+  personalEmail?: string;
+  personalPhone?: string;
+  socialSecurityNumber?: string;
+  iban?: string;
+  bic?: string;
+  // Contract / Payroll fields
+  contractType?: string;
+  salaryType?: string;
+  grossAmount?: string;
+  weeklyHours?: string;
+  workdaysPerWeek?: string;
+  contractStartDate?: string;
+  contractEndDate?: string;
+  annualVacationDays?: string;
+  has13thSalary?: string;
+  hasVacationBonus?: string;
+}
+
+export interface ImportRowValidation {
+  rowNumber: number;
+  errors: string[];
+  warnings: string[];
+}
+
+export interface BulkImportEmployeesRequest {
+  entityId: string;
+  employees: Omit<EmployeeImportRow, 'rowNumber'>[];
+}
+
+export interface BulkImportRowResult {
+  rowIndex: number;
+  success: boolean;
+  employeeId?: string;
+  error?: string;
+}
+
+export interface BulkImportEmployeesResponse {
+  totalRows: number;
+  successCount: number;
+  failureCount: number;
+  results: BulkImportRowResult[];
+}

@@ -115,6 +115,18 @@ public class AccountingController : ControllerBase
         return Ok(result);
     }
 
+    // ── Payroll Posting ────────────────────────────────────────────────────────
+
+    [HttpPost("payroll/post")]
+    [ProducesResponseType(typeof(PayrollPostingResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PayrollPostingResult>> PostMonthlyPayroll(
+        [FromBody] PostMonthlyPayrollCommand command, CancellationToken ct)
+    {
+        var result = await _mediator.Send(command, ct);
+        return Ok(result);
+    }
+
     // ── Profit & Loss (GuV nach HGB Paragraph 275) ────────────────────────────
 
     [HttpGet("pnl")]
@@ -232,6 +244,17 @@ public class AccountingController : ControllerBase
         var reversalId = await _mediator.Send(
             new ReverseJournalEntryCommand(entityId, id, request.Reason), ct);
         return Ok(reversalId);
+    }
+
+    [HttpDelete("journal-entries/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteJournalEntry(
+        [FromQuery] Guid entityId, Guid id, CancellationToken ct = default)
+    {
+        await _mediator.Send(new DeleteJournalEntryCommand(entityId, id), ct);
+        return NoContent();
     }
 
     // ── Fiscal Periods ───────────────────────────────────────────────────
@@ -440,6 +463,75 @@ public class AccountingController : ControllerBase
     {
         await _mediator.Send(new ConfirmPartnerMatchCommand(id, request.BusinessPartnerId), ct);
         return NoContent();
+    }
+
+    // ── Revenue Schedule (Erlösabgrenzung / PRA) ────────────────────────
+
+    [HttpGet("documents/{documentId:guid}/revenue-schedule")]
+    [ProducesResponseType(typeof(IReadOnlyList<RevenueScheduleEntryDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<RevenueScheduleEntryDto>>> GetRevenueSchedule(
+        [FromQuery] Guid entityId, Guid documentId, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetRevenueScheduleQuery(entityId, documentId), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("revenue-schedules/pending")]
+    [ProducesResponseType(typeof(PagedResult<RevenueScheduleEntryDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<RevenueScheduleEntryDto>>> GetPendingRevenueEntries(
+        [FromQuery] Guid entityId,
+        [FromQuery] DateOnly month,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(
+            new GetPendingRevenueEntriesQuery(entityId, month, page, pageSize), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("revenue-schedules/overview")]
+    [ProducesResponseType(typeof(DeferredRevenueOverviewDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<DeferredRevenueOverviewDto>> GetDeferredRevenueOverview(
+        [FromQuery] Guid entityId, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new GetDeferredRevenueOverviewQuery(entityId), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("revenue-schedules/{entryId:guid}/post")]
+    [ProducesResponseType(typeof(PostRevenueScheduleEntryResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PostRevenueScheduleEntryResult>> PostRevenueScheduleEntry(
+        [FromQuery] Guid entityId, Guid entryId, CancellationToken ct = default)
+    {
+        var userId = Guid.Parse(User.FindFirst("sub")!.Value);
+        var result = await _mediator.Send(
+            new PostRevenueScheduleEntryCommand(entityId, entryId, userId), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("revenue-schedules/post-all")]
+    [ProducesResponseType(typeof(PostAllDueRevenueEntriesResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PostAllDueRevenueEntriesResult>> PostAllDueRevenueEntries(
+        [FromQuery] Guid entityId, [FromQuery] DateOnly upToMonth, CancellationToken ct = default)
+    {
+        var userId = Guid.Parse(User.FindFirst("sub")!.Value);
+        var result = await _mediator.Send(
+            new PostAllDueRevenueEntriesCommand(entityId, userId, upToMonth), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("documents/{documentId:guid}/cancel-revenue-schedule")]
+    [ProducesResponseType(typeof(CancelRevenueScheduleResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CancelRevenueScheduleResult>> CancelRevenueSchedule(
+        [FromQuery] Guid entityId, Guid documentId, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(
+            new CancelRevenueScheduleCommand(entityId, documentId), ct);
+        return Ok(result);
     }
 
     // ── Travel Cost Sync ─────────────────────────────────────────────────

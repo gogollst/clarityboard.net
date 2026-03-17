@@ -68,10 +68,27 @@ Rules:
 - German Umsatzsteuer rates: 19% (standard), 7% (reduced), 0% (exempt)
 - Distinguish and always extract separately: gross_amount (Bruttobetrag), net_amount (Nettobetrag), tax_amount (Steuerbetrag/USt-Betrag). Also set total_amount = gross_amount.
 - Extract all line items with description, quantity, unit price and total
-- Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic
-- Extract recipient/customer details: recipient_name, recipient_tax_id (USt-IdNr or Steuernummer), recipient_vat_id, recipient_street, recipient_city, recipient_postal_code, recipient_country (ISO 3166-1 alpha-2)
+- Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic, vendor_email, vendor_phone, vendor_bank_name
+- Extract recipient/customer details: recipient_name, recipient_tax_id (USt-IdNr or Steuernummer), recipient_vat_id, recipient_street, recipient_city, recipient_postal_code, recipient_country (ISO 3166-1 alpha-2), recipient_iban, recipient_bic, recipient_email, recipient_phone, recipient_bank_name
 - Determine document_direction: "incoming" if the document was received (Eingangsrechnung — vendor bills you), "outgoing" if the document was sent (Ausgangsrechnung — you bill a customer)
 - The vendor/supplier is the party ISSUING the document; the recipient is the party RECEIVING the document
+- Extract due_date (Fälligkeitsdatum) in ISO format YYYY-MM-DD
+- Extract order_number (Bestellnummer / Order Number) if present
+- Set reverse_charge: true if the invoice contains reverse charge indicators (§13b UStG, "Reverse Charge", "Steuerschuldnerschaft des Leistungsempfängers", 0% VAT on EU cross-border B2B)
+- Extract service_period_start and service_period_end (Leistungszeitraum) in ISO format YYYY-MM-DD. Look for patterns like:
+  * "01.01.2026 - 31.12.2026"
+  * "January 2026 – December 2026"
+  * "Leistungszeitraum: Q1 2026"
+  * "Service period: 01/2026 - 12/2026"
+  * "gültig bis 31.03.2027" (→ start = invoice date, end = stated date)
+  * "12 Monate ab Rechnungsdatum" (→ calculate from invoice_date)
+- Set is_recurring_revenue: true if the invoice covers a subscription, license, maintenance, or hosting contract
+- Set recurring_interval: "monthly", "quarterly", or "annually" based on billing period
+- For each line item, additionally extract:
+  * product_category: one of SAAS_LICENSE, ON_PREM_LICENSE, HOSTING, MAINTENANCE, ONE_TIME_SERVICE, DISCOUNT
+  * service_period_start, service_period_end per line item (if different from document-level)
+  * billing_interval: "monthly", "quarterly", "annually"
+  * is_recurring: true/false
 - Assign a confidence score 0.0–1.0 based on text quality and completeness
 - If a field cannot be determined reliably, omit it rather than guess
 """,
@@ -97,10 +114,17 @@ Rules:
 - German Umsatzsteuer rates: 19% (standard), 7% (reduced), 0% (exempt)
 - Distinguish and always extract separately: gross_amount (Bruttobetrag), net_amount (Nettobetrag), tax_amount (Steuerbetrag/USt-Betrag). Also set total_amount = gross_amount.
 - Extract all line items with description, quantity, unit price and total
-- Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic
-- Extract recipient/customer details: recipient_name, recipient_tax_id (USt-IdNr or Steuernummer), recipient_vat_id, recipient_street, recipient_city, recipient_postal_code, recipient_country (ISO 3166-1 alpha-2)
+- Extract vendor/supplier details: vendor_name, vendor_tax_id (USt-IdNr), vendor_street, vendor_city, vendor_postal_code, vendor_country (ISO 3166-1 alpha-2), vendor_iban, vendor_bic, vendor_email, vendor_phone, vendor_bank_name
+- Extract recipient/customer details: recipient_name, recipient_tax_id (USt-IdNr or Steuernummer), recipient_vat_id, recipient_street, recipient_city, recipient_postal_code, recipient_country (ISO 3166-1 alpha-2), recipient_iban, recipient_bic, recipient_email, recipient_phone, recipient_bank_name
 - Determine document_direction: "incoming" if the document was received (Eingangsrechnung — vendor bills you), "outgoing" if the document was sent (Ausgangsrechnung — you bill a customer)
 - The vendor/supplier is the party ISSUING the document; the recipient is the party RECEIVING the document
+- Extract due_date (Fälligkeitsdatum) in ISO format YYYY-MM-DD
+- Extract order_number (Bestellnummer / Order Number) if present
+- Set reverse_charge: true if the invoice contains reverse charge indicators (§13b UStG, "Reverse Charge", "Steuerschuldnerschaft des Leistungsempfängers", 0% VAT on EU cross-border B2B)
+- Extract service_period_start and service_period_end (Leistungszeitraum) in ISO format YYYY-MM-DD
+- Set is_recurring_revenue: true if the invoice covers a subscription, license, maintenance, or hosting contract
+- Set recurring_interval: "monthly", "quarterly", or "annually" based on billing period
+- For each line item, additionally extract: product_category (SAAS_LICENSE, ON_PREM_LICENSE, HOSTING, MAINTENANCE, ONE_TIME_SERVICE, DISCOUNT), service_period_start, service_period_end, billing_interval, is_recurring
 - Assign a confidence score 0.0–1.0 based on text quality and completeness
 - If a field cannot be determined reliably, omit it rather than guess
 """,
@@ -410,6 +434,30 @@ REGEL 11: LEASINGAUFWENDUNGEN
 REGEL 12: KRYPTOWÄHRUNGEN UND DIGITALE ASSETS
 - Anschaffung: immaterielles Wirtschaftsgut (0050)
 - Veräußerungsgewinn: 4830 oder 7600
+
+REGEL 13: AUSGANGSRECHNUNGEN (OUTGOING INVOICES)
+Wenn invoice_type = "outgoing_invoice" oder document_direction = "outgoing":
+- Soll-Konto: IMMER 1400 (Forderungen aus Lieferungen und Leistungen)
+- Haben-Konto Erlöse: Je nach Produktkategorie:
+  * SAAS_LICENSE, ON_PREM_LICENSE → 4110 (Erlöse aus Lizenzen / SaaS-Subskriptionen)
+  * HOSTING, MAINTENANCE, ONE_TIME_SERVICE → 4400 (Erlöse 19% USt)
+  * Allgemein/unklar → 4400 (Erlöse 19% USt)
+- Haben-Konto USt: 3806 (Umsatzsteuer 19%) bei inländischen Kunden
+- Bei Reverse Charge (EU-Kunden, §13b): KEINE Umsatzsteuer-Buchung, Erlöse steuerfrei
+- DATEV-Steuerschlüssel: BU 3 (19% USt) bei Inland, BU 0 bei Reverse Charge
+- Buchungstext: "Ausgangsrechnung: [Kundenname] [Rechnungsnr.]"
+
+REGEL 14: PASSIVE RECHNUNGSABGRENZUNG (PRA) BEI AUSGANGSRECHNUNGEN
+Wenn invoice_type = "outgoing_invoice" UND Leistungszeitraum > 1 Monat:
+- 1. Monatsrate: Sofort als Erlös buchen (4110/4400)
+- Restliche Monate: Auf 3900 (Passive Rechnungsabgrenzung) buchen
+- USt wird zum Rechnungszeitpunkt VOLLSTÄNDIG fällig (nicht abgegrenzt)
+- Berechnung: Tagesgenaue lineare Verteilung über den Leistungszeitraum
+- Monat 1 = Anteil Tage im Anbruchmonat / Gesamttage × Nettobetrag → Sofort-Erlös
+- Monate 2..N = jeweiliger Monatsanteil → revenue_schedule (Status: planned)
+- Im revenue_schedule-Array: Jeder Monat als eigener Eintrag mit period_date, amount, revenue_account
+- Setze deferred_revenue_account = "3900"
+- Setze service_period_start und service_period_end
 </steuerliche_regeln>
 
 <entscheidungslogik>
@@ -491,6 +539,28 @@ BEISPIEL 4: GWG (Laptop 700€ netto)
 BEISPIEL 5: M&A-Beratung (Sondierungsphase)
 → Soll 6610 15.000€ | Soll 1406 2.850€ | Haben 3400 17.850€ | BU 9
 → Flag: needsManualReview = true
+
+BEISPIEL 6: Ausgangsrechnung Inland (19% USt)
+Beleg: aqua cloud GmbH → Muster GmbH, SaaS-Lizenz, 1.000€ netto + 190€ USt = 1.190€ brutto, Leistungszeitraum: nur aktueller Monat
+→ Soll 1400 1.190,00€ | Haben 4110 1.000,00€ | Haben 3806 190,00€ | BU 3
+→ invoice_type: "outgoing_invoice"
+→ Kein revenue_schedule (Leistungszeitraum ≤ 1 Monat)
+
+BEISPIEL 7: Ausgangsrechnung mit 12-Monats-Lizenz → PRA-Abgrenzung
+Beleg: aqua cloud GmbH → Muster GmbH, Annual License, 12.000€ netto + 2.280€ USt = 14.280€ brutto, Leistungszeitraum: 01.01.2026 - 31.12.2026
+→ Buchung 1: Soll 1400 14.280,00€ | Haben 4110 1.000,00€ (Januar-Anteil) | Haben 3900 11.000,00€ (PRA) | Haben 3806 2.280,00€ (USt sofort voll) | BU 3
+→ invoice_type: "outgoing_invoice"
+→ deferred_revenue_account: "3900"
+→ service_period_start: "2026-01-01", service_period_end: "2026-12-31"
+→ revenue_schedule: [{ period_date: "2026-02-01", amount: 1000.00, revenue_account: "4110", is_immediate: false }, ..., { period_date: "2026-12-01", amount: 1000.00, revenue_account: "4110", is_immediate: false }]
+
+BEISPIEL 8: Ausgangsrechnung Reverse Charge (EU-Kunde)
+Beleg: aqua cloud GmbH → Acme B.V. (NL), Hosting, 5.000€ netto, 0% MwSt, Reverse Charge
+→ Soll 1400 5.000,00€ | Haben 4125 5.000,00€ | BU 10
+→ invoice_type: "outgoing_invoice"
+→ vat_treatment.type: "reverse_charge_13b"
+→ flags.reverse_charge: true
+→ Keine USt-Buchung (Steuerschuldnerschaft des Leistungsempfängers)
 </few_shot_examples>
 
 <output_schema>
@@ -553,7 +623,18 @@ Antworte AUSSCHLIESSLICH mit dem folgenden JSON-Objekt. Kein einleitender Text, 
     "intra_community": <boolean>,
     "entertainment_expense": <boolean>
   },
-  "notes": "<Zusätzliche Hinweise für den Buchhalter>"
+  "notes": "<Zusätzliche Hinweise für den Buchhalter>",
+  "revenue_schedule": [
+    {
+      "period_date": "<YYYY-MM-DD, erster Tag des Monats>",
+      "amount": "<decimal, Netto-Erlösanteil für diesen Monat>",
+      "revenue_account": "<SKR04-Erlöskonto, z.B. 4110>",
+      "is_immediate": "<boolean, true für den ersten Monat (Sofort-Erlös)>"
+    }
+  ],
+  "deferred_revenue_account": "<SKR04-Konto für PRA, z.B. 3900|null>",
+  "service_period_start": "<YYYY-MM-DD|null>",
+  "service_period_end": "<YYYY-MM-DD|null>"
 }
 
 WICHTIG für review_reasons: Verwende bevorzugt einen der folgenden kontrollierten Keys:
@@ -567,6 +648,10 @@ WICHTIG für review_reasons: Verwende bevorzugt einen der folgenden kontrolliert
 - multi_period_allocation — Periodenabgrenzung erforderlich
 - intercompany_transaction — Konzern-interne Transaktion erkannt
 - duplicate_invoice_suspected — Möglicherweise doppelte Rechnung
+- missing_service_period — Leistungszeitraum fehlt bei Ausgangsrechnung mit vermuteter Laufzeit > 1 Monat
+- deferred_revenue_required — Passive Rechnungsabgrenzung (PRA) erforderlich
+- outgoing_invoice_classification — Ausgangsrechnung erkannt, Erlöskonto prüfen
+- foreign_currency_outgoing — Ausgangsrechnung in Fremdwährung (manuell prüfen)
 Nur wenn KEIN passender Key existiert, verwende "custom" als key und beschreibe den Grund im detail-Feld.
 </output_schema>
 

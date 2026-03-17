@@ -43,6 +43,8 @@ import type {
   OnboardingChecklistDetail,
   CreateOnboardingChecklistRequest,
   AddOnboardingTaskRequest,
+  BulkImportEmployeesRequest,
+  BulkImportEmployeesResponse,
 } from '@/types/hr';
 
 // ---------------------------------------------------------------------------
@@ -119,6 +121,33 @@ export function useUpdateEmployee() {
     },
     onError: () => {
       toast.error(i18n.t('hr:toast.employeeUpdateError'));
+    },
+  });
+}
+
+export function useBulkImportEmployees() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: BulkImportEmployeesRequest) => {
+      const { data } = await api.post<BulkImportEmployeesResponse>('/hr/employees/import', request);
+      return data;
+    },
+    onSuccess: (result) => {
+      if (result.failureCount === 0) {
+        toast.success(i18n.t('hr:toast.bulkImportSuccess', { count: result.successCount }));
+      } else if (result.successCount > 0) {
+        toast.warning(i18n.t('hr:toast.bulkImportPartial', {
+          success: result.successCount,
+          total: result.totalRows,
+        }));
+      } else {
+        toast.error(i18n.t('hr:toast.bulkImportAllFailed'));
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.hr.employees() });
+    },
+    onError: () => {
+      toast.error(i18n.t('hr:toast.bulkImportError'));
     },
   });
 }

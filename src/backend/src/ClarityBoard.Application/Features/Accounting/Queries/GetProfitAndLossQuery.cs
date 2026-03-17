@@ -145,9 +145,18 @@ public class GetProfitAndLossQueryHandler : IRequestHandler<GetProfitAndLossQuer
         if (costCenterIds != null)
             query = query.Where(x => x.jel.CostCenterId != null && costCenterIds.Contains(x.jel.CostCenterId.Value));
 
+        // Use NET amounts: subtract VatAmount from each line's effective side.
+        // This ensures P&L always shows amounts excluding VAT (Umsatzsteuer),
+        // regardless of whether the journal entry was booked gross or net+VAT-split.
         return await query
             .GroupBy(x => x.AccountNumber)
-            .Select(g => new { AccountNumber = g.Key, Balance = g.Sum(x => x.jel.DebitAmount - x.jel.CreditAmount) })
+            .Select(g => new
+            {
+                AccountNumber = g.Key,
+                Balance = g.Sum(x =>
+                    (x.jel.DebitAmount > 0 ? x.jel.DebitAmount - x.jel.VatAmount : 0)
+                    - (x.jel.CreditAmount > 0 ? x.jel.CreditAmount - x.jel.VatAmount : 0))
+            })
             .ToDictionaryAsync(x => x.AccountNumber, x => x.Balance, ct);
     }
 

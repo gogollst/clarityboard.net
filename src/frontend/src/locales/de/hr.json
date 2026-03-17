@@ -169,7 +169,30 @@
         "invalidEmploymentType": "Ungültige Beschäftigungsart (gültig: FullTime, PartTime, WorkingStudent, MiniJob, Internship)",
         "invalidEmail": "Ungültiges E-Mail-Format für {{field}}",
         "emailMaxLength": "E-Mail darf maximal 254 Zeichen haben für {{field}}",
-        "duplicateInBatch": "Doppelte Personalnummer (gleich wie Zeile {{row}})"
+        "duplicateInBatch": "Doppelte Personalnummer (gleich wie Zeile {{row}})",
+        "grossAmountRequired": "Bruttogehalt ist erforderlich, wenn Vertragsdaten angegeben sind",
+        "grossAmountPositive": "Bruttogehalt muss eine positive Zahl sein",
+        "salaryTypeRequired": "Vergütungsart ist erforderlich, wenn Vertragsdaten angegeben sind",
+        "invalidSalaryType": "Ungültige Vergütungsart (gültig: Monthly, Hourly, DailyRate)",
+        "invalidContractType": "Ungültige Vertragsart (gültig: Permanent, FixedTerm, Freelance, WorkingStudent)",
+        "weeklyHoursRange": "Wochenstunden müssen zwischen 0 und 60 liegen",
+        "workdaysPerWeekRange": "Arbeitstage pro Woche müssen zwischen 1 und 7 liegen",
+        "fixedTermRequiresEndDate": "Befristete Verträge erfordern ein Vertragsende",
+        "vacationDaysRange": "Urlaubstage pro Jahr müssen zwischen 0 und 365 liegen",
+        "invalidYesNo": "Ungültiger Wert für {{field}} (gültig: Yes, No)",
+        "noContractDataWarning": "Keine Vertrags-/Gehaltsdaten — Lohnabrechnung kann für diesen Mitarbeiter nicht berechnet werden"
+      },
+      "contractFields": {
+        "contractType": "Vertragsart",
+        "salaryType": "Vergütungsart",
+        "grossAmount": "Bruttogehalt (EUR)",
+        "weeklyHours": "Wochenstunden",
+        "workdaysPerWeek": "Arbeitstage/Woche",
+        "contractStartDate": "Vertragsbeginn",
+        "contractEndDate": "Vertragsende",
+        "annualVacationDays": "Urlaubstage",
+        "has13thSalary": "13. Gehalt",
+        "hasVacationBonus": "Urlaubsgeld"
       }
     },
     "sections": {

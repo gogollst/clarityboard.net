@@ -36,6 +36,9 @@ export interface JournalEntryLine {
   accountId: string;
   accountNumber: string;
   accountName: string;
+  accountNameDe?: string;
+  accountNameEn?: string;
+  accountNameRu?: string;
   debitAmount: number;
   creditAmount: number;
   currency: string;
@@ -73,6 +76,9 @@ export interface JournalEntryDetailLine {
   accountId: string;
   accountNumber: string;
   accountName: string;
+  accountNameDe?: string;
+  accountNameEn?: string;
+  accountNameRu?: string;
   debitAmount: number;
   creditAmount: number;
   currency: string;
@@ -183,6 +189,9 @@ export interface UpdateAccountRequest {
 export interface TrialBalanceLine {
   accountNumber: string;
   accountName: string;
+  accountNameDe?: string;
+  accountNameEn?: string;
+  accountNameRu?: string;
   accountType: string;
   accountClass: number;
   debitTotal: number;
@@ -223,6 +232,29 @@ export interface ProfitAndLoss {
   sections: PnlSection[];
   netIncome: number;
   priorNetIncome?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Payroll Posting
+// ---------------------------------------------------------------------------
+
+export interface PayrollPostingRequest {
+  entityId: string;
+  year: number;
+  month: number;
+}
+
+export interface PayrollPostingError {
+  employeeName: string;
+  error: string;
+}
+
+export interface PayrollPostingResult {
+  employeesProcessed: number;
+  journalEntriesCreated: number;
+  totalGrossSalary: number;
+  totalSocialContributions: number;
+  errors: PayrollPostingError[];
 }
 
 // ---------------------------------------------------------------------------

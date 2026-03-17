@@ -111,6 +111,7 @@ public class DocumentController : ControllerBase
     public async Task<ActionResult<PagedResult<DocumentListDto>>> GetList(
         [FromQuery] Guid entityId,
         [FromQuery] string? status,
+        [FromQuery] string? direction,
         [FromQuery] DateOnly? dateFrom,
         [FromQuery] DateOnly? dateTo,
         [FromQuery] string? search,
@@ -122,6 +123,7 @@ public class DocumentController : ControllerBase
         {
             EntityId = entityId,
             Status = status,
+            Direction = direction,
             DateFrom = dateFrom,
             DateTo = dateTo,
             Search = search,
@@ -317,14 +319,21 @@ public class DocumentController : ControllerBase
         if (userId is null)
             return Unauthorized();
 
-        await _mediator.Send(new DeleteDocumentCommand
+        try
         {
-            EntityId = entityId,
-            DocumentId = id,
-            UserId = userId.Value,
-        }, ct);
+            await _mediator.Send(new DeleteDocumentCommand
+            {
+                EntityId = entityId,
+                DocumentId = id,
+                UserId = userId.Value,
+            }, ct);
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return UnprocessableEntity(ex.Message);
+        }
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────

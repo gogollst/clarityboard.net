@@ -128,6 +128,43 @@ public class BusinessPartner
         UpdatedAt = DateTime.UtcNow;
     }
 
+    /// <summary>
+    /// Fills in fields that are currently null with new values from extraction.
+    /// Never overwrites existing data. Returns true if any field was updated.
+    /// </summary>
+    public bool EnrichMissingFields(
+        string? taxId = null,
+        string? vatNumber = null,
+        string? street = null,
+        string? city = null,
+        string? postalCode = null,
+        string? country = null,
+        string? email = null,
+        string? phone = null,
+        string? bankName = null,
+        string? iban = null,
+        string? bic = null)
+    {
+        var changed = false;
+
+        if (TaxId is null && taxId is not null) { TaxId = taxId; changed = true; }
+        if (VatNumber is null && vatNumber is not null) { VatNumber = vatNumber; changed = true; }
+        if (Street is null && street is not null) { Street = street; changed = true; }
+        if (City is null && city is not null) { City = city; changed = true; }
+        if (PostalCode is null && postalCode is not null) { PostalCode = postalCode; changed = true; }
+        if (Country is null && country is not null) { Country = country; changed = true; }
+        if (Email is null && email is not null) { Email = email; changed = true; }
+        if (Phone is null && phone is not null) { Phone = phone; changed = true; }
+        if (BankName is null && bankName is not null) { BankName = bankName; changed = true; }
+        if (Iban is null && iban is not null) { Iban = iban; changed = true; }
+        if (Bic is null && bic is not null) { Bic = bic; changed = true; }
+
+        if (changed)
+            UpdatedAt = DateTime.UtcNow;
+
+        return changed;
+    }
+
     public void Deactivate()
     {
         IsActive = false;

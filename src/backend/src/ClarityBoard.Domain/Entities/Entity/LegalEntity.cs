@@ -21,6 +21,8 @@ public class LegalEntity
     public string? DatevConsultantNumber { get; private set; } // DATEV Beraternummer
     public string? ManagingDirector { get; private set; } // Legacy free-text (kept for migration compatibility)
     public Guid? ManagingDirectorId { get; private set; } // FK to User (Geschäftsführer)
+    public string? Iban { get; private set; }
+    public string? Bic { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 

@@ -55,15 +55,17 @@ public class GetPlanVsActualQueryHandler
                 _db.JournalEntries.Where(je => je.EntityId == entityId && je.EntryDate.Year == year),
                 jl => jl.JournalEntryId,
                 je => je.Id,
-                (jl, je) => new { jl.AccountId, Month = (short)je.EntryDate.Month, jl.DebitAmount, jl.CreditAmount })
+                (jl, je) => new { jl.AccountId, Month = (short)je.EntryDate.Month, jl.DebitAmount, jl.CreditAmount, jl.VatAmount })
             .ToListAsync(cancellationToken);
 
-        // Aggregate actual amounts by account + month
+        // Aggregate actual amounts by account + month (NET: excluding VAT)
         var actuals = journalLines
             .GroupBy(x => new { x.AccountId, x.Month })
             .ToDictionary(
                 g => (g.Key.AccountId, g.Key.Month),
-                g => g.Sum(x => x.DebitAmount - x.CreditAmount));
+                g => g.Sum(x =>
+                    (x.DebitAmount > 0 ? x.DebitAmount - x.VatAmount : 0)
+                    - (x.CreditAmount > 0 ? x.CreditAmount - x.VatAmount : 0)));
 
         var lines = budget.Lines.Select(l =>
         {

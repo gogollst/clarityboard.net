@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { formatCurrency } from '@/lib/format';
+import { getLocalizedAccountName } from '@/lib/accountUtils';
 import { useTrialBalance } from '@/hooks/useAccounting';
 import { useDepartments } from '@/hooks/useHr';
 import DataTable from '@/components/shared/DataTable';
@@ -26,7 +27,7 @@ const currentYear = now.getFullYear();
 const currentMonth = now.getMonth() + 1;
 
 export function Component() {
-  const { t } = useTranslation(['accounting', 'common']);
+  const { t, i18n } = useTranslation(['accounting', 'common']);
   const { selectedEntityId } = useEntity();
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
@@ -44,7 +45,20 @@ export function Component() {
 
   const columns = [
     { key: 'accountNumber', header: t('accounting:trialBalance.columns.accountNumber') },
-    { key: 'accountName', header: t('accounting:trialBalance.columns.accountName') },
+    {
+      key: 'accountName',
+      header: t('accounting:trialBalance.columns.accountName'),
+      render: (item: Record<string, unknown>) =>
+        getLocalizedAccountName(
+          {
+            name: String(item.accountName ?? ''),
+            nameDe: item.accountNameDe as string | undefined,
+            nameEn: item.accountNameEn as string | undefined,
+            nameRu: item.accountNameRu as string | undefined,
+          },
+          i18n.language,
+        ),
+    },
     { key: 'accountType', header: t('accounting:trialBalance.columns.accountType') },
     {
       key: 'debitTotal',

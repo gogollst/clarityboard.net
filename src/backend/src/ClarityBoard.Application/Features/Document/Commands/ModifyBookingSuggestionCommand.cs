@@ -107,7 +107,8 @@ public class ModifyBookingSuggestionCommandHandler : IRequestHandler<ModifyBooki
 
         await _patternLearner.LearnFromDecisionAsync(
             targetEntityId, document.VendorName, document.BusinessPartnerId,
-            request.DebitAccountId, request.CreditAccountId, request.VatCode, request.HrEmployeeId, ct);
+            request.DebitAccountId, request.CreditAccountId, request.VatCode, request.HrEmployeeId,
+            ct, document.DocumentDirection);
 
         await _db.SaveChangesAsync(ct);
 

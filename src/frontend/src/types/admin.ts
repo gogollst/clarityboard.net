@@ -127,3 +127,23 @@ export interface UpsertAuthConfigRequest {
   tokenLifetimeHours: number;
   rememberMeTokenLifetimeDays: number;
 }
+
+export interface ProductCategoryMapping {
+  id: string;
+  productNamePattern: string;
+  productCategory: string;
+  revenueAccountId?: string;
+  revenueAccountNumber?: string;
+  revenueAccountName?: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface UpsertProductMappingRequest {
+  id?: string;
+  entityId: string;
+  productNamePattern: string;
+  productCategory: string;
+  revenueAccountId?: string;
+  isActive: boolean;
+}

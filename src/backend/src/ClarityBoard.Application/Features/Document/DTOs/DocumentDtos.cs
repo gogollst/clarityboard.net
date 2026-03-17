@@ -8,6 +8,8 @@ public record DocumentListDto
     public long FileSize { get; init; }
     public string DocumentType { get; init; } = default!;
     public string Status { get; init; } = default!;
+    public string DocumentDirection { get; init; } = "incoming";
+    public decimal? ClassificationConfidence { get; init; }
     public string? VendorName { get; init; }
     public string? InvoiceNumber { get; init; }
     public DateOnly? InvoiceDate { get; init; }
@@ -16,6 +18,8 @@ public record DocumentListDto
     public decimal? TaxAmount { get; init; }
     public string? Currency { get; init; }
     public decimal? Confidence { get; init; }
+    public DateOnly? DueDate { get; init; }
+    public bool ReverseCharge { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? ProcessedAt { get; init; }
 }
@@ -29,6 +33,8 @@ public record DocumentDetailDto
     public long FileSize { get; init; }
     public string DocumentType { get; init; } = default!;
     public string Status { get; init; } = default!;
+    public string DocumentDirection { get; init; } = "incoming";
+    public decimal? ClassificationConfidence { get; init; }
     public string? VendorName { get; init; }
     public string? InvoiceNumber { get; init; }
     public DateOnly? InvoiceDate { get; init; }

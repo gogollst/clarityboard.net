@@ -41,7 +41,10 @@
     "cashFlow": "Cash Flow",
     "scenarios": "Scenarios",
     "datevExport": "DATEV Export",
-    "financialDetails": "Financial Details"
+    "financialDetails": "Financial Details",
+    "praBalance": "PRA Balance",
+    "dueThisMonth": "due this month",
+    "viewDetails": "View details"
   },
   "hr": {
     "title": "HR Dashboard",

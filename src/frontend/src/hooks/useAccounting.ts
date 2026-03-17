@@ -26,6 +26,8 @@ import type {
   BusinessPartnerSearchItem,
   CreateBusinessPartnerRequest,
   UpdateBusinessPartnerRequest,
+  PayrollPostingRequest,
+  PayrollPostingResult,
 } from '@/types/accounting';
 
 // ---------------------------------------------------------------------------
@@ -268,6 +270,31 @@ export function useReverseJournalEntry() {
   });
 }
 
+export function useDeleteJournalEntry() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, entityId }: { id: string; entityId: string }) => {
+      await api.delete(`/accounting/journal-entries/${id}`, {
+        params: { entityId },
+      });
+      return { entityId };
+    },
+    onSuccess: ({ entityId }) => {
+      toast.success(i18n.t('accounting:toast.journalEntryDeleted'));
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.journalEntries(entityId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.accounting.trialBalance(entityId),
+      });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:toast.journalEntryDeleteError'));
+    },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Financial Reports
 // ---------------------------------------------------------------------------
@@ -316,6 +343,33 @@ export function useProfitAndLoss(
       return data;
     },
     enabled: !!entityId && !!year && !!month,
+  });
+}
+
+export function usePostPayroll() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (request: PayrollPostingRequest) => {
+      const { data } = await api.post<PayrollPostingResult>('/accounting/payroll/post', request);
+      return data;
+    },
+    onSuccess: (result) => {
+      if (result.errors.length === 0) {
+        toast.success(i18n.t('accounting:toast.payrollPosted', {
+          count: result.journalEntriesCreated,
+        }));
+      } else {
+        toast.warning(i18n.t('accounting:toast.payrollPartial', {
+          success: result.journalEntriesCreated,
+          total: result.employeesProcessed,
+        }));
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounting.all });
+    },
+    onError: () => {
+      toast.error(i18n.t('accounting:toast.payrollError'));
+    },
   });
 }
 

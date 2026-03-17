@@ -73,6 +73,9 @@ export function Component() {
   const [sourceForm, setSourceForm] = useState({
     name: '',
     sourceType: '',
+    secret: '',
+    headerSignatureKey: 'X-Webhook-Signature',
+    eventFilter: '',
   });
 
   const [ruleForm, setRuleForm] = useState({
@@ -97,11 +100,14 @@ export function Component() {
         entityId: selectedEntityId,
         name: sourceForm.name,
         sourceType: sourceForm.sourceType,
+        secret: sourceForm.secret || undefined,
+        headerSignatureKey: sourceForm.headerSignatureKey || undefined,
+        eventFilter: sourceForm.eventFilter || undefined,
       },
       {
         onSuccess: () => {
           setIsAddSourceOpen(false);
-          setSourceForm({ name: '', sourceType: '' });
+          setSourceForm({ name: '', sourceType: '', secret: '', headerSignatureKey: 'X-Webhook-Signature', eventFilter: '' });
         },
       },
     );
@@ -462,6 +468,45 @@ export function Component() {
                 placeholder={t('webhooks.dialogs.addSource.sourceTypePlaceholder')}
               />
             </div>
+            <div>
+              <Label>{t('webhooks.dialogs.addSource.secret')}</Label>
+              <Input
+                type="password"
+                value={sourceForm.secret}
+                onChange={(e) =>
+                  setSourceForm((f) => ({ ...f, secret: e.target.value }))
+                }
+                placeholder={t('webhooks.dialogs.addSource.secretPlaceholder')}
+              />
+            </div>
+            <div>
+              <Label>{t('webhooks.dialogs.addSource.headerSignatureKey')}</Label>
+              <Input
+                value={sourceForm.headerSignatureKey}
+                onChange={(e) =>
+                  setSourceForm((f) => ({ ...f, headerSignatureKey: e.target.value }))
+                }
+                placeholder="X-Webhook-Signature"
+              />
+            </div>
+            <div>
+              <Label>{t('webhooks.dialogs.addSource.eventFilter')}</Label>
+              <Input
+                value={sourceForm.eventFilter}
+                onChange={(e) =>
+                  setSourceForm((f) => ({ ...f, eventFilter: e.target.value }))
+                }
+                placeholder={t('webhooks.dialogs.addSource.eventFilterPlaceholder')}
+              />
+            </div>
+            {sourceForm.sourceType && (
+              <div className="rounded-md bg-muted p-3">
+                <Label className="text-xs text-muted-foreground">{t('webhooks.dialogs.addSource.endpointUrl')}</Label>
+                <code className="mt-1 block text-xs break-all">
+                  POST /api/webhooks/{sourceForm.sourceType}/events
+                </code>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button

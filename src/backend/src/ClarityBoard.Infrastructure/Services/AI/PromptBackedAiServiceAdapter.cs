@@ -47,6 +47,12 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
                          ?? GetNestedString(supplierObj, "iban"),
             VendorBic = GetString(root, "vendor_bic", "vendorBic", "supplier_bic", "bic")
                         ?? GetNestedString(supplierObj, "bic"),
+            VendorEmail = GetString(root, "vendor_email", "vendorEmail", "supplier_email")
+                          ?? GetNestedString(supplierObj, "email"),
+            VendorPhone = GetString(root, "vendor_phone", "vendorPhone", "supplier_phone")
+                          ?? GetNestedString(supplierObj, "phone", "telephone", "tel"),
+            VendorBankName = GetString(root, "vendor_bank_name", "vendorBankName", "supplier_bank_name")
+                             ?? GetNestedString(supplierObj, "bank_name", "bankName", "bank"),
             RecipientName = GetString(root, "recipient_name", "recipientName", "customer_name")
                             ?? GetNestedString(GetNestedObject(root, "recipient", "customer"), "name"),
             RecipientTaxId = GetString(root, "recipient_tax_id", "recipientTaxId", "customer_tax_id")
@@ -61,6 +67,16 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
                                   ?? GetNestedAddressField(GetNestedObject(root, "recipient", "customer"), "postal_code", "postalCode", "zip"),
             RecipientCountry = GetString(root, "recipient_country", "recipientCountry")
                                ?? GetNestedAddressField(GetNestedObject(root, "recipient", "customer"), "country"),
+            RecipientIban = GetString(root, "recipient_iban", "recipientIban", "customer_iban")
+                            ?? GetNestedString(GetNestedObject(root, "recipient", "customer"), "iban"),
+            RecipientBic = GetString(root, "recipient_bic", "recipientBic", "customer_bic")
+                           ?? GetNestedString(GetNestedObject(root, "recipient", "customer"), "bic"),
+            RecipientEmail = GetString(root, "recipient_email", "recipientEmail", "customer_email")
+                             ?? GetNestedString(GetNestedObject(root, "recipient", "customer"), "email"),
+            RecipientPhone = GetString(root, "recipient_phone", "recipientPhone", "customer_phone")
+                             ?? GetNestedString(GetNestedObject(root, "recipient", "customer"), "phone", "telephone", "tel"),
+            RecipientBankName = GetString(root, "recipient_bank_name", "recipientBankName", "customer_bank_name")
+                                ?? GetNestedString(GetNestedObject(root, "recipient", "customer"), "bank_name", "bankName", "bank"),
             DocumentDirection = GetString(root, "document_direction", "documentDirection", "direction"),
             InvoiceNumber = GetString(root, "invoice_number", "invoiceNumber", "document_number"),
             InvoiceDate = ParseDateOnly(GetString(root, "invoice_date", "invoiceDate", "date")),
@@ -70,6 +86,13 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
             TaxAmount = GetDecimal(root, "tax_amount", "taxAmount", "total_tax", "vat_amount", "steuerbetrag", "ust_betrag"),
             Currency = GetString(root, "currency"),
             TaxRate = GetDecimal(root, "tax_rate", "taxRate", "vat_rate"),
+            DueDate = ParseDateOnly(GetString(root, "due_date", "dueDate", "faelligkeitsdatum")),
+            OrderNumber = GetString(root, "order_number", "orderNumber", "bestellnummer"),
+            ReverseCharge = GetBool(root, "reverse_charge", "reverseCharge") ?? false,
+            ServicePeriodStart = ParseDateOnly(GetString(root, "service_period_start", "servicePeriodStart", "leistungszeitraum_start")),
+            ServicePeriodEnd = ParseDateOnly(GetString(root, "service_period_end", "servicePeriodEnd", "leistungszeitraum_end")),
+            IsRecurringRevenue = GetBool(root, "is_recurring_revenue", "isRecurringRevenue") ?? false,
+            RecurringInterval = GetString(root, "recurring_interval", "recurringInterval", "billing_interval"),
             LineItems = GetLineItems(root),
             RawFields = GetRawFields(root),
             Confidence = GetDecimal(root, "confidence") ?? 0m,
@@ -127,6 +150,10 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
             Flags = ParseFlags(root),
             ClassifiedLineItems = ParseClassifiedLineItems(root),
             BookingEntries = ParseBookingEntries(root),
+            RevenueSchedule = ParseRevenueSchedule(root),
+            DeferredRevenueAccount = GetString(root, "deferred_revenue_account", "deferredRevenueAccount"),
+            ServicePeriodStart = ParseDateOnly(GetString(root, "service_period_start", "servicePeriodStart")),
+            ServicePeriodEnd = ParseDateOnly(GetString(root, "service_period_end", "servicePeriodEnd")),
         };
     }
 
@@ -211,6 +238,11 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
             UnitPrice = GetDecimal(item, "unit_price", "unitPrice"),
             TotalPrice = GetDecimal(item, "total_price", "totalPrice", "amount"),
             TaxCode = GetString(item, "tax_code", "taxCode", "vat_code"),
+            ProductCategory = GetString(item, "product_category", "productCategory"),
+            ServicePeriodStart = ParseDateOnly(GetString(item, "service_period_start", "servicePeriodStart")),
+            ServicePeriodEnd = ParseDateOnly(GetString(item, "service_period_end", "servicePeriodEnd")),
+            BillingInterval = GetString(item, "billing_interval", "billingInterval"),
+            IsRecurring = GetBool(item, "is_recurring", "isRecurring") ?? false,
         }).ToList();
     }
 
@@ -234,6 +266,35 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
 
     private static string? GetString(JsonElement element, params string[] names)
         => TryGetProperty(element, out var property, names) ? property.ToString() : null;
+
+    private static bool? GetBool(JsonElement element, params string[] names)
+    {
+        if (!TryGetProperty(element, out var property, names))
+            return null;
+
+        return property.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.String when bool.TryParse(property.GetString(), out var parsed) => parsed,
+            _ => null,
+        };
+    }
+
+    private static IReadOnlyList<RevenueScheduleItemResult> ParseRevenueSchedule(JsonElement root)
+    {
+        if (!TryGetProperty(root, out var schedule, "revenue_schedule", "revenueSchedule") ||
+            schedule.ValueKind != JsonValueKind.Array)
+            return [];
+
+        return schedule.EnumerateArray().Select(item => new RevenueScheduleItemResult
+        {
+            PeriodDate = ParseDateOnly(GetString(item, "period_date", "periodDate", "date")) ?? default,
+            Amount = GetDecimal(item, "amount") ?? 0m,
+            RevenueAccount = GetString(item, "revenue_account", "revenueAccount", "account"),
+            IsImmediate = GetBool(item, "is_immediate", "isImmediate") ?? false,
+        }).ToList();
+    }
 
     /// <summary>
     /// Normalize tax key: strip "BU " prefix, return just the number (e.g. "BU 9" → "9").
@@ -327,19 +388,8 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
         return false;
     }
 
-    private static bool GetBool(JsonElement element, params string[] names)
-    {
-        if (!TryGetProperty(element, out var property, names))
-            return false;
-
-        return property.ValueKind switch
-        {
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            JsonValueKind.String => bool.TryParse(property.GetString(), out var parsed) && parsed,
-            _ => false,
-        };
-    }
+    private static bool GetBoolOrFalse(JsonElement element, params string[] names)
+        => GetBool(element, names) ?? false;
 
     private static IReadOnlyList<string> GetStringArray(JsonElement element, params string[] names)
     {
@@ -391,7 +441,7 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
             Type = GetString(vt, "type") ?? "standard_19",
             Explanation = GetString(vt, "explanation"),
             InputTaxAccount = GetString(vt, "input_tax_account", "inputTaxAccount"),
-            InputTaxDeductible = GetBool(vt, "input_tax_deductible", "inputTaxDeductible"),
+            InputTaxDeductible = GetBoolOrFalse(vt, "input_tax_deductible", "inputTaxDeductible"),
             OutputTaxAccount = GetString(vt, "output_tax_account", "outputTaxAccount"),
             LegalBasis = GetString(vt, "legal_basis", "legalBasis"),
         };
@@ -405,14 +455,14 @@ public sealed class PromptBackedAiServiceAdapter(IPromptAiService promptAiServic
 
         return new BookingFlagsResult
         {
-            NeedsManualReview = GetBool(f, "needs_manual_review", "needsManualReview"),
+            NeedsManualReview = GetBoolOrFalse(f, "needs_manual_review", "needsManualReview"),
             ReviewReasons = GetReviewReasonArray(f, "review_reasons", "reviewReasons"),
-            IsRecurring = GetBool(f, "is_recurring", "isRecurring"),
-            GwgRelevant = GetBool(f, "gwg_relevant", "gwgRelevant"),
-            ActivationRequired = GetBool(f, "activation_required", "activationRequired"),
-            ReverseCharge = GetBool(f, "reverse_charge", "reverseCharge"),
-            IntraCommunity = GetBool(f, "intra_community", "intraCommunity"),
-            EntertainmentExpense = GetBool(f, "entertainment_expense", "entertainmentExpense"),
+            IsRecurring = GetBoolOrFalse(f, "is_recurring", "isRecurring"),
+            GwgRelevant = GetBoolOrFalse(f, "gwg_relevant", "gwgRelevant"),
+            ActivationRequired = GetBoolOrFalse(f, "activation_required", "activationRequired"),
+            ReverseCharge = GetBoolOrFalse(f, "reverse_charge", "reverseCharge"),
+            IntraCommunity = GetBoolOrFalse(f, "intra_community", "intraCommunity"),
+            EntertainmentExpense = GetBoolOrFalse(f, "entertainment_expense", "entertainmentExpense"),
         };
     }
 

@@ -30,6 +30,9 @@ public record DocumentExtractionResult
     public string? VendorCountry { get; init; }
     public string? VendorIban { get; init; }
     public string? VendorBic { get; init; }
+    public string? VendorEmail { get; init; }
+    public string? VendorPhone { get; init; }
+    public string? VendorBankName { get; init; }
     public string? RecipientName { get; init; }
     public string? RecipientTaxId { get; init; }
     public string? RecipientVatId { get; init; }
@@ -37,6 +40,11 @@ public record DocumentExtractionResult
     public string? RecipientCity { get; init; }
     public string? RecipientPostalCode { get; init; }
     public string? RecipientCountry { get; init; }
+    public string? RecipientIban { get; init; }
+    public string? RecipientBic { get; init; }
+    public string? RecipientEmail { get; init; }
+    public string? RecipientPhone { get; init; }
+    public string? RecipientBankName { get; init; }
     public string? DocumentDirection { get; init; } // "incoming" or "outgoing"
     public string? InvoiceNumber { get; init; }
     public DateOnly? InvoiceDate { get; init; }
@@ -46,6 +54,13 @@ public record DocumentExtractionResult
     public decimal? TaxAmount { get; init; }
     public string? Currency { get; init; }
     public decimal? TaxRate { get; init; }
+    public DateOnly? DueDate { get; init; }
+    public string? OrderNumber { get; init; }
+    public bool ReverseCharge { get; init; }
+    public DateOnly? ServicePeriodStart { get; init; }
+    public DateOnly? ServicePeriodEnd { get; init; }
+    public bool IsRecurringRevenue { get; init; }
+    public string? RecurringInterval { get; init; } // monthly, quarterly, annually
     public IReadOnlyList<LineItemResult> LineItems { get; init; } = [];
     public IReadOnlyDictionary<string, string> RawFields { get; init; } =
         new Dictionary<string, string>();
@@ -59,6 +74,11 @@ public record LineItemResult
     public decimal? UnitPrice { get; init; }
     public decimal? TotalPrice { get; init; }
     public string? TaxCode { get; init; }
+    public string? ProductCategory { get; init; } // SAAS_LICENSE, ON_PREM_LICENSE, HOSTING, MAINTENANCE, ONE_TIME_SERVICE, DISCOUNT
+    public DateOnly? ServicePeriodStart { get; init; }
+    public DateOnly? ServicePeriodEnd { get; init; }
+    public string? BillingInterval { get; init; } // monthly, quarterly, annually
+    public bool IsRecurring { get; init; }
 }
 
 public record BookingSuggestionResult
@@ -81,6 +101,19 @@ public record BookingSuggestionResult
     public IReadOnlyList<BookingEntryResult> BookingEntries { get; init; } = [];
     public string? AssignedEntity { get; init; }
     public string? Notes { get; init; }
+    // Revenue schedule for outgoing invoices with deferred revenue
+    public IReadOnlyList<RevenueScheduleItemResult> RevenueSchedule { get; init; } = [];
+    public string? DeferredRevenueAccount { get; init; } // e.g. "3900" for PRA
+    public DateOnly? ServicePeriodStart { get; init; }
+    public DateOnly? ServicePeriodEnd { get; init; }
+}
+
+public record RevenueScheduleItemResult
+{
+    public DateOnly PeriodDate { get; init; }
+    public decimal Amount { get; init; }
+    public string? RevenueAccount { get; init; }
+    public bool IsImmediate { get; init; } // true for first month (direct revenue)
 }
 
 public record VatTreatmentResult

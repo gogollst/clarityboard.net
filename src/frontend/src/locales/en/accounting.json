@@ -277,6 +277,8 @@
     "priorAmount": "Prior Period",
     "position": "Position",
     "subtotal": "Subtotal",
+    "postPayroll": "Post Payroll",
+    "postingPayroll": "Posting...",
     "sections": {
       "Umsatzerloese": "Revenue",
       "Bestandsveraenderungen / Eigenleistungen": "Inventory Changes / Own Work Capitalized",
@@ -350,6 +352,10 @@
     "editEntry": "Edit",
     "editTitle": "Edit Journal Entry",
     "saveChanges": "Save Changes",
+    "deleteEntry": "Delete",
+    "deleteConfirmTitle": "Delete Journal Entry?",
+    "deleteConfirmDescription": "This draft entry and all its lines will be permanently deleted. This action cannot be undone.",
+    "deleteConfirm": "Delete",
     "reverseConfirmTitle": "Reverse Journal Entry?",
     "reverseConfirmDescription": "A new reversal entry will be created. Please provide a reason.",
     "reverseReasonLabel": "Reason",
@@ -503,6 +509,48 @@
       "assignError": "Failed to assign business partner"
     }
   },
+  "deferredRevenue": {
+    "title": "Deferred Revenue",
+    "description": "Overview and resolution of deferred revenue entries (PRA account 3900)",
+    "praBalance": "PRA Balance",
+    "dueThisMonth": "Due This Month",
+    "dueNextMonth": "Due Next Month",
+    "entries": "Entries",
+    "plannedEntries": "{{count}} planned",
+    "bookedEntries": "{{count}} posted",
+    "selectMonth": "Select month",
+    "document": "Document",
+    "period": "Period",
+    "amount": "Amount",
+    "account": "Account",
+    "status": "Status",
+    "action": "Action",
+    "post": "Post",
+    "postAll": "Post all due",
+    "posting": "Posting...",
+    "planned": "Planned",
+    "booked": "Posted",
+    "cancelled": "Cancelled",
+    "noEntries": "No due entries for this month.",
+    "emptyTitle": "No pending revenue entries",
+    "emptyDescription": "There are no open deferred revenue entries for the selected month.",
+    "noEntitySelected": "Please select an entity first.",
+    "columns": {
+      "document": "Document",
+      "period": "Period",
+      "amount": "Amount",
+      "account": "Account",
+      "status": "Status",
+      "action": "Action"
+    },
+    "status": {
+      "planned": "Planned",
+      "booked": "Posted",
+      "cancelled": "Cancelled"
+    },
+    "postSuccess": "Revenue entry posted",
+    "postAllSuccess": "{{count}} revenue entries posted"
+  },
   "toast": {
     "journalEntryCreated": "Journal entry created",
     "journalEntryCreateError": "Failed to create journal entry",
@@ -510,6 +558,8 @@
     "journalEntryPostError": "Failed to post journal entry",
     "journalEntryReversed": "Journal entry reversed",
     "journalEntryReverseError": "Failed to reverse journal entry",
+    "journalEntryDeleted": "Journal entry deleted",
+    "journalEntryDeleteError": "Failed to delete journal entry",
     "journalEntryUpdated": "Journal entry updated",
     "journalEntryUpdateError": "Failed to update journal entry",
     "costCenterCreated": "Cost center created",
@@ -523,6 +573,9 @@
     "fiscalPeriodCreated": "Fiscal period created",
     "fiscalPeriodCreateError": "Failed to create fiscal period",
     "fiscalPeriodClosed": "Fiscal period closed",
-    "fiscalPeriodCloseError": "Failed to close fiscal period"
+    "fiscalPeriodCloseError": "Failed to close fiscal period",
+    "payrollPosted": "Payroll posted: {{count}} journal entries created",
+    "payrollPartial": "Payroll partially posted: {{success}} of {{total}} employees",
+    "payrollError": "Failed to post payroll"
   }
 }

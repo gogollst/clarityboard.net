@@ -29,9 +29,20 @@ public class WebhookProcessorConsumer : IConsumer<ProcessWebhookEvent>
         _logger = logger;
     }
 
+    // Source types handled by dedicated consumers — skip in generic processor
+    private static readonly HashSet<string> DedicatedSourceTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "zoho_books",
+    };
+
     public async Task Consume(ConsumeContext<ProcessWebhookEvent> context)
     {
         var message = context.Message;
+
+        // Skip source types that have their own dedicated consumer
+        if (DedicatedSourceTypes.Contains(message.SourceType))
+            return;
+
         _logger.LogInformation(
             "Processing webhook event {EventId} from {Source} type {EventType}",
             message.WebhookEventId, message.SourceType, message.EventType);

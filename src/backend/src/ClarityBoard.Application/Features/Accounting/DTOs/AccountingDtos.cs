@@ -20,6 +20,9 @@ public record JournalEntryLineDto
     public required Guid AccountId { get; init; }
     public required string AccountNumber { get; init; }
     public required string AccountName { get; init; }
+    public string? AccountNameDe { get; init; }
+    public string? AccountNameEn { get; init; }
+    public string? AccountNameRu { get; init; }
     public required decimal DebitAmount { get; init; }
     public required decimal CreditAmount { get; init; }
     public required string Currency { get; init; }

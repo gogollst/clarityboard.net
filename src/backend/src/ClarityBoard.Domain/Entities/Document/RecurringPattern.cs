@@ -19,6 +19,7 @@ public class RecurringPattern
     public Guid? HrEmployeeId { get; private set; }
     public int AutoBookThreshold { get; private set; } = 3;
     public bool AutoBookEnabled { get; private set; }
+    public string DocumentDirection { get; private set; } = "incoming"; // incoming or outgoing
 
     private RecurringPattern() { }
 
@@ -26,7 +27,8 @@ public class RecurringPattern
         Guid entityId, string vendorName,
         Guid debitAccountId, Guid creditAccountId,
         string? vatCode, string? costCenter,
-        decimal confidence, string? vendorPattern = null)
+        decimal confidence, string? vendorPattern = null,
+        string documentDirection = "incoming")
     {
         return new RecurringPattern
         {
@@ -40,6 +42,7 @@ public class RecurringPattern
             CostCenter = costCenter,
             MatchCount = 1,
             Confidence = confidence,
+            DocumentDirection = documentDirection,
             CreatedAt = DateTime.UtcNow,
         };
     }

@@ -11,6 +11,9 @@ public record JournalEntryDetailLineDto(
     Guid AccountId,
     string AccountNumber,
     string AccountName,
+    string? AccountNameDe,
+    string? AccountNameEn,
+    string? AccountNameRu,
     decimal DebitAmount,
     decimal CreditAmount,
     string Currency,
@@ -64,6 +67,7 @@ public class GetJournalEntryDetailQueryHandler : IRequestHandler<GetJournalEntry
                 return new JournalEntryDetailLineDto(
                     l.Id, l.LineNumber, l.AccountId,
                     account?.AccountNumber ?? "", account?.Name ?? "",
+                    account?.NameDe, account?.NameEn, account?.NameRu,
                     l.DebitAmount, l.CreditAmount, l.Currency,
                     l.VatAmount, l.VatCode, l.CostCenter, l.Description);
             }).ToList();

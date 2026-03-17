@@ -216,7 +216,13 @@
         "sourceName": "Название источника",
         "sourceNamePlaceholder": "напр. Stripe Payments",
         "sourceType": "Тип источника",
-        "sourceTypePlaceholder": "напр. stripe, shopify, custom",
+        "sourceTypePlaceholder": "напр. stripe, zoho_books, custom",
+        "secret": "Секрет вебхука",
+        "secretPlaceholder": "Секретный ключ для проверки подписи",
+        "headerSignatureKey": "Заголовок подписи",
+        "eventFilter": "Фильтр событий",
+        "eventFilterPlaceholder": "напр. invoice.sent, invoice.paid",
+        "endpointUrl": "Эндпоинт вебхука",
         "create": "Создать"
       },
       "addRule": {

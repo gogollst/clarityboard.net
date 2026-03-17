@@ -1,4 +1,5 @@
 export type DocumentStatus = 'uploaded' | 'processing' | 'extracted' | 'review' | 'booked' | 'failed';
+export type DocumentDirection = 'incoming' | 'outgoing';
 
 export interface DocumentListItem {
   id: string;
@@ -7,6 +8,8 @@ export interface DocumentListItem {
   fileSize: number;
   documentType: string;
   status: DocumentStatus;
+  documentDirection: DocumentDirection;
+  classificationConfidence?: number;
   vendorName?: string;
   invoiceNumber?: string;
   invoiceDate?: string;
@@ -15,6 +18,8 @@ export interface DocumentListItem {
   taxAmount?: number;
   currency?: string;
   confidence?: number;
+  dueDate?: string;
+  reverseCharge: boolean;
   createdAt: string;
   processedAt?: string;
 }
@@ -91,6 +96,7 @@ export interface DocumentListParams {
   page?: number;
   pageSize?: number;
   status?: DocumentStatus;
+  direction?: DocumentDirection;
   search?: string;
 }
 
@@ -112,6 +118,41 @@ export interface ModifyBookingRequest {
   description?: string;
   hrEmployeeId?: string;
   targetEntityId?: string;
+}
+
+// ── Revenue Schedule (PRA / Erlösabgrenzung) ──────────────────────────
+
+export interface RevenueScheduleEntry {
+  id: string;
+  documentId: string;
+  lineItemIndex: number;
+  periodDate: string;
+  amount: number;
+  revenueAccountNumber: string;
+  status: 'planned' | 'booked' | 'cancelled';
+  journalEntryId?: string;
+  postedAt?: string;
+}
+
+export interface DeferredRevenueOverview {
+  totalPraBalance: number;
+  dueThisMonth: number;
+  dueNextMonth: number;
+  totalPlannedEntries: number;
+  totalBookedEntries: number;
+}
+
+export interface PostRevenueEntryResult {
+  journalEntryId: string;
+  entryNumber: number;
+}
+
+export interface PostAllDueResult {
+  postedCount: number;
+}
+
+export interface CancelRevenueScheduleResult {
+  cancelledCount: number;
 }
 
 export interface DeleteDocumentPreflight {

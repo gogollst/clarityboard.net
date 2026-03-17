@@ -216,7 +216,13 @@
         "sourceName": "Quellenname",
         "sourceNamePlaceholder": "z.B. Stripe Payments",
         "sourceType": "Quellentyp",
-        "sourceTypePlaceholder": "z.B. stripe, shopify, custom",
+        "sourceTypePlaceholder": "z.B. stripe, zoho_books, custom",
+        "secret": "Webhook-Secret",
+        "secretPlaceholder": "Geheimer Schlüssel für Signaturvalidierung",
+        "headerSignatureKey": "Signatur-Header",
+        "eventFilter": "Event-Filter",
+        "eventFilterPlaceholder": "z.B. invoice.sent, invoice.paid",
+        "endpointUrl": "Webhook-Endpunkt",
         "create": "Erstellen"
       },
       "addRule": {

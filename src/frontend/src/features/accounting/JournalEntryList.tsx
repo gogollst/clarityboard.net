@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Send } from 'lucide-react';
+import { Plus, Send, Trash2 } from 'lucide-react';
 import { useEntity } from '@/hooks/useEntity';
-import { useJournalEntries, usePostJournalEntry } from '@/hooks/useAccounting';
+import { useJournalEntries, usePostJournalEntry, useDeleteJournalEntry } from '@/hooks/useAccounting';
 import DataTable from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -21,10 +21,12 @@ export function Component() {
   const { selectedEntityId } = useEntity();
   const [page, setPage] = useState(1);
   const [confirmPostId, setConfirmPostId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { data, isLoading } = useJournalEntries(selectedEntityId, { page, pageSize: 50 });
   const postMutation = usePostJournalEntry();
+  const deleteMutation = useDeleteJournalEntry();
 
   const items = data?.items ?? [];
   const totalCount = data?.totalCount ?? 0;
@@ -82,17 +84,30 @@ export function Component() {
       render: (item: Record<string, unknown>) => {
         if (item.status !== 'draft') return null;
         return (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              setConfirmPostId(String(item.id));
-            }}
-          >
-            <Send className="mr-1 h-3 w-3" />
-            {t('journalEntries.actions.post')}
-          </Button>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirmPostId(String(item.id));
+              }}
+            >
+              <Send className="mr-1 h-3 w-3" />
+              {t('journalEntries.actions.post')}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-destructive hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                setConfirmDeleteId(String(item.id));
+              }}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
         );
       },
     },
@@ -153,6 +168,34 @@ export function Component() {
               }}
             >
               {t('journalEntries.postConfirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!confirmDeleteId} onOpenChange={() => setConfirmDeleteId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('journalEntryDetail.deleteConfirmTitle')}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t('journalEntryDetail.deleteConfirmDescription')}</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>
+              {t('common:buttons.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={() => {
+                if (confirmDeleteId && selectedEntityId) {
+                  deleteMutation.mutate(
+                    { id: confirmDeleteId, entityId: selectedEntityId },
+                    { onSuccess: () => setConfirmDeleteId(null) },
+                  );
+                }
+              }}
+            >
+              {t('journalEntryDetail.deleteConfirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

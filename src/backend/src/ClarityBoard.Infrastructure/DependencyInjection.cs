@@ -82,9 +82,11 @@ public static class DependencyInjection
             bus.SetKebabCaseEndpointNameFormatter();
 
             bus.AddConsumer<WebhookProcessorConsumer>();
+            bus.AddConsumer<ZohoInvoiceProcessorConsumer>();
             bus.AddConsumer<DocumentProcessingConsumer>();
             bus.AddConsumer<KpiRecalculationConsumer>();
             bus.AddConsumer<AlertEvaluationConsumer>();
+            bus.AddConsumer<PostDueRevenueEntriesConsumer>();
 
             bus.UsingRabbitMq((context, cfg) =>
             {
@@ -124,6 +126,9 @@ public static class DependencyInjection
         services.AddScoped<DocumentStatusChangeNotifier>();
         services.AddScoped<IBusinessPartnerMatchingService, BusinessPartnerMatchingService>();
         services.AddScoped<IBookingPatternLearner, BookingPatternLearnerService>();
+        services.AddScoped<IDocumentClassifier, DocumentClassifierService>();
+        services.AddScoped<ProductMappingService>();
+        services.AddScoped<IRevenueScheduleService, RevenueScheduleService>();
 
         // KPI Calculators (registered as IKpiCalculationService for resolution by CalculatorName)
         services.AddScoped<IKpiCalculationService, ClarityBoard.Application.Services.FinancialKpiCalculator>();

@@ -23,6 +23,9 @@ export interface CreateWebhookConfigRequest {
   entityId: string;
   name: string;
   sourceType: string;
+  secret?: string;
+  headerSignatureKey?: string;
+  eventFilter?: string;
 }
 
 export interface UpdateWebhookConfigRequest {

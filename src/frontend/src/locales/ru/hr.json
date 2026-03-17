@@ -169,7 +169,30 @@
         "invalidEmploymentType": "Неверный тип занятости (допустимые: FullTime, PartTime, WorkingStudent, MiniJob, Internship)",
         "invalidEmail": "Неверный формат email для {{field}}",
         "emailMaxLength": "Email не должен превышать 254 символов для {{field}}",
-        "duplicateInBatch": "Дублирующийся табельный номер (совпадает со строкой {{row}})"
+        "duplicateInBatch": "Дублирующийся табельный номер (совпадает со строкой {{row}})",
+        "grossAmountRequired": "Оклад обязателен при указании данных договора",
+        "grossAmountPositive": "Оклад должен быть положительным числом",
+        "salaryTypeRequired": "Тип оплаты обязателен при указании данных договора",
+        "invalidSalaryType": "Неверный тип оплаты (допустимые: Monthly, Hourly, DailyRate)",
+        "invalidContractType": "Неверный тип договора (допустимые: Permanent, FixedTerm, Freelance, WorkingStudent)",
+        "weeklyHoursRange": "Часы в неделю должны быть от 0 до 60",
+        "workdaysPerWeekRange": "Рабочие дни в неделю должны быть от 1 до 7",
+        "fixedTermRequiresEndDate": "Срочный договор требует указания даты окончания",
+        "vacationDaysRange": "Количество дней отпуска должно быть от 0 до 365",
+        "invalidYesNo": "Неверное значение для {{field}} (допустимые: Yes, No)",
+        "noContractDataWarning": "Нет данных о договоре/зарплате — расчёт зарплаты невозможен для этого сотрудника"
+      },
+      "contractFields": {
+        "contractType": "Тип договора",
+        "salaryType": "Тип оплаты",
+        "grossAmount": "Оклад брутто (EUR)",
+        "weeklyHours": "Часов в неделю",
+        "workdaysPerWeek": "Рабочих дней/нед.",
+        "contractStartDate": "Начало договора",
+        "contractEndDate": "Окончание договора",
+        "annualVacationDays": "Дни отпуска",
+        "has13thSalary": "13-я зарплата",
+        "hasVacationBonus": "Отпускные"
       }
     },
     "sections": {

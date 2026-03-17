@@ -14,7 +14,8 @@ public class BookingPatternLearnerService : IBookingPatternLearner
     }
 
     public async Task LearnFromDecisionAsync(Guid entityId, string? vendorName, Guid? businessPartnerId,
-        Guid debitAccountId, Guid creditAccountId, string? vatCode, Guid? hrEmployeeId, CancellationToken ct)
+        Guid debitAccountId, Guid creditAccountId, string? vatCode, Guid? hrEmployeeId,
+        CancellationToken ct, string documentDirection = "incoming")
     {
         if (string.IsNullOrWhiteSpace(vendorName))
             return;
@@ -22,6 +23,7 @@ public class BookingPatternLearnerService : IBookingPatternLearner
         var pattern = await _db.RecurringPatterns
             .FirstOrDefaultAsync(p => p.EntityId == entityId
                 && p.IsActive
+                && p.DocumentDirection == documentDirection
                 && p.VendorName.ToLower() == vendorName.ToLower(), ct);
 
         if (pattern is not null)
@@ -44,7 +46,8 @@ public class BookingPatternLearnerService : IBookingPatternLearner
                 creditAccountId: creditAccountId,
                 vatCode: vatCode,
                 costCenter: null,
-                confidence: 0.60m);
+                confidence: 0.60m,
+                documentDirection: documentDirection);
 
             newPattern.SetEmployee(hrEmployeeId);
 

@@ -10,7 +10,7 @@ namespace ClarityBoard.API.Controllers;
 
 [ApiController]
 [Authorize]
-[Route("api/[controller]")]
+[Route("api/webhook-config")]
 public class WebhookConfigController : ControllerBase
 {
     private readonly ISender _mediator;

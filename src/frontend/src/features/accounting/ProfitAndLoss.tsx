@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
 import { formatCurrency } from '@/lib/format';
-import { useProfitAndLoss } from '@/hooks/useAccounting';
+import { useProfitAndLoss, usePostPayroll } from '@/hooks/useAccounting';
 import { useDepartments } from '@/hooks/useHr';
 import PageHeader from '@/components/shared/PageHeader';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -40,6 +41,7 @@ export function Component() {
   const [compareMonth, setCompareMonth] = useState(currentMonth);
   const [departmentId, setDepartmentId] = useState('');
 
+  const postPayroll = usePostPayroll();
   const { data: departments } = useDepartments(selectedEntityId ?? undefined);
   const activeDepartments = useMemo(
     () => (departments ?? []).filter((d) => d.isActive),
@@ -102,6 +104,16 @@ export function Component() {
                 </SelectContent>
               </Select>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={postPayroll.isPending}
+              onClick={() => postPayroll.mutate({ entityId: selectedEntityId, year, month })}
+            >
+              {postPayroll.isPending
+                ? t('accounting:profitAndLoss.postingPayroll')
+                : t('accounting:profitAndLoss.postPayroll')}
+            </Button>
             <div className="flex items-center gap-2 ml-4">
               <Checkbox
                 id="compare"

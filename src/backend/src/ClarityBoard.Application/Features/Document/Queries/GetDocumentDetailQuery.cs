@@ -123,6 +123,8 @@ public class GetDocumentDetailQueryHandler : IRequestHandler<GetDocumentDetailQu
             FileSize = document.FileSize,
             DocumentType = document.DocumentType,
             Status = document.Status,
+            DocumentDirection = document.DocumentDirection,
+            ClassificationConfidence = document.ClassificationConfidence,
             VendorName = document.VendorName,
             InvoiceNumber = document.InvoiceNumber,
             InvoiceDate = document.InvoiceDate,

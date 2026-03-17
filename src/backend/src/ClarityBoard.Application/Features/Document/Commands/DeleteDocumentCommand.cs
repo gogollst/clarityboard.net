@@ -146,25 +146,37 @@ public class DeleteDocumentCommandHandler : IRequestHandler<DeleteDocumentComman
             dbContext.Entry(item).Property(nameof(TravelExpenseItem.ReceiptDocumentId)).CurrentValue = null;
         }
 
-        // 4. Delete booking suggestions
+        // 4. Delete revenue schedule entries referencing this document
+        var revenueEntries = await _db.RevenueScheduleEntries
+            .Where(r => r.DocumentId == document.Id)
+            .ToListAsync(ct);
+        _db.RevenueScheduleEntries.RemoveRange(revenueEntries);
+
+        // 5. Delete cashflow entries referencing this document
+        var cashflowEntries = await _db.InvoiceCashflowEntries
+            .Where(c => c.DocumentId == document.Id)
+            .ToListAsync(ct);
+        _db.InvoiceCashflowEntries.RemoveRange(cashflowEntries);
+
+        // 6. Delete booking suggestions
         var bookingSuggestions = await _db.BookingSuggestions
             .Where(bs => bs.DocumentId == document.Id)
             .ToListAsync(ct);
         _db.BookingSuggestions.RemoveRange(bookingSuggestions);
 
-        // 5. Delete document fields
+        // 7. Delete document fields
         var fields = await _db.DocumentFields
             .Where(f => f.DocumentId == document.Id)
             .ToListAsync(ct);
         _db.DocumentFields.RemoveRange(fields);
 
-        // 6. Delete the document record
+        // 8. Delete the document record
         _db.Documents.Remove(document);
 
-        // 7. Save all DB changes in a single transaction (ICommand ensures this)
+        // 9. Save all DB changes in a single transaction (ICommand ensures this)
         await _db.SaveChangesAsync(ct);
 
-        // 8. Delete file from MinIO (after DB commit — non-critical if it fails)
+        // 10. Delete file from MinIO (after DB commit — non-critical if it fails)
         try
         {
             if (!string.IsNullOrEmpty(document.StoragePath))
@@ -178,7 +190,7 @@ public class DeleteDocumentCommandHandler : IRequestHandler<DeleteDocumentComman
                 document.Id, document.StoragePath);
         }
 
-        // 9. Notify via SignalR
+        // 11. Notify via SignalR
         try
         {
             await _notifier.NotifyDocumentStatusChangedAsync(request.EntityId, request.DocumentId, "deleted", ct);

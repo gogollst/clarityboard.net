@@ -277,6 +277,8 @@
     "priorAmount": "Предыдущий период",
     "position": "Позиция",
     "subtotal": "Промежуточный итог",
+    "postPayroll": "Провести зарплату",
+    "postingPayroll": "Проводка...",
     "sections": {
       "Umsatzerloese": "Выручка",
       "Bestandsveraenderungen / Eigenleistungen": "Изменения запасов / Собственные работы",
@@ -571,6 +573,9 @@
     "fiscalPeriodCreated": "Отчётный период создан",
     "fiscalPeriodCreateError": "Ошибка создания отчётного периода",
     "fiscalPeriodClosed": "Отчётный период закрыт",
-    "fiscalPeriodCloseError": "Ошибка закрытия отчётного периода"
+    "fiscalPeriodCloseError": "Ошибка закрытия отчётного периода",
+    "payrollPosted": "Зарплата проведена: создано {{count}} проводок",
+    "payrollPartial": "Зарплата проведена частично: {{success}} из {{total}} сотрудников",
+    "payrollError": "Ошибка проведения зарплаты"
   }
 }

@@ -11,11 +11,12 @@ npm run build        # tsc -b && vite build (production)
 npm run lint         # ESLint
 ```
 
-### Backend (`src/backend/`)
+### Backend (`src/backend/`) — .NET 10
 ```bash
 dotnet restore       # Restore NuGet packages
 dotnet build         # Build all projects
 dotnet test          # Run all tests
+dotnet test --filter "FullyQualifiedName~SomeTestClass"  # Run specific tests
 ```
 Note: `dotnet` CLI is NOT installed locally on the production server. Migrations are created manually as SQL + Designer files.
 
@@ -49,11 +50,12 @@ API → Application → Domain ← Infrastructure
 - Entity configurations in `Persistence/Configurations/{Domain}/`
 
 ### Frontend Stack
-- **React 19** + TypeScript 5, **Vite**, **Tailwind CSS 4**, **shadcn/ui**
+- **React 19** + TypeScript 5, **Vite**, **Tailwind CSS 4**, **shadcn/ui** (Node 22)
 - **TanStack Query** for server state, **Zustand** for client state
 - **React Router 7** with lazy-loaded routes
 - **i18next** with 3 languages (de, en, ru) in `src/locales/{lang}/{namespace}.json`
-- **React Hook Form + Zod** for form validation
+- **React Hook Form + Zod** for form validation, **sonner** for toast notifications
+- **recharts** for charts, **lucide-react** for icons, **date-fns** for date formatting
 
 ### Frontend Conventions
 - Route components use `export function Component()` (React Router lazy convention)
@@ -88,7 +90,8 @@ src/frontend/src/types/                            # TypeScript interfaces (mirr
 src/frontend/src/locales/                          # i18n translations (de, en, ru)
 src/frontend/src/components/ui/                    # shadcn/ui components
 src/frontend/src/stores/                           # Zustand stores (auth, entity, ui)
-docs/architecture/                                 # Technical architecture docs
+docs/                                              # Functional concept docs (KPIs, modules, integrations)
+docs/architecture/                                 # Technical architecture docs (12 documents)
 ```
 
 ## CI Pipeline
