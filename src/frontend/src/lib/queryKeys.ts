@@ -8,6 +8,8 @@ export const queryKeys = {
     alerts: (entityId: string) => ['kpi', 'alerts', entityId] as const,
     alertEvents: (alertId: string) =>
       ['kpi', 'alert-events', alertId] as const,
+    entityAlertEvents: (entityId: string, status?: string) =>
+      ['kpi', 'entity-alert-events', entityId, status ?? 'all'] as const,
     drillDown: (entityId: string, kpiId: string) =>
       ['kpi', 'drill-down', entityId, kpiId] as const,
     workingCapital: (entityId: string) =>
@@ -46,6 +48,12 @@ export const queryKeys = {
       ['accounting', 'business-partner', id] as const,
     businessPartnerSearch: (entityId: string) =>
       ['accounting', 'business-partner-search', entityId] as const,
+    revenueSchedule: (entityId: string, documentId: string) =>
+      ['accounting', 'revenue-schedule', entityId, documentId] as const,
+    pendingRevenueEntries: (entityId: string) =>
+      ['accounting', 'pending-revenue-entries', entityId] as const,
+    deferredRevenueOverview: (entityId: string) =>
+      ['accounting', 'deferred-revenue-overview', entityId] as const,
   },
 
   cashflow: {
@@ -117,6 +125,7 @@ export const queryKeys = {
     auditLogs: () => ['admin', 'audit-logs'] as const,
     mailConfig: () => ['admin', 'mail-config'] as const,
     authConfig: () => ['admin', 'auth-config'] as const,
+    productMappings: (entityId: string) => ['admin', 'product-mappings', entityId] as const,
   },
 
   settings: {

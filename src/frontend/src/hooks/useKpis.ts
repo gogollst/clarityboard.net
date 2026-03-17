@@ -196,6 +196,23 @@ export function useAlertEvents(alertId: string | null) {
   });
 }
 
+export function useEntityAlertEvents(
+  entityId: string | null,
+  status?: 'active' | 'acknowledged' | 'resolved',
+) {
+  return useQuery({
+    queryKey: queryKeys.kpi.entityAlertEvents(entityId ?? '', status),
+    queryFn: async () => {
+      const { data } = await api.get<AlertDto[]>(
+        '/kpi/alert-events',
+        { params: { entityId, status } },
+      );
+      return data;
+    },
+    enabled: !!entityId,
+  });
+}
+
 export function useAcknowledgeAlert() {
   const queryClient = useQueryClient();
 
