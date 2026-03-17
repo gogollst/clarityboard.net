@@ -9,10 +9,12 @@ interface UiState {
   theme: Theme;
   locale: Locale;
   connectionStatus: ConnectionStatus;
+  showFullNav: boolean;
   toggleSidebar: () => void;
   setTheme: (theme: Theme) => void;
   setLocale: (locale: Locale) => void;
   setConnectionStatus: (status: ConnectionStatus) => void;
+  toggleFullNav: () => void;
 }
 
 const THEME_KEY = 'cb-theme';
@@ -37,8 +39,10 @@ export const useUiStore = create<UiState>((set) => ({
   theme: initialTheme,
   locale: 'en',
   connectionStatus: 'disconnected',
+  showFullNav: false,
 
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  toggleFullNav: () => set((s) => ({ showFullNav: !s.showFullNav })),
 
   setTheme: (theme) => {
     localStorage.setItem(THEME_KEY, theme);
