@@ -81,6 +81,13 @@ export function useAuth() {
     return user.permissions.includes(permission);
   };
 
+  const EXECUTIVE_ROLES = ['ceo', 'cfo', 'cso', 'chro', 'coo'];
+
+  const isExecutive =
+    user?.roles?.some((r) => EXECUTIVE_ROLES.includes(r.toLowerCase())) ||
+    user?.permissions?.includes('executive.view') ||
+    false;
+
   return {
     user,
     isAuthenticated,
@@ -91,6 +98,7 @@ export function useAuth() {
     resetPasswordViaToken,
     hasPermission,
     role: user?.roles?.[0] ?? null,
+    isExecutive,
   };
 }
 
