@@ -12,8 +12,6 @@ const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage
 const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage'));
 const AcceptInvitationPage = lazy(() => import('@/features/auth/AcceptInvitationPage'));
 
-// Dashboard
-const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
 
 // Loading fallback
 function PageLoader() {
@@ -54,7 +52,8 @@ export const router = createBrowserRouter([
     ),
     errorElement: <RouteErrorBoundary />,
     children: [
-      { index: true, element: <DashboardPage /> },
+      { index: true, lazy: () => import('@/features/dashboard/ExecutiveDashboard') },
+      { path: 'dashboard/ops', lazy: () => import('@/features/dashboard/DashboardPage') },
 
       // KPI domains (lazy loaded)
       { path: 'kpis/financial', lazy: () => import('@/features/financial/ProfitabilityView') },
@@ -85,6 +84,7 @@ export const router = createBrowserRouter([
       { path: 'admin/audit', lazy: () => import('@/features/admin/AuditLog') },
       { path: 'admin/mail', lazy: () => import('@/features/admin/MailConfig') },
       { path: 'admin/auth-config', lazy: () => import('@/features/admin/AuthConfig') },
+      { path: 'admin/product-mappings', lazy: () => import('@/features/admin/ProductMappings') },
 
       // Admin – AI Management
       { path: 'admin/ai/providers', lazy: () => import('@/features/admin/AiProviders') },
@@ -111,11 +111,13 @@ export const router = createBrowserRouter([
       { path: 'accounting/datev/exports', lazy: () => import('@/features/accounting/DatevExports') },
       { path: 'accounting/cost-centers', lazy: () => import('@/features/accounting/CostCenters') },
       { path: 'accounting/scenarios', lazy: () => import('@/features/accounting/AccountingScenarios') },
+      { path: 'accounting/deferred-revenue', lazy: () => import('@/features/accounting/DeferredRevenueOverview') },
 
       // HR
       { path: 'hr/me', lazy: () => import('@/features/hr/self/MySelf') },
       { path: 'hr/departments', lazy: () => import('@/features/hr/departments/DepartmentList') },
       { path: 'hr/employees', lazy: () => import('@/features/hr/employees/EmployeeList') },
+      { path: 'hr/employees/import', lazy: () => import('@/features/hr/employees/import/EmployeeImport') },
       { path: 'hr/employees/new', lazy: () => import('@/features/hr/employees/EmployeeCreate') },
       { path: 'hr/employees/:id', lazy: () => import('@/features/hr/employees/EmployeeDetail') },
       { path: 'hr/leave/requests', lazy: () => import('@/features/hr/leave/LeaveRequestList') },
