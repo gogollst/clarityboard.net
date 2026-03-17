@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEntity } from '@/hooks/useEntity';
@@ -53,6 +53,19 @@ export function Component() {
     refetch,
   } = useExecutiveDashboard(selectedEntityId, period, compareEnabled);
 
+  // Staleness: re-check every 60s whether lastUpdated is >5min old
+  const [isStale, setIsStale] = useState(false);
+  useEffect(() => {
+    function check() {
+      if (!dashboard?.lastUpdated) { setIsStale(true); return; }
+      const age = Date.now() - new Date(dashboard.lastUpdated).getTime();
+      setIsStale(age > 5 * 60 * 1000);
+    }
+    check();
+    const id = setInterval(check, 60_000);
+    return () => clearInterval(id);
+  }, [dashboard?.lastUpdated]);
+
   // No entity selected
   if (!selectedEntityId) {
     return (
@@ -86,9 +99,6 @@ export function Component() {
   const lastUpdatedTime = dashboard?.lastUpdated
     ? new Date(dashboard.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null;
-
-  const isStale = !dashboard?.lastUpdated ||
-    (Date.now() - new Date(dashboard.lastUpdated).getTime()) > 5 * 60 * 1000;
 
   return (
     <main className="max-w-7xl mx-auto">
