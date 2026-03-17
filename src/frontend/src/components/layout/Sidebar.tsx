@@ -40,6 +40,7 @@ import {
   Receipt,
   Handshake,
   ListTree,
+  Package,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -52,6 +53,7 @@ interface NavItem {
   label: string;
   path: string;
   icon: React.ElementType;
+  disabled?: boolean;
 }
 
 interface NavGroup {
@@ -61,16 +63,18 @@ interface NavGroup {
 
 export default function Sidebar() {
   const location = useLocation();
-  const { hasPermission } = useAuth();
+  const { hasPermission, isExecutive } = useAuth();
   const { sidebarOpen, toggleSidebar } = useUiStore();
+  const showFullNav = useUiStore((s) => s.showFullNav);
+  const toggleFullNav = useUiStore((s) => s.toggleFullNav);
   const { data: versionInfo } = useVersion();
-  const { t } = useTranslation(['navigation', 'common']);
+  const { t } = useTranslation(['navigation', 'common', 'executive']);
 
   const mainNavGroups = useMemo<NavGroup[]>(() => [
     {
       label: t('navigation:groups.overview'),
       items: [
-        { label: t('navigation:items.dashboard'), path: '/', icon: LayoutDashboard },
+        { label: t('navigation:items.dashboard'), path: '/dashboard/ops', icon: LayoutDashboard },
       ],
     },
     {
@@ -115,6 +119,7 @@ export default function Sidebar() {
       { label: t('navigation:items.accountingDatev'), path: '/accounting/datev/exports', icon: Download },
       { label: t('navigation:items.costCenters'), path: '/accounting/cost-centers', icon: Layers },
       { label: t('navigation:items.accountingScenarios'), path: '/accounting/scenarios', icon: Target },
+      { label: t('navigation:items.deferredRevenue'), path: '/accounting/deferred-revenue', icon: Calendar },
     ],
   }), [t]);
 
@@ -148,6 +153,7 @@ export default function Sidebar() {
       { label: t('navigation:items.webhooks'), path: '/admin/webhooks', icon: Webhook },
       { label: t('navigation:items.auditLog'), path: '/admin/audit', icon: ClipboardList },
       { label: t('navigation:items.mailConfig'), path: '/admin/mail', icon: Mail },
+      { label: t('navigation:items.productMappings'), path: '/admin/product-mappings', icon: Package },
     ],
   }), [t]);
 
@@ -161,8 +167,66 @@ export default function Sidebar() {
     ],
   }), [t]);
 
+  const executiveNavGroups = useMemo<NavGroup[]>(() => {
+    const groups: NavGroup[] = [
+      {
+        label: t('navigation:groups.executive'),
+        items: [
+          { label: t('executive:sidebar.executiveSummary'), path: '/', icon: LayoutDashboard },
+        ],
+      },
+      {
+        label: t('executive:sidebar.domains'),
+        items: [
+          { label: t('navigation:items.financial'), path: '/kpis/financial', icon: DollarSign },
+          { label: t('navigation:items.sales'), path: '/kpis/sales', icon: TrendingUp },
+          { label: t('navigation:items.marketing'), path: '/kpis/marketing', icon: Megaphone },
+          { label: t('navigation:items.hrKpi'), path: '/kpis/hr', icon: Users },
+          {
+            label: `${t('executive:sidebar.operations')} (${t('executive:sidebar.comingSoon')})`,
+            path: '#',
+            icon: Activity,
+            disabled: true,
+          },
+        ],
+      },
+      {
+        label: t('executive:sidebar.tools'),
+        items: [
+          { label: t('navigation:items.forecast'), path: '/cashflow/forecast', icon: BarChart3 },
+          { label: t('navigation:items.scenarios'), path: '/scenarios', icon: Landmark },
+          { label: t('navigation:items.budget'), path: '/budget', icon: PiggyBank },
+        ],
+      },
+      {
+        label: t('navigation:groups.overview'),
+        items: [
+          { label: t('executive:sidebar.fullDashboard'), path: '/dashboard/ops', icon: BarChart2 },
+        ],
+      },
+    ];
+
+    if (hasPermission('admin.*')) {
+      groups.push({
+        label: t('navigation:groups.admin'),
+        items: [
+          { label: t('navigation:items.users'), path: '/admin/users', icon: Users },
+        ],
+      });
+      groups.push({
+        label: t('navigation:groups.aiManagement'),
+        items: [
+          { label: t('navigation:items.providers'), path: '/admin/ai/providers', icon: KeyRound },
+        ],
+      });
+    }
+
+    return groups;
+  }, [t, hasPermission]);
+
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
+    if (path === '/dashboard/ops') return location.pathname === '/dashboard/ops';
     return location.pathname.startsWith(path);
   };
 
@@ -198,80 +262,112 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="sidebar-scrollbar flex-1 overflow-y-auto py-3">
-        {mainNavGroups.map((group) => (
-          <NavGroupSection
-            key={group.label}
-            group={group}
-            collapsed={!sidebarOpen}
-            isActive={isActive}
-          />
-        ))}
-
-        {showAccounting && (
+        {isExecutive && !showFullNav ? (
+          /* Executive sidebar */
+          executiveNavGroups.map((group, idx) => (
+            <div key={group.label}>
+              {idx > 0 && (
+                <div
+                  className="mx-3 my-2 border-t"
+                  style={{ borderColor: 'var(--color-sidebar-border)' }}
+                />
+              )}
+              <NavGroupSection
+                group={group}
+                collapsed={!sidebarOpen}
+                isActive={isActive}
+              />
+            </div>
+          ))
+        ) : (
+          /* Operational sidebar */
           <>
-            <div
-              className="mx-3 my-2 border-t"
-              style={{ borderColor: 'var(--color-sidebar-border)' }}
-            />
-            <NavGroupSection
-              group={accountingNavGroupMemo}
-              collapsed={!sidebarOpen}
-              isActive={isActive}
-            />
-          </>
-        )}
+            {mainNavGroups.map((group) => (
+              <NavGroupSection
+                key={group.label}
+                group={group}
+                collapsed={!sidebarOpen}
+                isActive={isActive}
+              />
+            ))}
 
-        {showHr && (
-          <>
-            <div
-              className="mx-3 my-2 border-t"
-              style={{ borderColor: 'var(--color-sidebar-border)' }}
-            />
-            <NavGroupSection
-              group={hrNavGroupMemo}
-              collapsed={!sidebarOpen}
-              isActive={isActive}
-            />
-          </>
-        )}
+            {showAccounting && (
+              <>
+                <div
+                  className="mx-3 my-2 border-t"
+                  style={{ borderColor: 'var(--color-sidebar-border)' }}
+                />
+                <NavGroupSection
+                  group={accountingNavGroupMemo}
+                  collapsed={!sidebarOpen}
+                  isActive={isActive}
+                />
+              </>
+            )}
 
-        {showHrAdmin && (
-          <>
-            <div
-              className="mx-3 my-2 border-t"
-              style={{ borderColor: 'var(--color-sidebar-border)' }}
-            />
-            <NavGroupSection
-              group={hrAdminNavGroupMemo}
-              collapsed={!sidebarOpen}
-              isActive={isActive}
-            />
-          </>
-        )}
+            {showHr && (
+              <>
+                <div
+                  className="mx-3 my-2 border-t"
+                  style={{ borderColor: 'var(--color-sidebar-border)' }}
+                />
+                <NavGroupSection
+                  group={hrNavGroupMemo}
+                  collapsed={!sidebarOpen}
+                  isActive={isActive}
+                />
+              </>
+            )}
 
-        {showAdmin && (
-          <>
-            <div
-              className="mx-3 my-2 border-t"
-              style={{ borderColor: 'var(--color-sidebar-border)' }}
-            />
-            <NavGroupSection
-              group={adminNavGroupMemo}
-              collapsed={!sidebarOpen}
-              isActive={isActive}
-            />
-            <div
-              className="mx-3 my-2 border-t"
-              style={{ borderColor: 'var(--color-sidebar-border)' }}
-            />
-            <NavGroupSection
-              group={aiAdminNavGroupMemo}
-              collapsed={!sidebarOpen}
-              isActive={isActive}
-            />
+            {showHrAdmin && (
+              <>
+                <div
+                  className="mx-3 my-2 border-t"
+                  style={{ borderColor: 'var(--color-sidebar-border)' }}
+                />
+                <NavGroupSection
+                  group={hrAdminNavGroupMemo}
+                  collapsed={!sidebarOpen}
+                  isActive={isActive}
+                />
+              </>
+            )}
+
+            {showAdmin && (
+              <>
+                <div
+                  className="mx-3 my-2 border-t"
+                  style={{ borderColor: 'var(--color-sidebar-border)' }}
+                />
+                <NavGroupSection
+                  group={adminNavGroupMemo}
+                  collapsed={!sidebarOpen}
+                  isActive={isActive}
+                />
+                <div
+                  className="mx-3 my-2 border-t"
+                  style={{ borderColor: 'var(--color-sidebar-border)' }}
+                />
+                <NavGroupSection
+                  group={aiAdminNavGroupMemo}
+                  collapsed={!sidebarOpen}
+                  isActive={isActive}
+                />
+              </>
+            )}
           </>
         )}
       </nav>
+
+      {/* Executive toggle */}
+      {isExecutive && sidebarOpen && (
+        <button
+          onClick={toggleFullNav}
+          className="w-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors text-left"
+        >
+          {showFullNav ? t('executive:sidebar.hideFullNav') : t('executive:sidebar.showFullNav')}
+        </button>
+      )}
 
       {/* Version */}
       {sidebarOpen && versionInfo && (
@@ -347,7 +443,26 @@ function NavGroupSection({
       <ul className="space-y-0.5 px-2">
         {group.items.map((item) => {
           const Icon = item.icon;
-          const active = isActive(item.path);
+          const active = !item.disabled && isActive(item.path);
+
+          if (item.disabled) {
+            return (
+              <li key={item.path + item.label}>
+                <span
+                  className={cn(
+                    'flex items-center gap-3 rounded-md px-2 py-2 text-sm font-medium cursor-not-allowed opacity-50',
+                    collapsed && 'justify-center'
+                  )}
+                  style={{ color: 'var(--color-sidebar-foreground)' }}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <Icon className="h-4 w-4 shrink-0" style={{ color: 'var(--color-sidebar-foreground)' }} />
+                  {!collapsed && <span>{item.label}</span>}
+                </span>
+              </li>
+            );
+          }
+
           return (
             <li key={item.path}>
               <Link
