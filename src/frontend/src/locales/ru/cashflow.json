@@ -77,6 +77,7 @@
     "balanceSheet": {
       "totalAssets": "Итого активы",
       "totalLiabilities": "Итого обязательства",
+      "totalLiabilitiesAndEquity": "Итого пассивы и капитал",
       "equity": "Собственный капитал"
     },
     "chart": {
