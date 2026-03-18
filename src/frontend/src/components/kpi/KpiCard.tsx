@@ -28,7 +28,8 @@ interface KpiCardProps {
   isLoading?: boolean;
 }
 
-function formatValue(value: number, unit: KpiUnit): string {
+function formatValue(value: number | null | undefined, unit: KpiUnit): string {
+  if (value == null) return '—';
   switch (unit) {
     case 'currency':
       return formatCurrency(value);

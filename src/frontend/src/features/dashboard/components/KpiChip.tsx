@@ -11,7 +11,8 @@ interface KpiChipProps {
   className?: string;
 }
 
-function formatValue(value: number, unit: KpiDefinition['unit']): string {
+function formatValue(value: number | null | undefined, unit: KpiDefinition['unit']): string {
+  if (value == null) return '—';
   switch (unit) {
     case 'currency':
       if (Math.abs(value) >= 1_000_000) return `€${(value / 1_000_000).toFixed(1)}M`;
