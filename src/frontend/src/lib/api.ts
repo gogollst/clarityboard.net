@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useEntityStore } from '@/stores/entityStore';
+import { useAuthStore } from '@/stores/authStore';
 
 export const api = axios.create({
   baseURL: '/api',
@@ -99,6 +100,8 @@ api.interceptors.response.use(
         return api(error.config);
       } catch {
         accessToken = null;
+        refreshToken = null;
+        useAuthStore.getState().logout();
         window.location.href = '/login';
         return Promise.reject(error);
       }

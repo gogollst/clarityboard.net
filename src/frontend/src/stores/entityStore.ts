@@ -13,6 +13,7 @@ interface EntityState {
   selectedEntityId: string | null;
   setEntities: (entities: LegalEntity[]) => void;
   setSelectedEntity: (entityId: string) => void;
+  clearSelectedEntity: () => void;
 }
 
 const STORAGE_KEY = 'cb_selected_entity_id';
@@ -38,5 +39,9 @@ export const useEntityStore = create<EntityState>((set) => ({
   setSelectedEntity: (entityId) => {
     persistEntityId(entityId);
     set({ selectedEntityId: entityId });
+  },
+  clearSelectedEntity: () => {
+    clearPersistedEntityId();
+    set({ selectedEntityId: null });
   },
 }));

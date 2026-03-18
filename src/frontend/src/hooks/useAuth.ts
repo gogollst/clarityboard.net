@@ -32,8 +32,11 @@ export function useAuth() {
     storeTokens(data.accessToken, data.refreshToken ?? null, rememberMe);
     storeUser(data.user, rememberMe);
     setUser(data.user);
+    const entityStore = useEntityStore.getState();
     if (data.user.entities?.length > 0) {
-      useEntityStore.getState().setSelectedEntity(data.user.entities[0].entityId);
+      entityStore.setSelectedEntity(data.user.entities[0].entityId);
+    } else {
+      entityStore.clearSelectedEntity();
     }
     return { requires2FA: false };
   };
@@ -49,8 +52,11 @@ export function useAuth() {
     storeTokens(data.accessToken, data.refreshToken ?? null, rememberMe);
     storeUser(data.user, rememberMe);
     setUser(data.user);
+    const entityStore = useEntityStore.getState();
     if (data.user.entities?.length > 0) {
-      useEntityStore.getState().setSelectedEntity(data.user.entities[0].entityId);
+      entityStore.setSelectedEntity(data.user.entities[0].entityId);
+    } else {
+      entityStore.clearSelectedEntity();
     }
   };
 

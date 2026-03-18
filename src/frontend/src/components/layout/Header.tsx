@@ -91,7 +91,10 @@ export default function Header() {
           <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
           <select
             value={selectedEntityId ?? ''}
-            onChange={(e) => switchEntity(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val) switchEntity(val);
+            }}
             disabled={isSwitching}
             className="bg-transparent text-sm font-medium text-foreground focus:outline-none disabled:opacity-60"
           >
